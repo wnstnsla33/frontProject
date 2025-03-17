@@ -1,0 +1,73 @@
+package pProject.pPro.securityConfig;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+
+import pProject.pPro.User.UserDTO;
+import pProject.pPro.User.UserRepository;
+import pProject.pPro.entity.Grade;
+import pProject.pPro.entity.UserEntity;
+
+@Service
+public class CustomOAuth2UserService extends DefaultOAuth2UserService{
+	private final UserRepository userRepository;
+	public CustomOAuth2UserService(UserRepository userRepository) {
+		this.userRepository= userRepository;
+	}
+	@Override
+	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+		OAuth2User oAuth2User = super.loadUser(userRequest);
+		String registraionid=userRequest.getClientRegistration().getRegistrationId();
+		OAuth2Response oAuth2Response = null;
+        if (registraionid.equals("naver")) {
+
+            oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
+        }
+      
+        else {
+        	return null;
+        }
+        String userEmail = oAuth2Response.getProvider()+" "+oAuth2Response.getproviderId();
+        System.out.println("userEmil 유저이메일"+ userEmail);
+        UserEntity existData = userRepository.findByuserEmail(userEmail);
+        if(existData==null) {
+        	UserEntity userEntity = new UserEntity();
+        	userEntity.setUserName(oAuth2Response.getName());
+        	userEntity.setUserBirthDay(oAuth2Response.getBirthDay());
+        	SimpleDateFormat formatter = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분");
+        	String createDate = formatter.format(new Date());
+        	userEntity.setUserCreateDate(createDate);
+        	userEntity.setUserGrade(Grade.BRONZE);
+        	userEntity.setUserEmail(userEmail);
+        	userEntity.setUserAge(Integer.parseInt( oAuth2Response.getAge()));
+        	userEntity.setUserSex(oAuth2Response.getSex());
+        	userRepository.save(userEntity);
+        	UserDTO userDTO = new UserDTO();
+        	userDTO.setEmail(userEmail);
+        	userDTO.setName(oAuth2Response.getName());
+        	userDTO.setRole("ROLE_USER");
+        	return new CustomOAuth2User(userDTO);
+        }
+        else {
+             existData.setUserEmail(userEmail);
+
+             userRepository.save(existData);
+
+             UserDTO userDTO = new UserDTO();
+             userDTO.setEmail(userEmail);
+             userDTO.setName(oAuth2Response.getName());
+             if(existData.getUserGrade()==Grade.ADMIN) userDTO.setRole("ROLE_ADMIN");
+             else userDTO.setRole("ROLE_USER");
+             return new CustomOAuth2User(userDTO);
+        }
+        
+	}
+
+}
