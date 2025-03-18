@@ -78,7 +78,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .successHandler(customSuccessHandler)
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/my", "/signup/**","/find/**").permitAll() // 공개 경로
+                .requestMatchers("/", "/my", "/signup/**","/find/**","/post").permitAll() // 공개 경로
                 .requestMatchers("/post/**","/myInfo","user/**").hasRole("USER") // USER 역할 필요
                 .anyRequest().authenticated() // 나머지 경로는 인증 필요
             )

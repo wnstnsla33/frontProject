@@ -72,7 +72,7 @@ public class JWTFilter extends OncePerRequestFilter {
 				customOAuth2User.getAuthorities());
 		// 세션에 사용자 등록
 		SecurityContextHolder.getContext().setAuthentication(authToken);
-
+		
 		filterChain.doFilter(request, response);
 
 	}

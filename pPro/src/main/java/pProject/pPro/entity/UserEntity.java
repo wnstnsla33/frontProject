@@ -73,7 +73,7 @@ public class UserEntity {
 	private List<BookmarkEntity> bookmark = new ArrayList<BookmarkEntity>();
 
 	@OneToMany(mappedBy = "user")
-	@JsonIgnore
+	@JsonBackReference("user-post")
 	private List<PostEntity> post = new ArrayList<PostEntity>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
