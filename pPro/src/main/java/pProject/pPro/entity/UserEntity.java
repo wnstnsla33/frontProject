@@ -59,13 +59,13 @@ public class UserEntity {
 	
 	private String Hint;
 	
-	@Column(columnDefinition = "varchar2(255) default 'https://i.namu.wiki/i/Bge3xnYd4kRe_IKbm2uqxlhQJij2SngwNssjpjaOyOqoRhQlNwLrR2ZiK-JWJ2b99RGcSxDaZ2UCI7fiv4IDDQ.webp'")
+	@ColumnDefault("'https://i.namu.wiki/i/Bge3xnYd4kRe_IKbm2uqxlhQJij2SngwNssjpjaOyOqoRhQlNwLrR2ZiK-JWJ2b99RGcSxDaZ2UCI7fiv4IDDQ.webp'")
 	private String userImg;
 
-	@Column(columnDefinition = "number(10) default 1")
+	@ColumnDefault("1")
 	private int userExp;
 
-	@Column(columnDefinition = "number(10) default 1")
+	@ColumnDefault("1")
 	private int userLevel;
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

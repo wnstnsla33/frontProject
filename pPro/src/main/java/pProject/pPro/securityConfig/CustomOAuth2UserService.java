@@ -35,8 +35,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	return null;
         }
         String userEmail = oAuth2Response.getProvider()+" "+oAuth2Response.getproviderId();
-        System.out.println("userEmil 유저이메일"+ userEmail);
-        UserEntity existData = userRepository.findByuserEmail(userEmail);
+        UserEntity existData = userRepository.findByEmail(userEmail);
         if(existData==null) {
         	UserEntity userEntity = new UserEntity();
         	userEntity.setUserName(oAuth2Response.getName());
@@ -47,7 +46,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	userEntity.setUserGrade(Grade.BRONZE);
         	userEntity.setUserEmail(userEmail);
         	userEntity.setUserAge(Integer.parseInt( oAuth2Response.getAge()));
-        	userEntity.setUserSex(oAuth2Response.getSex());
+        	userEntity.setUserSex(oAuth2Response.getSex()=="M"?"남성":"여성");
+        	userEntity.setUserImg("https://i.namu.wiki/i/Bge3xnYd4kRe_IKbm2uqxlhQJij2SngwNssjpjaOyOqoRhQlNwLrR2ZiK-JWJ2b99RGcSxDaZ2UCI7fiv4IDDQ.webp");
+        	userEntity.setUserLevel(1);
+        	userEntity.setUserExp(0);
         	userRepository.save(userEntity);
         	UserDTO userDTO = new UserDTO();
         	userDTO.setEmail(userEmail);
@@ -56,9 +58,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	return new CustomOAuth2User(userDTO);
         }
         else {
-             existData.setUserEmail(userEmail);
+        	if (!existData.getUserEmail().equals(userEmail)) {
+                existData.setUserEmail(userEmail);
+                System.out.println("oauth2 email바뀌어 새로 저장");
+                userRepository.save(existData);
+            }
 
-             userRepository.save(existData);
 
              UserDTO userDTO = new UserDTO();
              userDTO.setEmail(userEmail);

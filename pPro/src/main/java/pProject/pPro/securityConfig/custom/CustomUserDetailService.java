@@ -18,7 +18,7 @@ public class CustomUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         System.out.println(username + " 계정 이메일 조회 중...");
 
-        UserEntity userEntity = userRepository.findByuserEmail(username);
+        UserEntity userEntity = userRepository.findByEmail(username);
 
         // ✅ 예외 처리 추가
         if (userEntity == null) {

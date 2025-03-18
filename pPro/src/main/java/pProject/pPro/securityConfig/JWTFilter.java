@@ -43,7 +43,7 @@ public class JWTFilter extends OncePerRequestFilter {
 		// 허용할 경로: /post, /post/{id}
 		boolean isAllowedPath = requestURI.equals("/post") || requestURI.matches("/post/\\d+")
 				|| requestURI.equals("/signup") || requestURI.equals("/signup/confirm") || requestURI.equals("/login")
-				|| requestURI.equals("/my");
+				|| requestURI.equals("/my")||requestURI.startsWith("/find");
 
 		if (isAllowedPath && token == null) {
 			filterChain.doFilter(request, response);
