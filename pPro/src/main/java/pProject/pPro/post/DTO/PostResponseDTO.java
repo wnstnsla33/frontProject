@@ -21,6 +21,9 @@ public class PostResponseDTO {
     	return ResponseEntity.status(HttpStatus.OK).body(list);
     }
 	
+	public static ResponseEntity getPost(PostListDTO postListDTO) {
+    	return ResponseEntity.status(HttpStatus.OK).body(postListDTO);
+    }
 	//msg
 	public static ResponseEntity postFail(String msg) {
     	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);

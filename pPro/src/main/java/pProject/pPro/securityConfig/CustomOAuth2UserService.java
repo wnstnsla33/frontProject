@@ -3,6 +3,7 @@ package pProject.pPro.securityConfig;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -35,8 +36,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	return null;
         }
         String userEmail = oAuth2Response.getProvider()+" "+oAuth2Response.getproviderId();
-        UserEntity existData = userRepository.findByEmail(userEmail);
-        if(existData==null) {
+        Optional< UserEntity> optionalUser = userRepository.findByEmail(userEmail);
+        if(!optionalUser.isPresent()) {
         	UserEntity userEntity = new UserEntity();
         	userEntity.setUserName(oAuth2Response.getName());
         	userEntity.setUserBirthDay(oAuth2Response.getBirthDay());
@@ -58,6 +59,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	return new CustomOAuth2User(userDTO);
         }
         else {
+        	UserEntity existData = optionalUser.get();
         	if (!existData.getUserEmail().equals(userEmail)) {
                 existData.setUserEmail(userEmail);
                 System.out.println("oauth2 email바뀌어 새로 저장");

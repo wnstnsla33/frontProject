@@ -44,7 +44,7 @@ public class UserService {
 	}
 
 	public ResponseEntity saveUser(SignupLoginDTO signupDTO) {
-		UserEntity isExist = userRepository.findByEmail(signupDTO.getEmail());
+		UserEntity isExist = userRepository.findByEmail(signupDTO.getEmail()).get();
 		if (isExist != null)
 			return responseUserDTO.existId();
 		UserEntity userEntity = new UserEntity();
@@ -69,7 +69,7 @@ public class UserService {
 	}
 
 	public ResponseEntity LoginUser(SignupLoginDTO dto) {
-		UserEntity isExist = userRepository.findByEmail(dto.getEmail());
+		UserEntity isExist = userRepository.findByEmail(dto.getEmail()).get();
 		if (isExist == null)
 			return responseUserDTO.accountNotFound();
 		else if (passwordEncoder.matches(dto.getPassword(), isExist.getUserPassword())) {
@@ -79,16 +79,17 @@ public class UserService {
 	}
 
 	public ResponseEntity<?> userInfo(String email) {
-		UserEntity findEntity = userRepository.findByEmail(email);
+		UserEntity findEntity = userRepository.findByEmail(email).get();
 		UserInfoDTO dto = new UserInfoDTO(findEntity);
 		return ResponseEntity.status(HttpStatus.OK).body(dto);
 	}
 
 	public ResponseEntity<?> updateUser(ProfileEditDTO profileEditDTO, String email) {
-		UserEntity user = userRepository.findByEmail(email);
-		if (!passwordEncoder.matches(user.getUserPassword(), profileEditDTO.getUserPassword())) {
-			return responseUserDTO.loginFail();
-		}
+		UserEntity user = userRepository.findByEmail(email).get();
+		if (!(user.getUserPassword().startsWith("naver ") || user.getUserPassword().startsWith("google ") || user.getUserPassword().startsWith("kakao "))
+			    && !passwordEncoder.matches(profileEditDTO.getUserPassword(), user.getUserPassword())) {
+			    return responseUserDTO.loginFail();
+			}
 		if (profileEditDTO.getUserNewPassword() != null) {
 			user.setUserNickName(passwordEncoder.encode(profileEditDTO.getUserNewPassword()));
 		}
@@ -108,7 +109,7 @@ public class UserService {
 	}
 
 	public ResponseEntity expUp(String email) {// 게시판 등록 시 경험치 20
-		UserEntity user = userRepository.findByEmail(email);
+		UserEntity user = userRepository.findByEmail(email).get();
 		int exp = user.getUserExp() + 20;
 		if (exp == 100) {
 			user.setUserLevel(user.getUserLevel() + 1);
@@ -126,7 +127,7 @@ public class UserService {
 	}
 
 	public ResponseEntity deleteUser(String email) {
-		UserEntity user = userRepository.findByEmail(email);
+		UserEntity user = userRepository.findByEmail(email).get();
 		userRepository.deleteByUserEmail(email);
 		return responseUserDTO.userDelete();
 	}
@@ -161,7 +162,7 @@ public class UserService {
 				||userInfoDTO.getUserEmail().startsWith("kakao ")) {
 			return responseUserDTO.failInMsg("SNS로그인 계정은 pwd찾기 불가합니다.");
 		}
-		UserEntity user = userRepository.findByEmail(userInfoDTO.getUserEmail());
+		UserEntity user = userRepository.findByEmail(userInfoDTO.getUserEmail()).get();
 		
 		if (user == null)
 			return responseUserDTO.accountNotFound();

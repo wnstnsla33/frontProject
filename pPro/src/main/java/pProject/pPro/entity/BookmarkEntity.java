@@ -44,4 +44,10 @@ public class BookmarkEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "post_id", nullable = false)
 	private PostEntity post;
+	public BookmarkEntity( PostEntity post,UserEntity user) {
+		super();
+		this.createBookmark = LocalDate.now();
+		this.user = user;
+		this.post = post;
+	}
 }
