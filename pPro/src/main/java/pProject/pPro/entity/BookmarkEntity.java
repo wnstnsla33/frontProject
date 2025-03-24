@@ -36,17 +36,18 @@ public class BookmarkEntity {
 	@Column(name = "bookmark_id")
 	private Long bookmarkId;
 
-	private LocalDate createBookmark;
+	private LocalDate createDate;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	@JsonManagedReference("user-bookmark")
 	private UserEntity user;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "post_id", nullable = false)
+	@JsonManagedReference("post-bookmark")
 	private PostEntity post;
 	public BookmarkEntity( PostEntity post,UserEntity user) {
 		super();
-		this.createBookmark = LocalDate.now();
+		this.createDate = LocalDate.now();
 		this.user = user;
 		this.post = post;
 	}

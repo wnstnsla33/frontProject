@@ -3,13 +3,17 @@ package pProject.pPro.entity;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,6 +22,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,7 +58,11 @@ public class PostEntity {
     @JoinColumn(name = "user_id")
 	@JsonManagedReference("user-post")
 	private UserEntity user;
-
+	
+	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonBackReference("post-bookmark")
+	private List<BookmarkEntity> bookmark = new ArrayList<BookmarkEntity>();
+	
 	public PostEntity(WritePostDTO writePostDTO,UserEntity user) {
 		super();
 		this.title = writePostDTO.getTitle();
@@ -88,4 +97,6 @@ public class PostEntity {
 	    // 저장된 파일 경로나 URL을 반환 (프로젝트에 따라 달라짐)
 	    return "/uploads/" + savedFileName;  // 프론트에서 접근 가능한 경로로 반환
 	}
+	
+	
 }

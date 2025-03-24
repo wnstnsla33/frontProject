@@ -35,8 +35,7 @@ public class BookmarkService {
 		if (bookmark.isPresent()) {
 			bookmarkRepository.delete(bookmark.get());
 			return false;
-		} 
-		else {
+		} else {
 			bookmarkRepository.save(new BookmarkEntity(post, user));
 			return true;
 		}
@@ -44,5 +43,13 @@ public class BookmarkService {
 
 	public ResponseEntity getMyBookmarkList(String email) {
 		return bookmarkResponseDTO.bookmarkTypeSuccees(bookmarkRepository.bookmarkNumberByUser(email));
+	}
+
+	public BookmarkEntity getBookmark(Long postId, String email) {
+		Optional<BookmarkEntity> bookmark = bookmarkRepository.findBookmark(postId, email);
+		if (bookmark.isPresent()) {
+			return bookmark.get();
+		}
+		else return null;
 	}
 }

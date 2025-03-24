@@ -4,6 +4,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.Year;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import pProject.pPro.User.DTO.ProfileEditDTO;
 import pProject.pPro.User.DTO.ResponseUserDTO;
 import pProject.pPro.User.DTO.SignupLoginDTO;
 import pProject.pPro.User.DTO.UserInfoDTO;
+import pProject.pPro.User.DTO.userServiceResponseDTO;
 import pProject.pPro.entity.Grade;
 import pProject.pPro.entity.UserEntity;
 
@@ -43,10 +45,10 @@ public class UserService {
 		return key;
 	}
 
-	public ResponseEntity saveUser(SignupLoginDTO signupDTO) {
-		UserEntity isExist = userRepository.findByEmail(signupDTO.getEmail()).get();
-		if (isExist != null)
-			return responseUserDTO.existId();
+	public String saveUser(SignupLoginDTO signupDTO) {
+		Optional< UserEntity> isExist = userRepository.findByEmail(signupDTO.getEmail());
+		if (isExist.isPresent())
+			return "existId";
 		UserEntity userEntity = new UserEntity();
 		userEntity.setUserEmail(signupDTO.getEmail());
 		userEntity.setUserNickName(signupDTO.getNickname());
@@ -64,32 +66,39 @@ public class UserService {
 				"https://i.namu.wiki/i/Bge3xnYd4kRe_IKbm2uqxlhQJij2SngwNssjpjaOyOqoRhQlNwLrR2ZiK-JWJ2b99RGcSxDaZ2UCI7fiv4IDDQ.webp");
 		userEntity.setUserLevel(1);
 		userEntity.setUserExp(0);
-		userRepository.save(userEntity);
-		return responseUserDTO.signupSuccess();
+		try {
+			userRepository.save(userEntity);
+			return "success";
+		} catch (Exception e) {
+			// TODO: handle exception
+			return "fail";
+		}
+
 	}
 
 	public ResponseEntity LoginUser(SignupLoginDTO dto) {
-		UserEntity isExist = userRepository.findByEmail(dto.getEmail()).get();
-		if (isExist == null)
+		Optional< UserEntity> isExist = userRepository.findByEmail(dto.getEmail());
+		if (isExist.isPresent())
 			return responseUserDTO.accountNotFound();
-		else if (passwordEncoder.matches(dto.getPassword(), isExist.getUserPassword())) {
+		else if (passwordEncoder.matches(dto.getPassword(), isExist.get().getUserPassword())) {
 			return ResponseUserDTO.loginSuccess();
 		}
 		return ResponseUserDTO.loginFail();
 	}
 
-	public ResponseEntity<?> userInfo(String email) {
+	public UserInfoDTO userInfo(String email) {
 		UserEntity findEntity = userRepository.findByEmail(email).get();
 		UserInfoDTO dto = new UserInfoDTO(findEntity);
-		return ResponseEntity.status(HttpStatus.OK).body(dto);
+		return dto;
 	}
 
-	public ResponseEntity<?> updateUser(ProfileEditDTO profileEditDTO, String email) {
+	public UserEntity updateUser(ProfileEditDTO profileEditDTO, String email) {
 		UserEntity user = userRepository.findByEmail(email).get();
-		if (!(user.getUserPassword().startsWith("naver ") || user.getUserPassword().startsWith("google ") || user.getUserPassword().startsWith("kakao "))
-			    && !passwordEncoder.matches(profileEditDTO.getUserPassword(), user.getUserPassword())) {
-			    return responseUserDTO.loginFail();
-			}
+		if (!(user.getUserPassword().startsWith("naver ") || user.getUserPassword().startsWith("google ")
+				|| user.getUserPassword().startsWith("kakao "))
+				&& !passwordEncoder.matches(profileEditDTO.getUserPassword(), user.getUserPassword())) {
+			return null;
+		}
 		if (profileEditDTO.getUserNewPassword() != null) {
 			user.setUserNickName(passwordEncoder.encode(profileEditDTO.getUserNewPassword()));
 		}
@@ -105,7 +114,7 @@ public class UserService {
 			user.setUserInfo(profileEditDTO.getUserInfo());
 		}
 
-		return ResponseUserDTO.userInfo(userRepository.save(user));
+		return userRepository.save(user);
 	}
 
 	public ResponseEntity expUp(String email) {// 게시판 등록 시 경험치 20
@@ -126,55 +135,64 @@ public class UserService {
 		return ResponseUserDTO.userInfo(userRepository.save(user));
 	}
 
-	public ResponseEntity deleteUser(String email) {
+	public boolean deleteUser(String email) {
 		UserEntity user = userRepository.findByEmail(email).get();
-		userRepository.deleteByUserEmail(email);
-		return responseUserDTO.userDelete();
+		try {
+			userRepository.deleteByUserEmail(email);
+			return true;
+		} catch (Exception e) {
+			return false;
+			// TODO: handle exception
+		}
 	}
 
-	public ResponseEntity logout(HttpServletResponse response) {
+	public void logout(HttpServletResponse response) {
 		Cookie cookie = new Cookie("Authorization", null);
 		cookie.setPath("/");
 		cookie.setHttpOnly(true);
 		cookie.setMaxAge(0);
 		cookie.setSecure(true);
 		response.addCookie(cookie);
-		return responseUserDTO.logoutSuccess();
 	}
 
-	public ResponseEntity findId(UserInfoDTO userInfoDTO) {
-		UserEntity user = userRepository.findByName(userInfoDTO.getUserName());
-		if(user==null)return responseUserDTO.accountNotFound();
-		else if(!user.getUserBirthDay().equals(userInfoDTO.getUserBirthDay())) {
-			return responseUserDTO.failInMsg("생일이 잘못되었습니다");
-		}
-		else if(user.getUserEmail().startsWith("naver ")
-				||user.getUserEmail().startsWith("google ")
-				||user.getUserEmail().startsWith("kakao ")){
-			return responseUserDTO.failInMsg("SNS로그인 계정은 id찾기 불가합니다.");
-		}
-		else return responseUserDTO.okInMsg("email 은"+user.getUserEmail());
+	public userServiceResponseDTO findId(UserInfoDTO userInfoDTO) {
+	    UserEntity user = userRepository.findByName(userInfoDTO.getUserName());
+	    if (user == null) return new userServiceResponseDTO(UserFindResult.NO_EXIST,null);
+	    else if (!user.getUserBirthDay().equals(userInfoDTO.getUserBirthDay())) {
+	       return new userServiceResponseDTO(UserFindResult.FIND_FAIL,null);
+	    } else if (user.getUserEmail().startsWith("naver ")
+	            || user.getUserEmail().startsWith("google ")
+	            || user.getUserEmail().startsWith("kakao ")) {
+	    	return new userServiceResponseDTO(UserFindResult.SNS_ID,null);
+	    } else {
+	    	return new userServiceResponseDTO(UserFindResult.SUCCESS,user.getUserEmail());
+	    }
 	}
 
-	public ResponseEntity findPwd(UserInfoDTO userInfoDTO) {
-		if(userInfoDTO.getUserEmail().startsWith("naver ")
-				||userInfoDTO.getUserEmail().startsWith("google ")
-				||userInfoDTO.getUserEmail().startsWith("kakao ")) {
-			return responseUserDTO.failInMsg("SNS로그인 계정은 pwd찾기 불가합니다.");
-		}
-		UserEntity user = userRepository.findByEmail(userInfoDTO.getUserEmail()).get();
-		
-		if (user == null)
-			return responseUserDTO.accountNotFound();
-		else if (!user.getUserName().equals(userInfoDTO.getUserName())) {
-			return responseUserDTO.failInMsg("이름이 잘못되었습니다");
-		}
 
-		else {
-			String pwd = createKey();
-			user.setUserPassword(passwordEncoder.encode(pwd));
-			userRepository.save(user);
-			return responseUserDTO.okInMsg(pwd + "로 재설정되었습니다.");
-		}
+	public userServiceResponseDTO findPwd(UserInfoDTO userInfoDTO) {
+	    if (userInfoDTO.getUserEmail().startsWith("naver ")
+	            || userInfoDTO.getUserEmail().startsWith("google ")
+	            || userInfoDTO.getUserEmail().startsWith("kakao ")) {
+	        return new userServiceResponseDTO(UserFindResult.SNS_ID, null);
+	    }
+
+	    Optional<UserEntity> userOpt = userRepository.findByEmail(userInfoDTO.getUserEmail());
+	    if (userOpt.isEmpty()) {
+	        return new userServiceResponseDTO(UserFindResult.NO_EXIST, null);
+	    }
+
+	    UserEntity user = userOpt.get();
+	    if (!user.getUserName().equals(userInfoDTO.getUserName())) {
+	        return new userServiceResponseDTO(UserFindResult.FIND_FAIL, null);
+	    }
+
+	    // 비밀번호 재설정
+	    String newPassword = createKey();
+	    user.setUserPassword(passwordEncoder.encode(newPassword));
+	    userRepository.save(user);
+
+	    return new userServiceResponseDTO(UserFindResult.SUCCESS, newPassword);
 	}
+
 }

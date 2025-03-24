@@ -17,6 +17,10 @@ public class PostResponseDTO {
     	return ResponseEntity.status(HttpStatus.OK).body("게시물이 정상 등록되었습니다.");
     }
 	
+	public static ResponseEntity getPostList(List<PostListDTO> list,Long postCount) {
+		PostPageDTO postPageDTO = new PostPageDTO(list,postCount);
+    	return ResponseEntity.status(HttpStatus.OK).body(postPageDTO);
+    }
 	public static ResponseEntity getPostList(List<PostListDTO> list) {
     	return ResponseEntity.status(HttpStatus.OK).body(list);
     }

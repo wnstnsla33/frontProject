@@ -16,8 +16,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import pProject.pPro.securityConfig.JWTUtil;
+
 @Component
-public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHandler{
+public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHandler {
 	private final JWTUtil jwtUtil;
 
 	public CustomSuccessHandlerNoSNS(JWTUtil jwtUtil) {
@@ -40,6 +41,10 @@ public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHan
 
 		String token = jwtUtil.createJwt(username, role, 600 * 60 * 60L);
 		response.addCookie(createCookie("Authorization", token));
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		response.getWriter().write("{\"message\": \"로그인 성공!\"}");
+
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
