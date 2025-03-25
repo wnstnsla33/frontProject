@@ -18,7 +18,7 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @EnableRedisRepositories
 @Configuration
-public class RedisConfig {
+public class SMTPRedisConfig {
 	@Value("${spring.data.redis.host}")
 	private String host;
 	@Value("${spring.data.redis.port}")

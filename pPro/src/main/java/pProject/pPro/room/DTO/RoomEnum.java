@@ -1,0 +1,5 @@
+package pProject.pPro.room.DTO;
+
+public enum RoomEnum {
+	HOST_ONLY,ROOM_FAIL,ROOM_SUCCESS,ALREADY_HOST,ALREADY_EXIT,BANNED,MAX_PARTICIPANTS
+}

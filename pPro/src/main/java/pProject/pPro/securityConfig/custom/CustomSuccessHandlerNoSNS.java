@@ -39,8 +39,10 @@ public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHan
 		GrantedAuthority auth = iterator.next();
 		String role = auth.getAuthority();
 
-		String token = jwtUtil.createJwt(username, role, 600 * 60 * 60L);
-		response.addCookie(createCookie("Authorization", token));
+		String access = jwtUtil.createJwt("access",username, role, 10 * 60 * 1000L);
+		String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+		response.addCookie(createCookie("access", access,1));
+		response.addCookie(createCookie("refresh", refresh,2));
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().write("{\"message\": \"로그인 성공!\"}");
@@ -48,12 +50,13 @@ public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHan
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
-	private Cookie createCookie(String key, String value) {
+	private Cookie createCookie(String key, String value,int cookieType) {
 
 		Cookie cookie = new Cookie(key, value);
 		cookie.setMaxAge(60 * 60 * 60);
 		// cookie.setSecure(true);
-		cookie.setPath("/");
+		if(cookieType==1)cookie.setPath("/");
+		else cookie.setPath("/auth/getToken");
 		cookie.setHttpOnly(true);
 
 		return cookie;

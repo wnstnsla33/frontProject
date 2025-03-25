@@ -84,5 +84,10 @@ public class UserEntity {
 	@JsonBackReference("user-replyLike")
 	private List<ReplyLikeEntity> replyLike = new ArrayList<ReplyLikeEntity>();
 	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<HostUserEntity> joinedRooms = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ChatEntity> chats = new ArrayList<>();
 	
 }

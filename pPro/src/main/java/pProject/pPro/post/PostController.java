@@ -83,5 +83,8 @@ public class PostController {
 		makeMessage("내가 쓴 게시물 보기");
 		return postResponseDTO.getPostList(postService.getMyPostList(user.getUsername()));
 	}
-	
+	@GetMapping("/post/test")
+	public void testest(@RequestParam(value = "postId") Long postId) {
+		postService.findPostTest(postId);
+	}
 }

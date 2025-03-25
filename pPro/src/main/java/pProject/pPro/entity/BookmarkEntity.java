@@ -35,7 +35,7 @@ public class BookmarkEntity {
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	@Column(name = "bookmark_id")
 	private Long bookmarkId;
-
+	
 	private LocalDate createDate;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)

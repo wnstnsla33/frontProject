@@ -29,26 +29,30 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
 		System.out.println("인증 성공!");
-		UserDetails customUserDetails = (UserDetails) authentication.getPrincipal();
+		CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
 		String username = customUserDetails.getUsername();
-
 		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 		Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
 		GrantedAuthority auth = iterator.next();
 		String role = auth.getAuthority();
 
-		String token = jwtUtil.createJwt(username, role, 600 * 60 * 60L);
-		response.addCookie(createCookie("Authorization", token));
-		response.sendRedirect("http://localhost:3000/");
+
+		String access = jwtUtil.createJwt("access",username, role, 10 * 60 * 1000L);
+		String refresh = jwtUtil.createJwt("refresh",username, role, 86400000L);
+		
+		response.addCookie(createCookie("access", access,1));
+		response.addCookie(createCookie("refresh", refresh,2));
+		 response.sendRedirect("http://localhost:3000/"); 
 	}
 
-	private Cookie createCookie(String key, String value) {
+	private Cookie createCookie(String key, String value,int cookieType) {
 
 		Cookie cookie = new Cookie(key, value);
 		cookie.setMaxAge(60 * 60 * 60);
 		// cookie.setSecure(true);
-		cookie.setPath("/");
+		if(cookieType==1)cookie.setPath("/");
+		else cookie.setPath("/auth/getToken");
 		cookie.setHttpOnly(true);
 
 		return cookie;

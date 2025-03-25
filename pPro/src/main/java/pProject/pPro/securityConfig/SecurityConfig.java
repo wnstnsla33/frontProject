@@ -45,8 +45,7 @@ public class SecurityConfig implements WebMvcConfigurer {
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // OPTIONS 추가
         config.setAllowCredentials(true); // 쿠키 허용
         config.setAllowedHeaders(List.of("*")); // 모든 헤더 허용
-        config.setExposedHeaders(List.of("Set-Cookie", "Authorization")); // 노출할 헤더
-
+        config.setExposedHeaders(List.of("Set-Cookie", "refresh","access")); // 노출할 헤더
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config); // 모든 경로에 적용
         return source;
@@ -78,7 +77,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .successHandler(customSuccessHandler)
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/my", "/signup/**","/find/**","/post").permitAll() // 공개 경로
+                .requestMatchers("/ws-stomp/**", "/api/**","/", "/my", "/signup/**","/find/**","/post","/auth/getToken").permitAll() // 공개 경로
                 .requestMatchers("/post/**","/myInfo","user/**").hasRole("USER") // USER 역할 필요
                 .anyRequest().authenticated() // 나머지 경로는 인증 필요
             )

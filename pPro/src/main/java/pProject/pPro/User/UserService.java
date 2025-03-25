@@ -147,13 +147,23 @@ public class UserService {
 	}
 
 	public void logout(HttpServletResponse response) {
-		Cookie cookie = new Cookie("Authorization", null);
-		cookie.setPath("/");
-		cookie.setHttpOnly(true);
-		cookie.setMaxAge(0);
-		cookie.setSecure(true);
-		response.addCookie(cookie);
+	    // access 쿠키 삭제
+	    Cookie accessCookie = new Cookie("access", null);
+	    accessCookie.setPath("/");
+	    accessCookie.setHttpOnly(true);
+	    accessCookie.setMaxAge(0);
+	    accessCookie.setSecure(true);
+	    response.addCookie(accessCookie);
+
+	    // refresh 쿠키 삭제
+	    Cookie refreshCookie = new Cookie("refresh", null);
+	    refreshCookie.setPath("/");
+	    refreshCookie.setHttpOnly(true);
+	    refreshCookie.setMaxAge(0);
+	    refreshCookie.setSecure(true);
+	    response.addCookie(refreshCookie);
 	}
+
 
 	public userServiceResponseDTO findId(UserInfoDTO userInfoDTO) {
 	    UserEntity user = userRepository.findByName(userInfoDTO.getUserName());

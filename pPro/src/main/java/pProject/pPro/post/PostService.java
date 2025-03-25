@@ -39,9 +39,12 @@ public class PostService {
 	private UserRepository userRepository;
 	@Autowired
 	private BookmarkRepository bookmarkRepository;
-	private PostResponseDTO postResponseDTO;
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
+	@Autowired
+	private PostMapper postMapper;
+	
+	private PostResponseDTO postResponseDTO;
 
 	public List<PostListDTO> getPostList() {
 		List<PostEntity> postEntities = postRepository.findAll();
@@ -185,5 +188,10 @@ public class PostService {
 		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new) // PostListDTO 생성자 사용
 				.collect(Collectors.toList());
 		return postList;
+	}
+	public void findPostTest(Long postId) {
+		PostEntity post =  postMapper.getPostDetail(postId);
+		System.out.println(post.getContent());
+		System.out.println(post.getSecreteKey());
 	}
 }
