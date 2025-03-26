@@ -78,7 +78,7 @@ public class SecurityConfig implements WebMvcConfigurer {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/ws-stomp/**", "/api/**","/", "/my", "/signup/**","/find/**","/post","/auth/getToken").permitAll() // 공개 경로
-                .requestMatchers("/post/**","/myInfo","user/**").hasRole("USER") // USER 역할 필요
+                .requestMatchers("/post/**","/myInfo","/user/**","/chatRoom/**","/auth/logout").hasRole("USER") // USER 역할 필요
                 .anyRequest().authenticated() // 나머지 경로는 인증 필요
             )
             .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가

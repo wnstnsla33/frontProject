@@ -31,11 +31,12 @@ public class ChatEntity {
 	@JoinColumn(name= "user_id")
 	private UserEntity user;
 	
-	public ChatEntity(String message,RoomEntity room) {
+	public ChatEntity(String message,RoomEntity room,UserEntity user) {
 		super();
 		this.message = message;
 		this.createTime = LocalDateTime.now();
 		this.room = room;
+		this.user=user;
 	}
 	
 }

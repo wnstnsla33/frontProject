@@ -49,7 +49,7 @@ public class JWTFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 			return;
 		}
-
+		System.out.println(token);
 		// 여기서부터는 토큰이 필수적임
 		if (token == null) {
 			System.out.println("널값 토쿤");
@@ -79,7 +79,7 @@ public class JWTFilter extends OncePerRequestFilter {
 		UserDTO userDTO = new UserDTO();
 		userDTO.setEmail(email);
 		userDTO.setRole(role);
-
+		
 		CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
 		Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null,
 				customOAuth2User.getAuthorities());

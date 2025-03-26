@@ -1,26 +1,44 @@
 package pProject.pPro.room.chat;
 
+import java.security.Principal;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import pProject.pPro.room.DTO.ChatMessageDTO;
+import pProject.pPro.room.DTO.ChatMessageDTO.MessageType;
 
 @Slf4j
 @RequiredArgsConstructor
 @RestController
 public class ChatController {
 
-    private final RedisPublisher redisPublisher;
+	private final RedisPublisher redisPublisher;
 
-    @MessageMapping("/chat/message")
-    public void message(ChatMessageDTO message) {
-        log.info("메시지 수신: {}", message);
+	private final ChatService chatService;
+	
+	
+	@MessageMapping("/chat/message")
+	public void message(ChatMessageDTO message,Principal principal) {
+		log.info("메시지 수신: {}", message);
+		// 실시간 전송
+		System.out.println(principal.getName());
+		redisPublisher.publish(message.getRoomId().toString(), message);
 
-        // 실시간 전송
-        redisPublisher.publish(message.getRoomId().toString(), message);
-        
-        // (다음 단계) DB 저장은 여기에 붙일 수도 있고 분리할 수도 있음
-    }
+	}
+	@MessageMapping("/chat/enter")
+	public void enterChat(ChatMessageDTO message,Principal principal) {
+		log.info("메시지 수신(enter): {}", message);
+		redisPublisher.publish(message.getRoomId().toString(), message);
+	}
+	@MessageMapping("/chat/delete")
+	public void deleteChat(ChatMessageDTO message,Principal principal) {
+		log.info("메시지 수신(delete): {}", message);
+		redisPublisher.publish(message.getRoomId().toString(), message);
+	}
+	
 }

@@ -90,4 +90,7 @@ public class UserEntity {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ChatEntity> chats = new ArrayList<>();
 	
+	@OneToMany(mappedBy = "createUser", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<RoomEntity> createUsers = new ArrayList<>();
+	
 }

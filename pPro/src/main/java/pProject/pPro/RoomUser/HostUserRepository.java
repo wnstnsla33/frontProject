@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 import pProject.pPro.entity.HostUserEntity;
 
 public interface HostUserRepository extends JpaRepository<HostUserEntity, Long>{
-	@Query("select h from HostUserEntity where h.room.roomId=:roomId and h.user.userEmail=:userEmail")
+	@Query("select h from HostUserEntity h where h.room.roomId=:roomId and h.user.userEmail=:userEmail")
 	Optional< HostUserEntity> findLoginEmail(@Param("roomId") String roomId,@Param("userEmail")String userEmail);
 }

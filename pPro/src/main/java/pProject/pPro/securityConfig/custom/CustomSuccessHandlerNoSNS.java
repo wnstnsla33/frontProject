@@ -56,7 +56,7 @@ public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHan
 		cookie.setMaxAge(60 * 60 * 60);
 		// cookie.setSecure(true);
 		if(cookieType==1)cookie.setPath("/");
-		else cookie.setPath("/auth/getToken");
+		else cookie.setPath("/auth");
 		cookie.setHttpOnly(true);
 
 		return cookie;

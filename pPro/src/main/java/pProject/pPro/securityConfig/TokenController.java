@@ -24,7 +24,7 @@ public class TokenController {
 
     @GetMapping("/auth/getToken")
     public ResponseEntity<?> getToken(HttpServletRequest request, HttpServletResponse response) {
-    	System.out.println("토큰 재발급");
+    	
         // 1. refresh 토큰 꺼내기
         String refreshToken = null;
         Cookie[] cookies = request.getCookies();
@@ -61,7 +61,7 @@ public class TokenController {
         accessCookie.setPath("/");
         accessCookie.setMaxAge(1 * 60); // 10분
         response.addCookie(accessCookie);
-
+        System.out.println("토큰 재발급");
         return ResponseEntity.ok("새 access 토큰이 발급되었습니다.");
     }
 }

@@ -55,7 +55,7 @@ public class UserController {
 		makeMessage("profile");
 		return ResponseEntity.status(HttpStatus.OK).body(userService.userInfo(loginUser.getUsername()));
 	}
-	@PostMapping("user/logout")
+	@PostMapping("/auth/logout")
 	public ResponseEntity logout(HttpServletResponse response) {
 		makeMessage("logout");
 		userService.logout(response);

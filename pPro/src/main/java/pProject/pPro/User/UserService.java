@@ -150,17 +150,16 @@ public class UserService {
 	    // access 쿠키 삭제
 	    Cookie accessCookie = new Cookie("access", null);
 	    accessCookie.setPath("/");
-	    accessCookie.setHttpOnly(true);
+	    accessCookie.setHttpOnly(false);
 	    accessCookie.setMaxAge(0);
-	    accessCookie.setSecure(true);
 	    response.addCookie(accessCookie);
 
 	    // refresh 쿠키 삭제
 	    Cookie refreshCookie = new Cookie("refresh", null);
-	    refreshCookie.setPath("/");
-	    refreshCookie.setHttpOnly(true);
+	    refreshCookie.setPath("/auth");
+	    refreshCookie.setHttpOnly(false);
 	    refreshCookie.setMaxAge(0);
-	    refreshCookie.setSecure(true);
+	    System.out.println("삭제");
 	    response.addCookie(refreshCookie);
 	}
 
