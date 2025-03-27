@@ -26,9 +26,8 @@ public class ChatController {
 	public void message(ChatMessageDTO message,Principal principal) {
 		log.info("메시지 수신: {}", message);
 		// 실시간 전송
-		System.out.println(principal.getName());
 		redisPublisher.publish(message.getRoomId().toString(), message);
-
+		chatService.saveMessage(message, principal.getName());
 	}
 	@MessageMapping("/chat/enter")
 	public void enterChat(ChatMessageDTO message,Principal principal) {

@@ -15,15 +15,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import lombok.RequiredArgsConstructor;
+import pProject.pPro.User.UserRepository;
+import pProject.pPro.entity.UserEntity;
+@RequiredArgsConstructor
 @Configuration
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	private final JWTUtil jwtUtil;
-
-	public CustomSuccessHandler(JWTUtil jwtUtil) {
-
-		this.jwtUtil = jwtUtil;
-	}
+	private final UserRepository userRepository;
+	
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -43,7 +43,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		
 		response.addCookie(createCookie("access", access,1));
 		response.addCookie(createCookie("refresh", refresh,2));
-		 response.sendRedirect("http://localhost:3000/"); 
+		UserEntity userEntity = userRepository.findByEmail(username).get();
+		if(userEntity.getUserNickName()==null) response.sendRedirect("http://localhost:3000/profileEdit"); 
+		else response.sendRedirect("http://localhost:3000/"); 
 	}
 
 	private Cookie createCookie(String key, String value,int cookieType) {

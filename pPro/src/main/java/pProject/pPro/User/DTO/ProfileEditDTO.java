@@ -14,4 +14,6 @@ public class ProfileEditDTO {
     private String userInfo;
     private String userPassword;
     private String userNewPassword;
+    private String sido;
+	private String sigungu;
 }

@@ -16,4 +16,6 @@ public class SignupLoginDTO {
 	private String realName;
 	private LocalDate birthDate;
 	private String gender;
+	private String sido;
+	private String sigungu;
 }

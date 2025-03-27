@@ -6,13 +6,17 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import pProject.pPro.RoomUser.HostUserRepository;
+import pProject.pPro.RoomUser.DTO.RoomAddress;
 import pProject.pPro.User.UserRepository;
+import pProject.pPro.entity.Address;
 import pProject.pPro.entity.ChatEntity;
 import pProject.pPro.entity.HostUserEntity;
 import pProject.pPro.entity.RoomEntity;
@@ -43,6 +47,7 @@ public class RoomService {
 		roomEntity.setRoomModifiedDate(LocalDateTime.now());
 		roomEntity.setCurPaticipants(1);
 		roomEntity.setCreateUser(user);
+		roomEntity.setAddress(new RoomAddress(room.getSido(),room.getSigungu(),room.getDong()));
 		RoomEntity saveRoom = roomRepository.save(roomEntity);
 		HostUserEntity hostUserEntity = new HostUserEntity(saveRoom, user);
 		hostUserRepository.save(hostUserEntity);
@@ -57,9 +62,13 @@ public class RoomService {
 	public List<RoomDTO> roomList() {
 		return roomRepository.findAll().stream().map(RoomDTO::new).collect(Collectors.toList());
 	}
+	public Page<RoomDTO> searchRooms(String keyword, Pageable pageable) {
+	    Page<RoomEntity> page = roomRepository.searchByRoomTitle(keyword, pageable);
+	    return page.map(RoomDTO::new);
+	}
 
 	public RoomServiceDTO updateRoom(RoomDTO room, String roomId,String email) {
-		RoomEntity roomEntity = roomRepository.findById(roomId)
+		RoomEntity roomEntity = roomRepository.findByIdForUpdate(roomId)
 				.orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 없습니다: " + roomId));
 		if(roomEntity.getCreateUser().getUserEmail().equals(email)) return new RoomServiceDTO(RoomEnum.ROOM_FAIL,"수정 권한이 없습니다");
 		roomEntity.setRoomContent(room.getRoomContent());
@@ -96,7 +105,7 @@ public class RoomService {
 
 	public RoomServiceDTO joinRoom(String roomId, String email) {
 		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, email);
-		RoomEntity roomEntity = roomRepository.findById(roomId)
+		RoomEntity roomEntity = roomRepository.findByIdForUpdate(roomId)
 				.orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 없습니다: " + roomId));
 		UserEntity user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("계정이 없습니다"));
 		if (hostUser.isPresent())
@@ -121,7 +130,7 @@ public class RoomService {
 		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, email);
 		if (!hostUser.isPresent())
 			return new RoomServiceDTO(RoomEnum.NONE_EXIST, "해당 방에 계정이 없습니다.");
-		RoomEntity roomEntity = roomRepository.findById(roomId)
+		RoomEntity roomEntity = roomRepository.findByIdForUpdate(roomId)
 				.orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 없습니다: " + roomId));
 		try {
 			hostUserRepository.delete(hostUser.get());

@@ -7,6 +7,7 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,6 +18,7 @@ import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pProject.pPro.RoomUser.DTO.RoomAddress;
 import pProject.pPro.room.DTO.RoomDTO;
 
 @Entity
@@ -34,6 +36,8 @@ public class RoomEntity {
 	private int curPaticipants;
 	private LocalDateTime roomCreatDate;
 	private LocalDateTime roomModifiedDate;
+	@Embedded
+	private RoomAddress address;
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private UserEntity createUser;

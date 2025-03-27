@@ -1,5 +1,9 @@
 package pProject.pPro.room;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +36,16 @@ public class RoomController {
 	public ResponseEntity roomList() {
 		return roomResponseDTO.roomSuccessType(roomService.roomList());
 	}
+	@GetMapping("/chatRoom/search")
+	public ResponseEntity searchRooms(
+	        @RequestParam(value = "title", required = false) String title,
+	        @RequestParam(value = "page", defaultValue = "0") int page
+	) {
+	    Pageable pageable = PageRequest.of(page, 20, Sort.by("roomCreatDate").descending());
+	    Page<RoomDTO> result = roomService.searchRooms(title == null ? "" : title, pageable);
+	    return roomResponseDTO.roomSuccessType(result);
+	}
+
 	@GetMapping("/chatRoom/{roomId}")
 	public ResponseEntity findRoom(@PathVariable("roomId") String roomId,@AuthenticationPrincipal UserDetails user) {
 		System.out.println("방 리스트"+roomId);
@@ -48,5 +62,15 @@ public class RoomController {
 		}
 		else return roomResponseDTO.roomMsgFail(roomServiceDto.getData());
 	}
-	
+	@GetMapping("/chatRoom/{roomId}/messages")
+	public ResponseEntity getMessages(@PathVariable("roomId") String roomId, @AuthenticationPrincipal UserDetails user) {
+		System.out.println(roomId+"방 이름");
+	    RoomServiceDTO<?> dto = roomService.getChatList(roomId, user.getUsername());
+	    if (dto.getState() == RoomEnum.ROOM_SUCCESS) {
+	        return RoomResponseDTO.roomSuccessType(dto.getData());
+	    } else {
+	        return RoomResponseDTO.roomFailType(dto.getData());
+	    }
+	}
+
 }

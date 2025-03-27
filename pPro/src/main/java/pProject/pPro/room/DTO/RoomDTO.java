@@ -20,6 +20,9 @@ public class RoomDTO {
 	private String hostName;
 	private LocalDateTime roomModifiedDate;
 	private LocalDateTime roomCreatedAt;
+	private String sido;
+	private String sigungu;
+	private String dong;
 
 	public RoomDTO(RoomEntity room) {
         this.roomId = room.getRoomId();

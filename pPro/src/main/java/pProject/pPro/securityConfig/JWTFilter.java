@@ -49,7 +49,6 @@ public class JWTFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		System.out.println(token);
 		// 여기서부터는 토큰이 필수적임
 		if (token == null) {
 			System.out.println("널값 토쿤");

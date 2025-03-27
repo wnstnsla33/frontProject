@@ -23,7 +23,6 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        System.out.println("CustomUsernamePasswordAuthenticationFilter - attemptAuthentication START");
         UsernamePasswordAuthenticationToken authenticationToken = null;
 
         String userId = null;
@@ -64,7 +63,6 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
 
         authenticationToken = new UsernamePasswordAuthenticationToken(userId, userPassword);
         this.setDetails(request, authenticationToken);
-        System.out.println("CustomUsernamePasswordAuthenticationFilter - attemptAuthentication END");
         return this.getAuthenticationManager().authenticate(authenticationToken);
 
     }

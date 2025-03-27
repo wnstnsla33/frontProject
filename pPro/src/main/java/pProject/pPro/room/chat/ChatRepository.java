@@ -14,4 +14,5 @@ import pProject.pPro.room.DTO.ChatMessageDTO;
 public interface ChatRepository extends JpaRepository<ChatEntity, Long>{
 	@Query("select c from ChatEntity c where c.room.roomId=:roomId")
 	List<ChatEntity> chatListByRoom(@Param("roomId")String roomId);
+	
 }	

@@ -24,11 +24,8 @@ public class ChatService {
 		RoomEntity room = roomRepository.findById(msg.getRoomId())
 				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
 		UserEntity user =userRepository.findByEmail(email).orElseThrow( ()->new IllegalArgumentException(" 해당 아이디가 없습니다."));
-		
-		
-		
 		ChatEntity entity = new ChatEntity(msg.getMessage(), room,user);
 		chatRepository.save(entity);
-
 	}
+	
 }
