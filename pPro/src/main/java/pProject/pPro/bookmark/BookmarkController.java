@@ -16,7 +16,8 @@ import pProject.pPro.bookmark.DTO.PostBookmarkResponseDTO;
 import pProject.pPro.entity.BookmarkEntity;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.post.PostService;
-import pProject.pPro.post.DTO.PostResponseDTO;
+import pProject.pPro.post.DTO.PostControllerDTO;
+import pProject.pPro.post.DTO.PostServiceDTO;
 
 @RestController
 public class BookmarkController {
@@ -35,8 +36,8 @@ public class BookmarkController {
 	public ResponseEntity postRemoveBookmark(@PathVariable("postId")Long postId,@AuthenticationPrincipal UserDetails loginUser) {
 		makeMessage("bookmark/postId");
 		boolean isBookmarked = bookmarkService.toggle(postId, loginUser.getUsername());
-		PostEntity updatePost = postService.incrementBookmarkCount(postId, isBookmarked);
-		return bookmarkResponseDTO.bookmarkTypeSuccees(new PostBookmarkResponseDTO(updatePost, isBookmarked));
+		PostServiceDTO<PostEntity> updatePost = postService.incrementBookmarkCount(postId, isBookmarked);
+		return bookmarkResponseDTO.bookmarkTypeSuccees(new PostBookmarkResponseDTO(updatePost.getData(), isBookmarked));
 	}
 	
 //	@GetMapping("post/regBookmark/{postId}")

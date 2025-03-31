@@ -7,6 +7,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PassWordDTO {
-	
 		private String pwd;
 }

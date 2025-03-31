@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import pProject.pPro.User.DTO.ProfileEditDTO;
 import pProject.pPro.User.DTO.ResponseUserDTO;
 import pProject.pPro.User.DTO.SignupLoginDTO;
@@ -43,7 +45,7 @@ public class UserController {
 		return "auth";
 	}
 	@PostMapping("/signup")
-	public ResponseEntity signUpUser(@RequestBody SignupLoginDTO signupDTO){
+	public ResponseEntity signUpUser(@RequestBody @Valid SignupLoginDTO signupDTO){
 		makeMessage("signiup");
 		String isSaved =  userService.saveUser(signupDTO);
 		if(isSaved.equals("existId"))return responseUserDTO.existId();
@@ -62,7 +64,7 @@ public class UserController {
 	    return responseUserDTO.logoutSuccess();
 	}
 	@PostMapping("/user/edit")
-	public ResponseEntity profileEdit(@RequestBody ProfileEditDTO profileEditDTO,
+	public ResponseEntity profileEdit(@ModelAttribute ProfileEditDTO profileEditDTO,
 	                                     @AuthenticationPrincipal  UserDetails loginUser) {
 		makeMessage("profileEdit");
 		UserEntity userInfo = userService.updateUser(profileEditDTO, loginUser.getUsername());

@@ -3,6 +3,7 @@ package pProject.pPro.entity;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +22,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -41,12 +43,13 @@ public class PostEntity {
     private Long postId;
 	
 	private String title;
-	private String titleImg;
+	@Lob
+	@Column(columnDefinition = "CLOB")
 	private String content;
 	
-	private LocalDate createDate;
+	private LocalDateTime createDate;
 	
-	private LocalDate modifiedDate;
+	private LocalDateTime modifiedDate;
 	
 	private int viewCount;
 	
@@ -66,36 +69,13 @@ public class PostEntity {
 	public PostEntity(WritePostDTO writePostDTO,UserEntity user) {
 		super();
 		this.title = writePostDTO.getTitle();
-		try {
-		this.titleImg = saveImage(writePostDTO.getTitleImg());
-		}catch (IOException e) {
-			System.out.println("title이미지 오류");
-		}
 		this.content = writePostDTO.getContent();
-		this.createDate = LocalDate.now();
-		this.modifiedDate = LocalDate.now();
+		this.createDate = LocalDateTime.now();
+		this.modifiedDate = LocalDateTime.now();
 		this.viewCount = 0;
 		this.bookmarkCount = 0;
 		this.secreteKey = writePostDTO.getSecreteKey();
 		this.user = user;
-	}
-	public String saveImage(MultipartFile imageFile) throws IOException {
-	    // 저장할 폴더 경로 (원하는 경로로 수정 가능)
-	    String uploadDir = "C:/myproject/uploads/";
-	    File dir = new File(uploadDir);
-	    if (!dir.exists()) dir.mkdirs();  // 폴더가 없으면 생성
-
-	    // 파일명 중복 방지를 위해 UUID 추가
-	    String originalFilename = imageFile.getOriginalFilename();
-	    String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-	    String savedFileName = UUID.randomUUID() + extension;
-
-	    // 실제 저장
-	    File savedFile = new File(uploadDir + savedFileName);
-	    imageFile.transferTo(savedFile);
-
-	    // 저장된 파일 경로나 URL을 반환 (프로젝트에 따라 달라짐)
-	    return "/uploads/" + savedFileName;  // 프론트에서 접근 가능한 경로로 반환
 	}
 	
 	

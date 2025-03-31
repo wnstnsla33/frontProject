@@ -1,6 +1,7 @@
 package pProject.pPro.post.DTO;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.Getter;
@@ -16,10 +17,9 @@ public class PostListDTO {
 	private Long postId;
 
 	private String title;
-	private String titleImg;
 	private String content;
-	private LocalDate createDate;
-	private LocalDate modifiedDate;
+	private LocalDateTime createDate;
+	private LocalDateTime modifiedDate;
 
 	private int viewCount;
 
@@ -34,11 +34,9 @@ public class PostListDTO {
 		if (postEntity.getSecreteKey() != null) {
 			this.postId = postEntity.getPostId();
 			this.title = "비밀글";
-			this.titleImg = "https://cafe24.poxo.com/ec01/sl63amg/MkCj60lH04MGF8dcvBKuW0eybFCsgGe/j2Yh65v5oJMmicHUSYBdNgf/Ld5X9bA8CqEQzGcDJdDxdOlUDXXqig==/_/web/upload/icon_202102212329010800.png";
 		} else {
 			this.postId = postEntity.getPostId();
 			this.title = postEntity.getTitle();
-			this.titleImg = postEntity.getTitleImg();
 			this.content = postEntity.getContent();
 			this.createDate = postEntity.getCreateDate();
 			this.modifiedDate = postEntity.getModifiedDate();
@@ -54,7 +52,6 @@ public class PostListDTO {
 		super();
 		this.postId = postEntity.getPostId();
 		this.title = postEntity.getTitle();
-		this.titleImg = postEntity.getTitleImg();
 		this.content = postEntity.getContent();
 		this.createDate = postEntity.getCreateDate();
 		this.modifiedDate = postEntity.getModifiedDate();
@@ -75,11 +72,8 @@ public class PostListDTO {
 		if (bookmarkEntity.getPost().getSecreteKey() != null) {
 			this.postId = bookmarkEntity.getPost().getPostId();
 			this.title = "비밀글";
-			this.titleImg = "https://cafe24.poxo.com/ec01/sl63amg/MkCj60lH04MGF8dcvBKuW0eybFCsgGe/j2Yh65v5oJMmicHUSYBdNgf/Ld5X9bA8CqEQzGcDJdDxdOlUDXXqig==/_/web/upload/icon_202102212329010800.png";
-		} else {
 			this.postId = bookmarkEntity.getPost().getPostId();
 			this.title = bookmarkEntity.getPost().getTitle();
-			this.titleImg = bookmarkEntity.getPost().getTitleImg();
 			this.content = bookmarkEntity.getPost().getContent();
 			this.createDate = bookmarkEntity.getPost().getCreateDate();
 			this.modifiedDate = bookmarkEntity.getPost().getModifiedDate();
@@ -93,13 +87,12 @@ public class PostListDTO {
 		super();
 		this.postId = bookmarkEntity.getPost().getPostId();
 		this.title = bookmarkEntity.getPost().getTitle();
-		this.titleImg = bookmarkEntity.getPost().getTitleImg();
 		this.content = bookmarkEntity.getPost().getContent();
 		this.createDate = bookmarkEntity.getPost().getCreateDate();
 		this.modifiedDate = bookmarkEntity.getPost().getModifiedDate();
 		this.viewCount = bookmarkEntity.getPost().getViewCount();
 		this.bookmarkCount = bookmarkEntity.getPost().getBookmarkCount();
-		this.userName = bookmarkEntity.getUser().getUserName();
+		this.userName = bookmarkEntity.getUser().getUserNickName();
 		this.bookmarked = false;
 		}
 

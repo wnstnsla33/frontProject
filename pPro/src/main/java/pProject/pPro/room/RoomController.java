@@ -9,17 +9,21 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import pProject.pPro.room.DTO.RoomDTO;
 import pProject.pPro.room.DTO.RoomEnum;
 import pProject.pPro.room.DTO.RoomResponseDTO;
 import pProject.pPro.room.DTO.RoomServiceDTO;
+import pProject.pPro.room.DTO.SearchRoomDTO;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,8 +33,15 @@ public class RoomController {
 	private RoomResponseDTO roomResponseDTO;
 	
 	@PostMapping("/chatRoom")//채팅방 만들기
-	public ResponseEntity createRoom(@RequestBody RoomDTO dto, @AuthenticationPrincipal UserDetails user) {
+	public ResponseEntity createRoom(@ModelAttribute RoomDTO dto, @AuthenticationPrincipal UserDetails user) {
 		return RoomResponseDTO.roomInfo(roomService.createRoom(dto,user.getUsername()));
+	}
+	@PostMapping("/chatRoom/image")
+	public ResponseEntity savedImage(@RequestPart("image")MultipartFile image ) {
+		if(image.isEmpty())return roomResponseDTO.roomMsgFail("이미지가 없습니다");
+		else {
+			return roomResponseDTO.roomMsgSuccess(roomService.savedImage(image));
+		}
 	}
 	@GetMapping("/chatRoom")//채팅방 목록 확인(아직 꾸미지않음)
 	public ResponseEntity roomList() {
@@ -38,12 +49,9 @@ public class RoomController {
 	}
 	@GetMapping("/chatRoom/search")
 	public ResponseEntity searchRooms(
-	        @RequestParam(value = "title", required = false) String title,
-	        @RequestParam(value = "page", defaultValue = "0") int page
-	) {
-	    Pageable pageable = PageRequest.of(page, 20, Sort.by("roomCreatDate").descending());
-	    Page<RoomDTO> result = roomService.searchRooms(title == null ? "" : title, pageable);
-	    return roomResponseDTO.roomSuccessType(result);
+	    @ModelAttribute SearchRoomDTO searchRoomDTO ,@AuthenticationPrincipal UserDetails user) {
+		searchRoomDTO.setEmail(user.getUsername());
+	    return roomResponseDTO.roomSuccessType(roomService.searchRooms(searchRoomDTO));
 	}
 
 	@GetMapping("/chatRoom/{roomId}")
@@ -71,6 +79,11 @@ public class RoomController {
 	    } else {
 	        return RoomResponseDTO.roomFailType(dto.getData());
 	    }
+	}
+	@GetMapping("/chatRoom/hostRooms")
+	public ResponseEntity gethostRooms(@AuthenticationPrincipal UserDetails user) {
+		RoomServiceDTO dto = roomService.GetMyJoinRooms(user.getUsername());
+		return RoomResponseDTO.roomSuccessType(dto.getData());
 	}
 
 }

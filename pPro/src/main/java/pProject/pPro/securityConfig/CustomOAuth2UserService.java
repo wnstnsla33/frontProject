@@ -48,7 +48,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	userEntity.setUserEmail(userEmail);
         	userEntity.setUserAge(Integer.parseInt( oAuth2Response.getAge()));
         	userEntity.setUserSex(oAuth2Response.getSex()=="M"?"남성":"여성");
-        	userEntity.setUserImg("https://i.namu.wiki/i/Bge3xnYd4kRe_IKbm2uqxlhQJij2SngwNssjpjaOyOqoRhQlNwLrR2ZiK-JWJ2b99RGcSxDaZ2UCI7fiv4IDDQ.webp");
+        	int num = (int)(Math.random() * 15) + 1; // 1 ~ 15
+        	userEntity.setUserImg("/uploads/" + num + ".png");
         	userEntity.setUserLevel(1);
         	userEntity.setUserExp(0);
         	userRepository.save(userEntity);

@@ -10,8 +10,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class RoomAddress {
-
 	private String sido;
-	private String sigungnu;
-	private String dong;
+	private String sigungu;
 }

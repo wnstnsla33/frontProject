@@ -27,25 +27,26 @@ public class JWTFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		String token = null;
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if (cookie.getName().equals("access")) {
-					token = cookie.getValue();
-					break;
-				}
-			}
-		}
+		 Cookie[] cookies = request.getCookies();
+		    if (cookies != null) {
+		        for (Cookie cookie : cookies) {
+		            if (cookie.getName().equals("access")) {
+		                token = cookie.getValue();
+		                break;
+		            }
+		        }
+		    }
 
 		String requestURI = request.getRequestURI();
-
+		System.out.println(requestURI);
 		// 허용할 경로는 무조건 필터를 통과시킴
 		boolean isAllowedPath = requestURI.equals("/post") || requestURI.matches("/post/\\d+")
 				|| requestURI.equals("/signup") || requestURI.equals("/signup/confirm") || requestURI.equals("/login")
 				|| requestURI.equals("/my") || requestURI.startsWith("/find") || requestURI.equals("/auth/getToken")
 				|| requestURI.equals("/ws-stomp") || // WebSocket 연결
 				requestURI.startsWith("/ws-stomp"); // SockJS fallback 지원 (필수)
-		if (isAllowedPath) {
+		if (token == null&&isAllowedPath) {
+			System.out.println("토큰없음,권한 true");
 			filterChain.doFilter(request, response);
 			return;
 		}

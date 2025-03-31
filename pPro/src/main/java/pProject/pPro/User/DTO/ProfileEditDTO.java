@@ -1,4 +1,6 @@
 package pProject.pPro.User.DTO;
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProfileEditDTO {
     private String nickName;
-    private String userImg;
+    private MultipartFile userImg;
     private String userInfo;
     private String userPassword;
     private String userNewPassword;

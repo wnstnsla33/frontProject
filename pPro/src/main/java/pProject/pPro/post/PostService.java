@@ -3,6 +3,7 @@ package pProject.pPro.post;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,7 +27,7 @@ import pProject.pPro.entity.BookmarkEntity;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.UserEntity;
 import pProject.pPro.post.DTO.PostListDTO;
-import pProject.pPro.post.DTO.PostResponseDTO;
+import pProject.pPro.post.DTO.PostServiceDTO;
 import pProject.pPro.post.DTO.WritePostDTO;
 
 @Service
@@ -44,154 +45,126 @@ public class PostService {
 	@Autowired
 	private PostMapper postMapper;
 	
-	private PostResponseDTO postResponseDTO;
-
-	public List<PostListDTO> getPostList() {
+	public PostServiceDTO<List<PostListDTO>> getPostList() {
 		List<PostEntity> postEntities = postRepository.findAll();
-		// Entity → DTO 변환
-		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new) // PostListDTO 생성자 사용
-				.collect(Collectors.toList());
-		return postList;
-	}
-
-	public List<PostListDTO> getPostList(int page, int sortNumber) {
-		int pageSize = 10;
-		Pageable pageable = null;
-		switch (sortNumber) {
-		case 1:
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
-			break;
-		case 2:
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "viewCount"));
-			break;
-		case 3:
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "bookmarkCount"));
-			break;
-		}
-		// Pageable 객체 생성 (createDate 기준 내림차순 정렬)
-
-		// 페이징 처리된 게시글 리스트 가져오기
-		Page<PostEntity> postEntities = postRepository.findAll(pageable);
-
-		// Entity → DTO 변환
 		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new).collect(Collectors.toList());
-		postList.size();
-		return postList;
+		return new PostServiceDTO<>(true, "전체 게시글 조회 성공", postList);
 	}
 
-	public List<PostListDTO> getPostBookmarkList(String email, int page, int sortNumber) {
+	public PostServiceDTO<List<PostListDTO>> getPostList(int page, int sortNumber) {
 		int pageSize = 10;
 		Pageable pageable = null;
 		switch (sortNumber) {
-		case 1: {
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
-			break;
+			case 1 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
+			case 2 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "viewCount"));
+			case 3 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "bookmarkCount"));
 		}
-		case 2: {
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.viewCount"));
-			break;
-		}
-		case 3: {
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.bookmarkCount"));
-			break;
-		}
+		Page<PostEntity> postEntities = postRepository.findAll(pageable);
+		System.out.println(postEntities);
+		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new).collect(Collectors.toList());
+		return new PostServiceDTO<>(true, "페이지별 게시글 조회 성공", postList);
+	}
+
+	public PostServiceDTO<List<PostListDTO>> getPostBookmarkList(String email, int page, int sortNumber) {
+		int pageSize = 10;
+		Pageable pageable = null;
+		switch (sortNumber) {
+			case 1 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
+			case 2 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.viewCount"));
+			case 3 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.bookmarkCount"));
 		}
 		Page<BookmarkEntity> bookmarkEntities = bookmarkRepository.bookmarkListByUser(email, pageable);
-		List<PostListDTO> postList = bookmarkEntities.stream().map(bookmark -> new PostListDTO(bookmark)) // 생성자 그대로 사용
-				.collect(Collectors.toList());
-		return postList;
+		List<PostListDTO> postList = bookmarkEntities.stream().map(PostListDTO::new).collect(Collectors.toList());
+		return new PostServiceDTO<>(true, "북마크 게시글 조회 성공", postList);
 	}
 
-	public Long postCount() {
-		return postRepository.count();
+	public PostServiceDTO<Long> postCount() {
+		return new PostServiceDTO<>(true, "전체 게시글 수 반환", postRepository.count());
 	}
 
-	public Long postBookmarkCount(String email) {
-		return bookmarkRepository.countMyBookmark(email);
+	public PostServiceDTO<Long> postBookmarkCount(String email) {
+		return new PostServiceDTO<>(true, "북마크 수 반환", bookmarkRepository.countMyBookmark(email));
 	}
 
-	public ResponseEntity writePost(WritePostDTO writePostDTO, String email) {
+	public PostServiceDTO<String> writePost(WritePostDTO writePostDTO, String email) {
 		UserEntity user = userRepository.findByEmail(email).get();
 		PostEntity newPost = new PostEntity(writePostDTO, user);
 		if (writePostDTO.getSecreteKey() != null)
 			newPost.setSecreteKey(passwordEncoder.encode(writePostDTO.getSecreteKey()));
 		postRepository.save(newPost);
-		return postResponseDTO.postSuccess("정상적으로 등록되었습니다");
+		return new PostServiceDTO<>(true, "정상적으로 등록되었습니다", null);
 	}
-
-//	public ResponseEntity getPostDetail(Long postId) {
-//		return postResponseDTO.getPost(new PostListDTO((postRepository.getPostDetail(postId).orElseThrow(
-//				() -> new RuntimeException("게시글이 존재하지 않습니다.")))));
-//	}
-	public PostEntity incrementBookmarkCount(Long postId, boolean isBookmarked) {
+	public PostServiceDTO<PostEntity> incrementBookmarkCount(Long postId, boolean isBookmarked) {
 		PostEntity post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 		if (isBookmarked)
 			post.setBookmarkCount(post.getBookmarkCount() + 1);
 		else
 			post.setBookmarkCount(post.getBookmarkCount() - 1);
-		return post;
+		return new PostServiceDTO<>(true, "북마크 카운트 갱신", post);
 	}
 
-	public PostListDTO incrementAndGetPost(Long postId, String email) {
+	public PostServiceDTO<PostListDTO> incrementAndGetPost(Long postId, String email) {
 		PostEntity post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("게시글 없음"));
 		post.setViewCount(post.getViewCount() + 1);
 		PostListDTO postListDTO = new PostListDTO(post);
-		if (email == null) {
-			System.out.println("postService 로그인 X");
-			return postListDTO;
-		} else {
+		if (email != null) {
 			Optional<BookmarkEntity> bookmark = bookmarkRepository.findBookmark(postId, email);
-			if (bookmark.isPresent())
-				postListDTO.setBookmarked(true);
+			bookmark.ifPresent(b -> postListDTO.setBookmarked(true));
 		}
-		return postListDTO;
+		return new PostServiceDTO<>(true, "게시글 상세 조회", postListDTO);
 	}
 
-	public PostListDTO updatePost(Long postId, PostListDTO postListDTO, String email) {
+	public PostServiceDTO<PostListDTO> updatePost(Long postId, PostListDTO postListDTO, String email) {
 		PostEntity post = postRepository.findById(postId).get();
 		UserEntity user = userRepository.findByEmail(email).get();
-		if (post.getUser().getUserId() != user.getUserId())
-			return null;
-		else {
-			post.setContent(postListDTO.getContent());
-			post.setModifiedDate(LocalDate.now());
-			post.setTitle(postListDTO.getTitle());
-			post.setTitleImg(postListDTO.getTitleImg());
+		if (!post.getUser().getUserId().equals(user.getUserId())) {
+			return new PostServiceDTO<>(false, "작성자만 수정할 수 있습니다", null);
 		}
+		post.setContent(postListDTO.getContent());
+		post.setModifiedDate(LocalDateTime.now());
+		post.setTitle(postListDTO.getTitle());
 		PostListDTO updatePost = new PostListDTO(post);
 		updatePost.setBookmarked(postListDTO.getBookmarked());
-		return updatePost;
+		return new PostServiceDTO<>(true, "수정 완료", updatePost);
 	}
 
-	public boolean deletePost(Long postId, String email) {
+	public PostServiceDTO<String> deletePost(Long postId, String email) {
 		PostEntity post = postRepository.findById(postId).get();
 		UserEntity user = userRepository.findByEmail(email).get();
-		if (post.getUser().getUserId() != user.getUserId())
-			return false;
-		else {
+		if (!post.getUser().getUserId().equals(user.getUserId())) {
+			return new PostServiceDTO<>(false, "작성자만 삭제할 수 있습니다", null);
+		} else {
 			postRepository.delete(post);
-			return true;
+			return new PostServiceDTO<>(true, "삭제되었습니다", null);
 		}
 	}
 
-	public PostListDTO getSecretePost(Long postId, String pwd) {
+	public PostServiceDTO<PostListDTO> getSecretePost(Long postId, String pwd) {
 		PostEntity post = postRepository.findById(postId).get();
 		if (passwordEncoder.matches(pwd, post.getSecreteKey())) {
-			return new PostListDTO(post,1);
-		} else
-			return null;
+			return new PostServiceDTO<>(true, "비밀번호 확인 완료", new PostListDTO(post, 1));
+		} else {
+			return new PostServiceDTO<>(false, "비밀번호가 틀렸습니다", null);
+		}
 	}
 
-	public List<PostListDTO> getMyPostList(String email) {
+	public PostServiceDTO<List<PostListDTO>> getMyPostList(String email) {
 		List<PostEntity> postEntities = postRepository.getMyPostList(email);
-		// Entity → DTO 변환
-		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new) // PostListDTO 생성자 사용
-				.collect(Collectors.toList());
-		return postList;
+		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new).collect(Collectors.toList());
+		return new PostServiceDTO<>(true, "내가 쓴 글 목록 조회", postList);
 	}
-	public void findPostTest(Long postId) {
-		PostEntity post =  postMapper.getPostDetail(postId);
+
+	public PostServiceDTO<String> findPostTest(Long postId) {
+		PostEntity post = postMapper.getPostDetail(postId);
 		System.out.println(post.getContent());
 		System.out.println(post.getSecreteKey());
+		return new PostServiceDTO<>(true, "테스트 완료", null);
 	}
+	public PostServiceDTO<List<PostListDTO>> getTop10Posts(){
+		List<PostListDTO> list = postRepository.findTop10ByOrderByViewCountDesc()
+			    .stream()
+			    .map(PostListDTO::new) // 또는 post -> new PostListDTO(post)
+			    .collect(Collectors.toList());
+		return new PostServiceDTO<List<PostListDTO>>(true, "조회수 탑10입니다.", list);
+		}
 }

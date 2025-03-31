@@ -6,10 +6,7 @@ import org.springframework.http.ResponseEntity;
 import lombok.Getter;
 
 public class RoomResponseDTO {
-	private int status;  
-	private String message; 
-
-
+	
 	public static ResponseEntity roomMsgSuccess(String msg) {
 		return ResponseEntity.status(HttpStatus.OK).body(msg);
 	}

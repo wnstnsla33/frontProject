@@ -38,7 +38,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		String role = auth.getAuthority();
 
 
-		String access = jwtUtil.createJwt("access",username, role, 10 * 60 * 1000L);
+		String access = jwtUtil.createJwt("access",username, role, 60 * 60 * 1000L);
 		String refresh = jwtUtil.createJwt("refresh",username, role, 86400000L);
 		
 		response.addCookie(createCookie("access", access,1));
@@ -51,10 +51,15 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	private Cookie createCookie(String key, String value,int cookieType) {
 
 		Cookie cookie = new Cookie(key, value);
-		cookie.setMaxAge(60 * 60 * 60);
+		
 		// cookie.setSecure(true);
-		if(cookieType==1)cookie.setPath("/");
-		else cookie.setPath("/auth");
+		if (cookieType == 1) { // access
+			cookie.setPath("/");
+			cookie.setMaxAge(60 * 60); // 1시간 (3600초)
+		} else { // refresh
+			cookie.setPath("/auth");
+			cookie.setMaxAge(7 * 24 * 60 * 60); // 7일 (604800초)
+		}
 		cookie.setHttpOnly(false);
 
 		return cookie;

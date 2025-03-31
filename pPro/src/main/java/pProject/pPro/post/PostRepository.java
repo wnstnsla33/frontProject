@@ -14,6 +14,7 @@ import pProject.pPro.entity.PostEntity;
 
 @Repository
 public interface PostRepository extends JpaRepository<PostEntity, Long> {
+	
 	@Modifying
 	@Query("select p from PostEntity p where p.postId=:postId")
 	void incrementViewCount(@Param("postId") Long postId);
@@ -24,4 +25,5 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 	@Query("select p from PostEntity p where p.user.userEmail = :userEmail")
 	List<PostEntity> getMyPostList(@Param("userEmail")String Email);
 	
+	 List<PostEntity> findTop10ByOrderByViewCountDesc();
 }

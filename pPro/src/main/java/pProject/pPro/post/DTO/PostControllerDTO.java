@@ -9,10 +9,7 @@ import lombok.Getter;
 import pProject.pPro.entity.PostEntity;
 
 @Getter
-public class PostResponseDTO {
-	private int state;
-	private String messsage;
-	
+public class PostControllerDTO {
 	public static ResponseEntity regPostSuccess() {
     	return ResponseEntity.status(HttpStatus.OK).body("게시물이 정상 등록되었습니다.");
     }
