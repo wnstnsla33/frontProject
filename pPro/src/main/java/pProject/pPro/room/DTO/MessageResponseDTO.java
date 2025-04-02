@@ -15,13 +15,14 @@ public class MessageResponseDTO {
     private String senderName;
     private String message;
     private LocalDateTime createTime;
-    
+    private String userImg;
 	public MessageResponseDTO(ChatEntity chat) {
 		super();
 		this.roomId = chat.getRoom().getRoomId();
 		this.senderName = chat.getUser().getUserName();
 		this.message = chat.getMessage();
 		this.createTime = chat.getCreateTime();
+		this.userImg = chat.getUser().getUserImg();
 	}
     
 }

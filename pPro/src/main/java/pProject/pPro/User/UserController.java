@@ -22,7 +22,7 @@ import pProject.pPro.User.DTO.ProfileEditDTO;
 import pProject.pPro.User.DTO.ResponseUserDTO;
 import pProject.pPro.User.DTO.SignupLoginDTO;
 import pProject.pPro.User.DTO.UserInfoDTO;
-import pProject.pPro.User.DTO.userServiceResponseDTO;
+import pProject.pPro.User.DTO.UserServiceResponseDTO;
 import pProject.pPro.entity.UserEntity;
 
 @RestController
@@ -72,37 +72,28 @@ public class UserController {
 		else return ResponseUserDTO.userInfo(userInfo);
 	}
 
-	@DeleteMapping("/user/delete")//이거 프론트에 수정해야돼
-	public ResponseEntity deleteUser(@AuthenticationPrincipal  UserDetails loginUser) {
-		makeMessage("delete User");
-		if(userService.deleteUser(loginUser.getUsername())) return responseUserDTO.userDelete();
-		else return responseUserDTO.failInMsg("계정이 삭제되지 않았습니다");
-	}
+//	@DeleteMapping("/user/delete")//이거 프론트에 수정해야돼
+//	public ResponseEntity deleteUser(@AuthenticationPrincipal  UserDetails loginUser) {
+//		makeMessage("delete User");
+//		UserServiceResponseDTO dto = userService.deleteUser(loginUser.getUsername());
+//		if(dto.getStatus()==UserEnum.SUCCESS) return responseUserDTO.userDelete();
+//		else return responseUserDTO.failInMsg("계정이 삭제되지 않았습니다");
+//	}
 	
 	@PostMapping("/find/id")
 	public ResponseEntity findId(@RequestBody UserInfoDTO userInfoDTO) {
 	    makeMessage("find/id " + userInfoDTO);
-	    userServiceResponseDTO response = userService.findId(userInfoDTO);
-
-	    return switch (response.getStatus()) {
-	        case NO_EXIST -> responseUserDTO.accountNotFound();
-	        case FIND_FAIL -> responseUserDTO.failInMsg("생일이 잘못되었습니다");
-	        case SNS_ID -> responseUserDTO.failInMsg("SNS 로그인 계정은 ID 찾기 불가합니다.");
-	        case SUCCESS -> responseUserDTO.okInMsg("이메일은 " + response.getData() + "입니다.");
-	    };
+	    UserServiceResponseDTO<String> response = userService.findId(userInfoDTO);
+	    if(response.getStatus()==UserEnum.SUCCESS)return responseUserDTO.okInMsg(response.getData());
+	    else return responseUserDTO.failInMsg(response.getData());
 	}
 
 	@PostMapping("/find/pwd")
 	public ResponseEntity findPwd(@RequestBody UserInfoDTO userInfoDTO) {
 	    makeMessage("find/pwd " + userInfoDTO);
-	    userServiceResponseDTO response = userService.findPwd(userInfoDTO);
-
-	    return switch (response.getStatus()) {
-	        case NO_EXIST -> responseUserDTO.accountNotFound();
-	        case SNS_ID -> responseUserDTO.failInMsg("SNS 로그인 계정은 비밀번호 찾기 불가합니다.");
-	        case FIND_FAIL -> responseUserDTO.failInMsg("이름이 잘못되었습니다");
-	        case SUCCESS -> responseUserDTO.okInMsg(response.getData() + "로 비밀번호가 재설정되었습니다.");
-	    };
+	    UserServiceResponseDTO<String> response = userService.findPwd(userInfoDTO);
+	    if(response.getStatus()==UserEnum.SUCCESS)return responseUserDTO.okInMsg(response.getData());
+	    else return responseUserDTO.failInMsg(response.getData());
 	}
 	
 }

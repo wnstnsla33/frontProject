@@ -52,7 +52,7 @@ public class PostEntity {
 	private LocalDateTime modifiedDate;
 	
 	private int viewCount;
-	
+	private int replyCount;
 	//bookmarkCount,likeCount는 DTO에서
 	private int bookmarkCount;
 	private String secreteKey; //널일 경우 일반 글

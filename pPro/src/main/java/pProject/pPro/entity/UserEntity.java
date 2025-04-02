@@ -1,6 +1,7 @@
 package pProject.pPro.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -53,6 +54,8 @@ public class UserEntity {
 	private String userBirthDay;
 	
 	private String userCreateDate;
+	
+	private LocalDateTime recentLoginTime; 
 	
 	private String userSex;
 	

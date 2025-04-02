@@ -4,6 +4,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.Year;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -21,7 +22,7 @@ import pProject.pPro.User.DTO.ProfileEditDTO;
 import pProject.pPro.User.DTO.ResponseUserDTO;
 import pProject.pPro.User.DTO.SignupLoginDTO;
 import pProject.pPro.User.DTO.UserInfoDTO;
-import pProject.pPro.User.DTO.userServiceResponseDTO;
+import pProject.pPro.User.DTO.UserServiceResponseDTO;
 import pProject.pPro.entity.Address;
 import pProject.pPro.entity.Grade;
 import pProject.pPro.entity.ImageStorageService;
@@ -48,7 +49,7 @@ public class UserService {
 				.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
 		return key;
 	}
-
+	
 	public String saveUser(SignupLoginDTO signupDTO) {
 		Optional<UserEntity> isExist = userRepository.findByEmail(signupDTO.getEmail());
 		if (isExist.isPresent())
@@ -156,16 +157,16 @@ public class UserService {
 		return ResponseUserDTO.userInfo(userRepository.save(user));
 	}
 
-	public boolean deleteUser(String email) {
+	public UserServiceResponseDTO deleteUser(String email,String pwd) {//이거 계정 삭제 시 비밀번호 필요
 		UserEntity user = userRepository.findByEmail(email).get();
 		try {
 			userRepository.deleteByUserEmail(email);
-			return true;
+			return new UserServiceResponseDTO(UserEnum.SUCCESS);
 		} catch (Exception e) {
-			return false;
-			// TODO: handle exception
+			return new UserServiceResponseDTO(UserEnum.FIND_FAIL);
 		}
 	}
+	
 
 	public void logout(HttpServletResponse response) {
 		// access 쿠키 삭제
@@ -184,34 +185,34 @@ public class UserService {
 		response.addCookie(refreshCookie);
 	}
 
-	public userServiceResponseDTO findId(UserInfoDTO userInfoDTO) {
+	public UserServiceResponseDTO findId(UserInfoDTO userInfoDTO) {
 		UserEntity user = userRepository.findByName(userInfoDTO.getUserName());
 		if (user == null)
-			return new userServiceResponseDTO(UserFindResult.NO_EXIST, null);
+			return new UserServiceResponseDTO(UserEnum.NO_EXIST, "아이디가 존재하지 않습니다.");
 		else if (!user.getUserBirthDay().equals(userInfoDTO.getUserBirthDay())) {
-			return new userServiceResponseDTO(UserFindResult.FIND_FAIL, null);
+			return new UserServiceResponseDTO(UserEnum.FIND_FAIL, "생일이 일치하지 않습니다.");
 		} else if (user.getUserEmail().startsWith("naver ") || user.getUserEmail().startsWith("google ")
 				|| user.getUserEmail().startsWith("kakao ")) {
-			return new userServiceResponseDTO(UserFindResult.SNS_ID, null);
+			return new UserServiceResponseDTO(UserEnum.SNS_ID, "sns계정은 아이디찾기가 불가합니다.");
 		} else {
-			return new userServiceResponseDTO(UserFindResult.SUCCESS, user.getUserEmail());
+			return new UserServiceResponseDTO(UserEnum.SUCCESS, user.getUserEmail());
 		}
 	}
 
-	public userServiceResponseDTO findPwd(UserInfoDTO userInfoDTO) {
+	public UserServiceResponseDTO findPwd(UserInfoDTO userInfoDTO) {
 		if (userInfoDTO.getUserEmail().startsWith("naver ") || userInfoDTO.getUserEmail().startsWith("google ")
 				|| userInfoDTO.getUserEmail().startsWith("kakao ")) {
-			return new userServiceResponseDTO(UserFindResult.SNS_ID, null);
+			return new UserServiceResponseDTO(UserEnum.SNS_ID, "sns계정은 비밀번호 찾기가 불가합니다");
 		}
 
 		Optional<UserEntity> userOpt = userRepository.findByEmail(userInfoDTO.getUserEmail());
 		if (userOpt.isEmpty()) {
-			return new userServiceResponseDTO(UserFindResult.NO_EXIST, null);
+			return new UserServiceResponseDTO(UserEnum.NO_EXIST, "해당 이메일이 없습니다.");
 		}
 
 		UserEntity user = userOpt.get();
 		if (!user.getUserName().equals(userInfoDTO.getUserName())) {
-			return new userServiceResponseDTO(UserFindResult.FIND_FAIL, null);
+			return new UserServiceResponseDTO(UserEnum.FIND_FAIL, "해당 이름이 없습니다.");
 		}
 
 		// 비밀번호 재설정
@@ -219,7 +220,7 @@ public class UserService {
 		user.setUserPassword(passwordEncoder.encode(newPassword));
 		userRepository.save(user);
 
-		return new userServiceResponseDTO(UserFindResult.SUCCESS, newPassword);
+		return new UserServiceResponseDTO(UserEnum.SUCCESS, newPassword);
 	}
 
 }

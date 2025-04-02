@@ -23,3 +23,4 @@ public class RoomResponseDTO {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(t);
 	}
 }
+	

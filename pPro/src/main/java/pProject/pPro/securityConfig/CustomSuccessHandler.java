@@ -1,6 +1,7 @@
 package pProject.pPro.securityConfig;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -44,6 +45,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		response.addCookie(createCookie("access", access,1));
 		response.addCookie(createCookie("refresh", refresh,2));
 		UserEntity userEntity = userRepository.findByEmail(username).get();
+		userEntity.setRecentLoginTime(LocalDateTime.now());
+		userRepository.save(userEntity);
 		if(userEntity.getUserNickName()==null) response.sendRedirect("http://localhost:3000/profileEdit"); 
 		else response.sendRedirect("http://localhost:3000/"); 
 	}

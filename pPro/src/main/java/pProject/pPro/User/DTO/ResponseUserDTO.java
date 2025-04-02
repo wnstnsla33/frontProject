@@ -49,6 +49,9 @@ public class ResponseUserDTO {
     public static ResponseEntity userDelete() {
     	return ResponseEntity.status(HttpStatus.OK).body("정상삭제 완료했습니다.");
     }
+    public static ResponseEntity userDeleteFail() {
+    	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("삭제에 실패하였습니다.");
+    }
     public static ResponseEntity okInMsg(String msg) {//내 정보
     	return ResponseEntity.status(HttpStatus.OK).body(msg);
     }

@@ -44,7 +44,7 @@ public class PostService {
 	private BCryptPasswordEncoder passwordEncoder;
 	@Autowired
 	private PostMapper postMapper;
-	
+
 	public PostServiceDTO<List<PostListDTO>> getPostList() {
 		List<PostEntity> postEntities = postRepository.findAll();
 		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new).collect(Collectors.toList());
@@ -55,9 +55,9 @@ public class PostService {
 		int pageSize = 10;
 		Pageable pageable = null;
 		switch (sortNumber) {
-			case 1 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
-			case 2 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "viewCount"));
-			case 3 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "bookmarkCount"));
+		case 1 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
+		case 2 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "viewCount"));
+		case 3 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "bookmarkCount"));
 		}
 		Page<PostEntity> postEntities = postRepository.findAll(pageable);
 		System.out.println(postEntities);
@@ -69,9 +69,9 @@ public class PostService {
 		int pageSize = 10;
 		Pageable pageable = null;
 		switch (sortNumber) {
-			case 1 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
-			case 2 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.viewCount"));
-			case 3 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.bookmarkCount"));
+		case 1 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
+		case 2 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.viewCount"));
+		case 3 -> pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.bookmarkCount"));
 		}
 		Page<BookmarkEntity> bookmarkEntities = bookmarkRepository.bookmarkListByUser(email, pageable);
 		List<PostListDTO> postList = bookmarkEntities.stream().map(PostListDTO::new).collect(Collectors.toList());
@@ -91,9 +91,14 @@ public class PostService {
 		PostEntity newPost = new PostEntity(writePostDTO, user);
 		if (writePostDTO.getSecreteKey() != null)
 			newPost.setSecreteKey(passwordEncoder.encode(writePostDTO.getSecreteKey()));
-		postRepository.save(newPost);
-		return new PostServiceDTO<>(true, "정상적으로 등록되었습니다", null);
+		try {
+			postRepository.save(newPost);
+			return new PostServiceDTO<>(true, "정상적으로 등록되었습니다", null);
+		} catch (Exception e) {
+			return new PostServiceDTO<String>(false, "등록에 실패하였습니다.", null);
+		}
 	}
+
 	public PostServiceDTO<PostEntity> incrementBookmarkCount(Long postId, boolean isBookmarked) {
 		PostEntity post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 		if (isBookmarked)
@@ -142,7 +147,7 @@ public class PostService {
 	public PostServiceDTO<PostListDTO> getSecretePost(Long postId, String pwd) {
 		PostEntity post = postRepository.findById(postId).get();
 		if (passwordEncoder.matches(pwd, post.getSecreteKey())) {
-			return new PostServiceDTO<>(true, "비밀번호 확인 완료", new PostListDTO(post, 1));
+			return new PostServiceDTO<>(true, "비밀번호 확인 완료", new PostListDTO(post, true));
 		} else {
 			return new PostServiceDTO<>(false, "비밀번호가 틀렸습니다", null);
 		}
@@ -160,11 +165,21 @@ public class PostService {
 		System.out.println(post.getSecreteKey());
 		return new PostServiceDTO<>(true, "테스트 완료", null);
 	}
-	public PostServiceDTO<List<PostListDTO>> getTop10Posts(){
-		List<PostListDTO> list = postRepository.findTop10ByOrderByViewCountDesc()
-			    .stream()
-			    .map(PostListDTO::new) // 또는 post -> new PostListDTO(post)
-			    .collect(Collectors.toList());
+
+	public PostServiceDTO<List<PostListDTO>> getTop10Posts() {
+		List<PostListDTO> list = postRepository.findTop10ByOrderByViewCountDesc().stream().map(PostListDTO::new) // 또는
+				.collect(Collectors.toList());
 		return new PostServiceDTO<List<PostListDTO>>(true, "조회수 탑10입니다.", list);
-		}
+	}
+
+	public PostServiceDTO<List<PostListDTO>> getNoticeList(){
+		List<PostListDTO> list = postRepository.getNoticeList().stream().map(PostListDTO::new) // 또는
+				.collect(Collectors.toList());
+		return new PostServiceDTO<List<PostListDTO>>(true, "게시판 목록입니다.", list);
+	}
+	
+	public PostServiceDTO<PostEntity> getRecentNotice(){
+		return new PostServiceDTO<PostEntity>(true, "첫번째 공지사항입니다.", postRepository.findTopByAdminOrderByCreatedAtDesc());
+	}
+
 }

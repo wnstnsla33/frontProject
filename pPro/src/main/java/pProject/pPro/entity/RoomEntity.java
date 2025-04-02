@@ -40,6 +40,7 @@ public class RoomEntity {
 	private LocalDateTime meetingTime;
 	private LocalDateTime roomCreatDate;
 	private LocalDateTime roomModifiedDate;
+	private String secretePassword;
 	@Embedded
 	private RoomAddress address;
 	
@@ -69,7 +70,6 @@ public class RoomEntity {
 		this.setRoomCreatDate(LocalDateTime.now());
 		this.setRoomModifiedDate(LocalDateTime.now());
 		this.setCurPaticipants(1);
-
 	}
 }
 

@@ -22,8 +22,12 @@ public class CustomUserDetails implements UserDetails {
 			
 			@Override
 			public String getAuthority() {
-				if(userEntity.getUserGrade()==Grade.ADMIN)return "ROLE_ADMIN";
-				else return "ROLE_USER";
+				if(userEntity.getUserGrade()==Grade.ADMIN) {
+					return "ROLE_ADMIN";
+				}
+				else {
+					return "ROLE_USER";
+				}
 			}
 		});	
 		return collection;

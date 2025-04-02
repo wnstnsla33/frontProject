@@ -6,10 +6,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,7 +46,7 @@ public class RoomService {
 	private final HostUserRepository hostUserRepository;
 	private final ChatRepository chatRepository;
 	private final ImageStorageService imageStorageService;
-	
+	private final BCryptPasswordEncoder passwordEncoder;
 	//생성
 	
 	public RoomDTO createRoom(RoomDTO room, String email) {
@@ -53,6 +55,10 @@ public class RoomService {
 		roomEntity.setRoomImg(imageStorageService.saveImage(room.getRoomSaveImg()));
 		roomEntity.setCreateUser(user);
 		roomEntity.setAddress(new RoomAddress(room.getSido(),room.getSigungu()));
+		if(room.getSecretePassword()!=null) {
+			System.out.println(room.getSecretePassword()+"**************************");
+			roomEntity.setSecretePassword(passwordEncoder.encode(room.getSecretePassword()));
+		}
 		RoomEntity saveRoom = roomRepository.save(roomEntity);
 		HostUserEntity hostUserEntity = new HostUserEntity(saveRoom, user);
 		hostUserRepository.save(hostUserEntity);
@@ -117,19 +123,20 @@ public class RoomService {
 	}
 
 	public RoomServiceDTO joinRoom(String roomId, String email) {
-		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, email);
-		if (hostUser.isPresent())return new RoomServiceDTO(RoomEnum.ROOM_SUCCESS, new RoomDTO(hostUser.get()));
+		boolean isAdmin = email.equals("admin@naver.com");
+		Optional<HostUserEntity> findHostUser = hostUserRepository.findLoginEmail(roomId, email);
+		if (findHostUser.isPresent())return new RoomServiceDTO(RoomEnum.ROOM_SUCCESS, new RoomDTO(findHostUser.get()));
 		RoomEntity roomEntity = roomRepository.findByIdForUpdate(roomId)
 				.orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 없습니다: " + roomId));
-		UserEntity user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("계정이 없습니다"));
-		HostUserEntity hostuserEntity = new HostUserEntity(roomEntity, user);
-		hostuserEntity.setJoinedTime(LocalDateTime.now());
-		// 꽉참
-		if (roomEntity.getRoomMaxParticipants() == roomEntity.getCurPaticipants())
+		if (!isAdmin&&roomEntity.getRoomMaxParticipants() == roomEntity.getCurPaticipants())
 			return new RoomServiceDTO(RoomEnum.MAX_PARTICIPANTS, "인원이 꽉찼습니다.");
+		UserEntity user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("계정이 없습니다"));
+		HostUserEntity newHostUser = new HostUserEntity(roomEntity, user);
+		newHostUser.setJoinedTime(LocalDateTime.now());
+		// 꽉참
 		try {
-			hostUserRepository.save(hostuserEntity);
-			roomEntity.setCurPaticipants(roomEntity.getCurPaticipants() + 1);
+			hostUserRepository.save(newHostUser);
+			if(!isAdmin)roomEntity.setCurPaticipants(roomEntity.getCurPaticipants() + 1);
 			return new RoomServiceDTO(RoomEnum.ROOM_SUCCESS, new RoomDTO(roomEntity));
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -137,7 +144,28 @@ public class RoomService {
 			return new RoomServiceDTO(RoomEnum.ROOM_FAIL, "방 입장중 오류 발생됨");
 		}
 	}
-
+	public RoomServiceDTO joinPwdRoom(String roomId, String email,String pwd) {
+		RoomEntity roomEntity = roomRepository.findByIdForUpdate(roomId)
+				.orElseThrow(() -> new IllegalArgumentException("해당 ID의 방이 없습니다: " + roomId));
+		if(!passwordEncoder.matches(pwd,roomEntity.getSecretePassword()))return new RoomServiceDTO<String>(RoomEnum.ROOM_FAIL,"비밀번호가 틀렸습니다");
+		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, email);
+		if (hostUser.isPresent())return new RoomServiceDTO(RoomEnum.ROOM_SUCCESS, new RoomDTO(hostUser.get(),true));
+		if (roomEntity.getRoomMaxParticipants() == roomEntity.getCurPaticipants())
+			return new RoomServiceDTO(RoomEnum.MAX_PARTICIPANTS, "인원이 꽉찼습니다.");
+		UserEntity user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("계정이 없습니다"));
+		HostUserEntity hostuserEntity = new HostUserEntity(roomEntity, user);
+		hostuserEntity.setJoinedTime(LocalDateTime.now());
+		// 꽉참
+		try {
+			hostUserRepository.save(hostuserEntity);
+			roomEntity.setCurPaticipants(roomEntity.getCurPaticipants() + 1);
+			return new RoomServiceDTO(RoomEnum.ROOM_SUCCESS, new RoomDTO(roomEntity,true));
+		} catch (Exception e) {
+			// TODO: handle exception
+			log.error("방 참가 중 예외 발생", e);
+			return new RoomServiceDTO(RoomEnum.ROOM_FAIL, "방 입장중 오류 발생됨");
+		}
+	}
 
 	public RoomServiceDTO GetMyJoinRooms(String email) {
 		 List<HostUserEntity> hostUserEntities = hostUserRepository.findRoomsByUser(email);

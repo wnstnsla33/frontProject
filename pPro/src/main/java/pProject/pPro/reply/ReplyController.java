@@ -40,10 +40,10 @@ public class ReplyController {
 		List<ReplyListDTO> replyList= replyService.findReplyByPost(postId);
 		return new ReplyResponseDTO().replyList(replyList);
 	}
-	@DeleteMapping("/post/{replyId}/reply")
-	public ResponseEntity deleteReply(@PathVariable("replyId")Long replyId ,@AuthenticationPrincipal UserDetails user) {
+	@DeleteMapping("/post/{postId}/{replyId}")
+	public ResponseEntity deleteReply(@PathVariable("postId")Long postId,@PathVariable("replyId")Long replyId ,@AuthenticationPrincipal UserDetails user) {
 		System.out.println("댓글지우기");
-		ReplyServiceValue<String> result =  replyService.deleteReply(replyId, user.getUsername());
+		ReplyServiceValue<String> result =  replyService.deleteReply(postId,replyId, user.getUsername());
 		if(result.getEnumVal()==ReplyServiceEnum.SUCCESS) return ReplyResponseDTO.replySuccess();
 		else if(result.getEnumVal()==ReplyServiceEnum.EMAIL_NOTMATCH)return ReplyResponseDTO.replyFail("삭제할 권한이 없습니다");
 		else return ReplyResponseDTO.replyFail("잘못된 요청입니다");

@@ -26,14 +26,17 @@ public class PostListDTO {
 	// bookmarkCount,likeCount는 DTO에서
 	private int bookmarkCount;
 	private boolean secreteKey;
-	private String userName;
+	private String userNickName;
 	private boolean bookmarked;
-
+	private boolean isPrivate;
+	private int replyCount;
 	public PostListDTO(PostEntity postEntity) {
 		super();
 		if (postEntity.getSecreteKey() != null) {
 			this.postId = postEntity.getPostId();
 			this.title = "비밀글";
+			this.userNickName = postEntity.getUser().getUserNickName();
+			this.viewCount = postEntity.getViewCount();
 		} else {
 			this.postId = postEntity.getPostId();
 			this.title = postEntity.getTitle();
@@ -42,13 +45,14 @@ public class PostListDTO {
 			this.modifiedDate = postEntity.getModifiedDate();
 			this.viewCount = postEntity.getViewCount();
 			this.bookmarkCount = postEntity.getBookmarkCount();
-			this.userName = postEntity.getUser().getUserName();
+			this.userNickName = postEntity.getUser().getUserNickName();
 			this.bookmarked = false;
+			this.replyCount= postEntity.getReplyCount();
 		}
 
 	}
 	
-	public PostListDTO(PostEntity postEntity,int pass) {
+	public PostListDTO(PostEntity postEntity,boolean pass) {
 		super();
 		this.postId = postEntity.getPostId();
 		this.title = postEntity.getTitle();
@@ -57,7 +61,9 @@ public class PostListDTO {
 		this.modifiedDate = postEntity.getModifiedDate();
 		this.viewCount = postEntity.getViewCount();
 		this.bookmarkCount = postEntity.getBookmarkCount();
-		this.userName = postEntity.getUser().getUserName();
+		this.userNickName = postEntity.getUser().getUserNickName();
+		this.isPrivate = postEntity.getSecreteKey()!=null?true:false;		
+		this.replyCount=postEntity.getReplyCount();
 		this.bookmarked = false;
 		}
 
@@ -79,11 +85,12 @@ public class PostListDTO {
 			this.modifiedDate = bookmarkEntity.getPost().getModifiedDate();
 			this.viewCount = bookmarkEntity.getPost().getViewCount();
 			this.bookmarkCount = bookmarkEntity.getPost().getBookmarkCount();
-			this.userName = bookmarkEntity.getUser().getUserName();
+			this.userNickName = bookmarkEntity.getUser().getUserNickName();
+			this.replyCount= bookmarkEntity.getPost().getReplyCount();
 			this.bookmarked = false;
 		}
 	}
-	public PostListDTO(BookmarkEntity bookmarkEntity,int pass) {
+	public PostListDTO(BookmarkEntity bookmarkEntity,boolean verify) {
 		super();
 		this.postId = bookmarkEntity.getPost().getPostId();
 		this.title = bookmarkEntity.getPost().getTitle();
@@ -92,8 +99,9 @@ public class PostListDTO {
 		this.modifiedDate = bookmarkEntity.getPost().getModifiedDate();
 		this.viewCount = bookmarkEntity.getPost().getViewCount();
 		this.bookmarkCount = bookmarkEntity.getPost().getBookmarkCount();
-		this.userName = bookmarkEntity.getUser().getUserNickName();
+		this.userNickName = bookmarkEntity.getUser().getUserNickName();
+		this.replyCount= bookmarkEntity.getPost().getReplyCount();
 		this.bookmarked = false;
-		}
+		this.isPrivate = bookmarkEntity.getPost().getSecreteKey()!=null?true:false;		}
 
 }

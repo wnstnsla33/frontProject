@@ -19,4 +19,8 @@ public interface HostUserRepository extends JpaRepository<HostUserEntity, Long>{
 		       "JOIN FETCH h.room r " +
 		       "WHERE h.user.userEmail = :userEmail")
 	List<HostUserEntity> findRoomsByUser(@Param("userEmail")String userEmail);
+	@Query("SELECT h FROM HostUserEntity h " +
+		       "JOIN FETCH h.room r " +
+		       "WHERE h.user.userId = :userId")
+	List<HostUserEntity> findRoomsByUserId(@Param("userId")Long userId);
 }

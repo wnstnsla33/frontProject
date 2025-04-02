@@ -47,9 +47,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	userEntity.setUserGrade(Grade.BRONZE);
         	userEntity.setUserEmail(userEmail);
         	userEntity.setUserAge(Integer.parseInt( oAuth2Response.getAge()));
-        	userEntity.setUserSex(oAuth2Response.getSex()=="M"?"남성":"여성");
-        	int num = (int)(Math.random() * 15) + 1; // 1 ~ 15
-        	userEntity.setUserImg("/uploads/" + num + ".png");
+        	System.out.println(oAuth2Response.getSex()+"***************오스서비스 확인 성별");
+        	int num =0;
+        	if(oAuth2Response.getSex().equals("M")) {
+        		 num = (int)(Math.random() * 9) + 1;
+        		userEntity.setUserSex("남성");
+        	}
+        	else {
+        		 num = (int)(Math.random() * 6) + 10;
+        		userEntity.setUserSex("여성");
+        	}
+        	userEntity.setUserImg("/uploads/classicImage/" + num + ".png");
         	userEntity.setUserLevel(1);
         	userEntity.setUserExp(0);
         	userRepository.save(userEntity);
