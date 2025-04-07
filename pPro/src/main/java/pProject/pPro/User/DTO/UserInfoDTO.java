@@ -24,13 +24,13 @@ public class UserInfoDTO {
 	
 	private int userAge;
 	
-//	private Grade userGrade;
+	private Grade userGrade;
 	
 	private String userBirthDay;
 	
-//	private String userCreateDate;
+	private String userCreateDate;
 	
-//	private String userSex;
+	private String userSex;
 	
 	private String userInfo;
 	
@@ -38,7 +38,7 @@ public class UserInfoDTO {
 	
 	private String userImg;
 
-//	private int userExp;
+	private int userExp;
 
 	private int userLevel;
 	
@@ -49,14 +49,14 @@ public class UserInfoDTO {
 		this.userNickName = userEntity.getUserNickName();
 		this.userName = userEntity.getUserName();
 		this.userAge = userEntity.getUserAge();
-//		this.userGrade = userEntity.getUserGrade();
+		this.userGrade = userEntity.getUserGrade();
 		this.userBirthDay = userEntity.getUserBirthDay();
-//		this.userCreateDate = userEntity.getUserCreateDate();
-//		this.userSex = userEntity.getUserSex();
+		this.userCreateDate = userEntity.getUserCreateDate();
+		this.userSex = userEntity.getUserSex();
 		this.userInfo = userEntity.getUserInfo();
 //		this.Hint = userEntity.getHint();
 		this.userImg = userEntity.getUserImg();
-//		this.userExp = userEntity.getUserExp();
+		this.userExp = userEntity.getUserExp();
 		this.userLevel = userEntity.getUserLevel();
 	}
 	

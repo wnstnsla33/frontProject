@@ -25,6 +25,7 @@ public class CustomUserDetails implements UserDetails {
 				if(userEntity.getUserGrade()==Grade.ADMIN) {
 					return "ROLE_ADMIN";
 				}
+				else if(userEntity.getUserGrade()==Grade.BANNED)return "ROLE_BANNED";
 				else {
 					return "ROLE_USER";
 				}

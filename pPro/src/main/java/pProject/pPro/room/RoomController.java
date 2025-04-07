@@ -1,101 +1,92 @@
 package pProject.pPro.room;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.room.DTO.PasswordDTO;
+import pProject.pPro.CommonResponse;
+import pProject.pPro.chat.DTO.ChatMessageDTO;
+import pProject.pPro.chat.DTO.MessageResponseDTO;
 import pProject.pPro.room.DTO.RoomDTO;
-import pProject.pPro.room.DTO.RoomEnum;
-import pProject.pPro.room.DTO.RoomResponseDTO;
-import pProject.pPro.room.DTO.RoomServiceDTO;
 import pProject.pPro.room.DTO.SearchRoomDTO;
+
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
 public class RoomController {
 
 	private final RoomService roomService;
-	private RoomResponseDTO roomResponseDTO;
-	
-	@PostMapping("/chatRoom")//채팅방 만들기
-	public ResponseEntity createRoom(@ModelAttribute RoomDTO dto,
-			    @AuthenticationPrincipal UserDetails user) {
-		return RoomResponseDTO.roomInfo(roomService.createRoom(dto,user.getUsername()));
+
+	@PostMapping("/chatRoom")
+	public ResponseEntity<?> createRoom(@ModelAttribute RoomDTO dto,
+	                                    @AuthenticationPrincipal UserDetails user) {
+		RoomDTO createdRoom = roomService.createRoom(dto, user.getUsername());
+		return ResponseEntity.ok(CommonResponse.success("방이 생성되었습니다", createdRoom));
 	}
-	@PostMapping("/chatRoom/image")
-	public ResponseEntity savedImage(@RequestPart("image")MultipartFile image ) {
-		if(image.isEmpty())return roomResponseDTO.roomMsgFail("이미지가 없습니다");
-		else {
-			return roomResponseDTO.roomMsgSuccess(roomService.savedImage(image));
-		}
-	}
-	@GetMapping("/chatRoom")//채팅방 목록 확인(아직 꾸미지않음)
-	public ResponseEntity roomList() {
-		return roomResponseDTO.roomSuccessType(roomService.roomList());
-	}
-	@GetMapping("/chatRoom/search")
-	public ResponseEntity searchRooms(
-	    @ModelAttribute SearchRoomDTO searchRoomDTO ,@AuthenticationPrincipal UserDetails user) {
-		searchRoomDTO.setEmail(user.getUsername());
-	    return roomResponseDTO.roomSuccessType(roomService.searchRooms(searchRoomDTO));
+
+	@GetMapping("/chatRoom")
+	public ResponseEntity<?> getRoomList() {
+		List<RoomDTO> rooms = roomService.roomList();
+		return ResponseEntity.ok(CommonResponse.success("전체 방 목록 조회 성공", rooms));
 	}
 
 	@GetMapping("/chatRoom/{roomId}")
-	public ResponseEntity findRoom(@PathVariable("roomId") String roomId,@AuthenticationPrincipal UserDetails user) {
-		System.out.println(user.getUsername());
-		RoomServiceDTO dto = roomService.joinRoom(roomId, user.getUsername());
-		if(dto.getState()==RoomEnum.ROOM_SUCCESS)return roomResponseDTO.roomSuccessType(dto.getData());
-		else return roomResponseDTO.roomFailType(dto.getData());
-	}
-	@DeleteMapping("/chatRoom/{roomId}")
-	public ResponseEntity deleteRoom(@PathVariable("roomId") String roomId,@AuthenticationPrincipal UserDetails user) {
-		RoomServiceDTO<String> roomServiceDto =  roomService.deleteRoom(roomId, user.getUsername());
-		if(roomServiceDto.getState()==RoomEnum.ROOM_SUCCESS) {
-			
-			return roomResponseDTO.roomMsgSuccess(roomServiceDto.getData());
-		}
-		else return roomResponseDTO.roomMsgFail(roomServiceDto.getData());
-	}
-	@GetMapping("/chatRoom/{roomId}/messages")
-	public ResponseEntity getMessages(@PathVariable("roomId") String roomId, @AuthenticationPrincipal UserDetails user) {
-		System.out.println(roomId+"방 이름");
-	    RoomServiceDTO<?> dto = roomService.getChatList(roomId, user.getUsername());
-	    if (dto.getState() == RoomEnum.ROOM_SUCCESS) {
-	        return RoomResponseDTO.roomSuccessType(dto.getData());
-	    } else {
-	        return RoomResponseDTO.roomFailType(dto.getData());
-	    }
-	}
-	@GetMapping("/chatRoom/hostRooms")
-	public ResponseEntity gethostRooms(@AuthenticationPrincipal UserDetails user) {
-		RoomServiceDTO dto = roomService.GetMyJoinRooms(user.getUsername());
-		return RoomResponseDTO.roomSuccessType(dto.getData());
-	}
-	@PostMapping("/chatRoom/{roomId}/verify")
-	public ResponseEntity verifyPWD(@PathVariable("roomId")String roomId,@RequestBody PasswordDTO passwordDto,@AuthenticationPrincipal UserDetails user) {
-		System.out.println(roomId+passwordDto.getPassword()+"********************");
-		RoomServiceDTO dto = roomService.joinPwdRoom(roomId, user.getUsername(),passwordDto.getPassword());
-		if(dto.getState()==RoomEnum.ROOM_SUCCESS)return roomResponseDTO.roomSuccessType(dto.getData());
-		else return roomResponseDTO.roomFailType(dto.getData());
+	public ResponseEntity<?> findRoom(@PathVariable("roomId") String roomId,
+	                                  @AuthenticationPrincipal UserDetails user) {
+		RoomDTO joinedRoom = roomService.joinRoom(roomId, user.getUsername());
+		return ResponseEntity.ok(CommonResponse.success("방 참가 완료", joinedRoom));
 	}
 
+	@PostMapping("/chatRoom/{roomId}/verify")
+	public ResponseEntity<?> joinWithPassword(@PathVariable("roomId") String roomId,
+	                                           @RequestParam("password") String password,
+	                                           @AuthenticationPrincipal UserDetails user) {
+		RoomDTO joinedRoom = roomService.joinPwdRoom(roomId, user.getUsername(), password);
+		return ResponseEntity.ok(CommonResponse.success("비밀방 참가 완료", joinedRoom));
+	}
+
+	@DeleteMapping("/chatRoom/{roomId}")
+	public ResponseEntity<?> deleteRoom(@PathVariable("roomId") String roomId,
+	                                    @AuthenticationPrincipal UserDetails user) {
+		roomService.deleteRoom(roomId, user.getUsername());
+		return ResponseEntity.ok(CommonResponse.success("방 삭제 또는 퇴장 처리 완료", null));
+	}
+
+	@PutMapping("/chatRoom/{roomId}")
+	public ResponseEntity<?> updateRoom(@PathVariable("roomId") String roomId,
+	                                    @RequestBody RoomDTO dto,
+	                                    @AuthenticationPrincipal UserDetails user) {
+		RoomDTO updatedRoom = roomService.updateRoom(dto, roomId, user.getUsername());
+		return ResponseEntity.ok(CommonResponse.success("방 정보 수정 완료", updatedRoom));
+	}
+
+	@GetMapping("/chatRoom/hostRooms")
+	public ResponseEntity<?> getMyJoinRooms(@AuthenticationPrincipal UserDetails user) {
+		List<RoomDTO> list = roomService.getMyJoinRooms(user.getUsername());
+		return ResponseEntity.ok(CommonResponse.success("참여 중인 방 목록 조회 성공", list));
+	}
+
+	@GetMapping("/chatRoom/{roomId}/messages")
+	public ResponseEntity<?> getChatList(@PathVariable("roomId") String roomId,
+	                                     @AuthenticationPrincipal UserDetails user) {
+		List<MessageResponseDTO> chatList = roomService.getChatList(roomId, user.getUsername());
+		return ResponseEntity.ok(CommonResponse.success("채팅 내역 조회 성공", chatList));
+	}
+
+	@PostMapping("/chatRoom/image")
+	public ResponseEntity<?> uploadRoomImage(@RequestPart("image") MultipartFile imageFile) {
+		String savedUrl = roomService.savedImage(imageFile);
+		return ResponseEntity.ok(CommonResponse.success("이미지 저장 성공", savedUrl));
+	}
+
+	@GetMapping("/chatRoom/search")
+	public ResponseEntity<?> searchRooms(@ModelAttribute SearchRoomDTO dto) {
+		var pageResult = roomService.searchRooms(dto);
+		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", pageResult));
+	}
 }

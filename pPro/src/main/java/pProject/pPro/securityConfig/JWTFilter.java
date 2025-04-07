@@ -38,13 +38,10 @@ public class JWTFilter extends OncePerRequestFilter {
 		    }
 
 		String requestURI = request.getRequestURI();
-		System.out.println(requestURI);
+		System.out.println(requestURI+"token:" +token);
+		
 		// 허용할 경로는 무조건 필터를 통과시킴
-		boolean isAllowedPath = requestURI.equals("/post") || requestURI.matches("/post/\\d+")
-				|| requestURI.equals("/signup") || requestURI.equals("/signup/confirm") || requestURI.equals("/login")
-				|| requestURI.equals("/my") || requestURI.startsWith("/find") || requestURI.equals("/auth/getToken")
-				|| requestURI.equals("/ws-stomp") || // WebSocket 연결
-				requestURI.startsWith("/ws-stomp"); // SockJS fallback 지원 (필수)
+		boolean isAllowedPath = isPublicPath(requestURI);
 		if (token == null&&isAllowedPath) {
 			System.out.println("토큰없음,권한 true");
 			filterChain.doFilter(request, response);
@@ -88,5 +85,17 @@ public class JWTFilter extends OncePerRequestFilter {
 
 		filterChain.doFilter(request, response);
 	}
-
+	private boolean isPublicPath(String requestURI) {
+	    return 
+	             requestURI.startsWith("/post")
+	            || requestURI.startsWith("/uploads/")
+	            || requestURI.equals("/signup")
+	            || requestURI.equals("/signup/confirm")
+	            || requestURI.equals("/login")
+	            || requestURI.equals("/my")
+	            || requestURI.startsWith("/find")
+	            || requestURI.equals("/auth/getToken")
+	            || requestURI.equals("/ws-stomp")
+	            || requestURI.startsWith("/ws-stomp");
+	}
 }

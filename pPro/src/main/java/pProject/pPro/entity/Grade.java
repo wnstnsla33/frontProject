@@ -5,8 +5,8 @@ public enum Grade {
     SILVER,  // 레벨 4~6은 실버
     GOLD,    // 레벨 7~9는 골드
     VIP,   // 레벨 10~12는 VIP
-    ADMIN;
-
+    ADMIN,
+	BANNED;
     // 레벨로 등급 찾기
     public static Grade fromLevel(int level) {
         if (level >= 1 && level <= 3) {

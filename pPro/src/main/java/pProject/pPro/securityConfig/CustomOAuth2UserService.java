@@ -46,6 +46,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	userEntity.setUserCreateDate(createDate);
         	userEntity.setUserGrade(Grade.BRONZE);
         	userEntity.setUserEmail(userEmail);
+        	userEntity.setReportedCount(0);
         	userEntity.setUserAge(Integer.parseInt( oAuth2Response.getAge()));
         	System.out.println(oAuth2Response.getSex()+"***************오스서비스 확인 성별");
         	int num =0;
@@ -80,6 +81,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
              userDTO.setEmail(userEmail);
              userDTO.setName(oAuth2Response.getName());
              if(existData.getUserGrade()==Grade.ADMIN) userDTO.setRole("ROLE_ADMIN");
+             else if(existData.getUserGrade()==Grade.BANNED) userDTO.setRole("ROLE_BANNED");
              else userDTO.setRole("ROLE_USER");
              return new CustomOAuth2User(userDTO);
         }

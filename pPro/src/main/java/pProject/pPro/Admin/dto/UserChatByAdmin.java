@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pProject.pPro.chat.DTO.ChatMessageDTO;
 import pProject.pPro.entity.ChatEntity;
-import pProject.pPro.room.DTO.ChatMessageDTO;
 
 @Getter
 @Setter

@@ -61,6 +61,10 @@ public class UserEntity {
 	
 	private String userInfo;
 	
+	private int reportedCount;
+	
+	private LocalDateTime reportedDate;
+	
 	private String Hint;
 	
 	@Embedded
@@ -99,5 +103,14 @@ public class UserEntity {
 	
 	@OneToMany(mappedBy = "createUser", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<RoomEntity> createUsers = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
+	private List<ReportEntity> reportsByMe = new ArrayList<>();
+
+	// 나를 신고한 리스트
+	@OneToMany(mappedBy = "reportedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
+	private List<ReportEntity> reportsAgainstMe = new ArrayList<>();
 	
 }
