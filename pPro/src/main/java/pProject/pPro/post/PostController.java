@@ -10,20 +10,22 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import pProject.pPro.CommonResponse;
+import pProject.pPro.ControllerUtils;
 import pProject.pPro.User.UserService;
-import pProject.pPro.entity.ImageStorageService;
 import pProject.pPro.post.DTO.PassWordDTO;
 import pProject.pPro.post.DTO.PostListDTO;
+import pProject.pPro.post.DTO.PostPageDTO;
 import pProject.pPro.post.DTO.PostSearchDTO;
 import pProject.pPro.post.DTO.WritePostDTO;
+import pProject.pPro.post.exception.PostErrorCode;
+import pProject.pPro.post.exception.PostException;
 
 @RestController
 @RequiredArgsConstructor
 public class PostController {
 	private final PostService postService;
 	private final UserService userService;
-	private final ImageStorageService imageStorageService;
-
+	private final ControllerUtils utils;
 	private void makeMessage(String methodName) {
 		System.out.println("********************************" + methodName);
 	}
@@ -32,7 +34,7 @@ public class PostController {
 	public ResponseEntity<?> newPost(@ModelAttribute WritePostDTO writePostDTO,
 	                                 @AuthenticationPrincipal UserDetails loginUser) {
 		makeMessage("newPost");
-		String email = loginUser.getUsername();
+		String email = utils.findEmail(loginUser);
 		userService.expUp(email);
 		postService.writePost(writePostDTO, email);
 		return ResponseEntity.ok(CommonResponse.success("정상적으로 등록되었습니다", null));
@@ -41,17 +43,17 @@ public class PostController {
 	@PostMapping("/post/image")
 	public ResponseEntity<?> imageUpload(@RequestPart("image") MultipartFile imageFile) {
 		if (imageFile.isEmpty()) {
-			throw new IllegalArgumentException("이미지 값이 없습니다.");
+			throw new PostException(PostErrorCode.UNKNOWN_ERROR);
 		}
-		String imageUrl = imageStorageService.saveImage(imageFile);
+		String imageUrl = postService.saveImg(imageFile);
 		return ResponseEntity.ok(CommonResponse.success("이미지 업로드 성공", imageUrl));
 	}
 
 	@GetMapping("/post")
 	public ResponseEntity<?> postList(@ModelAttribute PostSearchDTO searchDTO,
 	                                  @AuthenticationPrincipal UserDetails userDetails) {
-		String email = (userDetails != null) ? userDetails.getUsername() : null;
-		List<PostListDTO> list = postService.getPostList(
+		String email = utils.findEmailOrNull(userDetails);
+		PostPageDTO list = postService.getPostList(
 				email,
 				searchDTO.getPage() - 1,
 				searchDTO.getSortType(),
@@ -65,7 +67,7 @@ public class PostController {
 	                                          @RequestParam(value = "page", defaultValue = "0") int page,
 	                                          @RequestParam(value = "sortType", defaultValue = "1") int sortNumber) {
 		makeMessage("post/bookmark");
-		List<PostListDTO> list = postService.getPostBookmarkList(user.getUsername(), page - 1, sortNumber);
+		PostPageDTO list = postService.getPostBookmarkList(utils.findEmail(user), page - 1, sortNumber);
 		return ResponseEntity.ok(CommonResponse.success("북마크 게시글 조회 성공", list));
 	}
 
@@ -73,7 +75,7 @@ public class PostController {
 	public ResponseEntity<?> getPostDetail(@PathVariable("postId") long postId,
 	                                       @AuthenticationPrincipal UserDetails loginUser) {
 		makeMessage("post/postId");
-		String email = (loginUser != null) ? loginUser.getUsername() : null;
+		String email = utils.findEmailOrNull(loginUser);
 		PostListDTO dto = postService.incrementAndGetPost(postId, email);
 		return ResponseEntity.ok(CommonResponse.success("게시글 상세 조회 성공", dto));
 	}
@@ -83,7 +85,7 @@ public class PostController {
 	                                    @RequestBody PostListDTO updatePost,
 	                                    @AuthenticationPrincipal UserDetails loginUser) {
 		makeMessage("update post/postId");
-		PostListDTO updated = postService.updatePost(postId, updatePost, loginUser.getUsername());
+		PostListDTO updated = postService.updatePost(postId, updatePost, utils.findEmail(loginUser));
 		return ResponseEntity.ok(CommonResponse.success("게시글 수정 완료", updated));
 	}
 
@@ -91,7 +93,7 @@ public class PostController {
 	public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId,
 	                                    @AuthenticationPrincipal UserDetails loginUser) {
 		makeMessage("delete post/postId");
-		postService.deletePost(postId, loginUser.getUsername());
+		postService.deletePost(postId, utils.findEmail(loginUser));
 		return ResponseEntity.ok(CommonResponse.success("삭제되었습니다", null));
 	}
 
@@ -100,7 +102,7 @@ public class PostController {
 	                                        @RequestBody PassWordDTO passWordDTO,
 	                                        @AuthenticationPrincipal UserDetails user) {
 		makeMessage("secrete post/postId" + postId + passWordDTO.getPwd());
-		String email = (user != null) ? user.getUsername() : null;
+		String email = utils.findEmailOrNull(user);
 		PostListDTO dto = postService.getSecretePost(postId, passWordDTO.getPwd(), email);
 		return ResponseEntity.ok(CommonResponse.success("비밀 게시글 조회 성공", dto));
 	}
@@ -108,20 +110,20 @@ public class PostController {
 	@GetMapping("/post/myPost")
 	public ResponseEntity<?> getMyPostLists(@AuthenticationPrincipal UserDetails user) {
 		makeMessage("내가 쓴 게시물 보기");
-		List<PostListDTO> list = postService.getMyPostList(user.getUsername());
+		List<PostListDTO> list = postService.getMyPostList(utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("내 게시글 조회 성공", list));
 	}
 
 	@GetMapping("/post/topView")
 	public ResponseEntity<?> getTop10Post(@AuthenticationPrincipal UserDetails user) {
-		String email = (user != null) ? user.getUsername() : null;
+		String email = utils.findEmailOrNull(user);
 		List<PostListDTO> list = postService.getTop10Posts(email);
 		return ResponseEntity.ok(CommonResponse.success("TOP10 게시글 조회 성공", list));
 	}
 
 	@GetMapping("/post/notice")
 	public ResponseEntity<?> getNoticeList(@AuthenticationPrincipal UserDetails user) {
-		String email = (user != null) ? user.getUsername() : null;
+		String email = utils.findEmailOrNull(user);
 		List<PostListDTO> list = postService.getNoticeList(email);
 		return ResponseEntity.ok(CommonResponse.success("공지 게시글 조회 성공", list));
 	}

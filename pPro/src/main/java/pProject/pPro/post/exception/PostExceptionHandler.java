@@ -34,11 +34,4 @@ public class PostExceptionHandler {
                 .body(CommonResponse.fail(message));
     }
 
-    // 그 외 예외 (예: NullPointerException, IllegalArgumentException 등)
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<CommonResponse<Void>> handleEtcException(Exception e) {
-        log.error("Post 처리 중 알 수 없는 예외 발생", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(CommonResponse.fail("서버 오류입니다. 잠시 후 다시 시도해주세요."));
-    }
 }

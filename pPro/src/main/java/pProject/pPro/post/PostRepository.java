@@ -77,7 +77,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 		""")
 		List<PostListDTO> findTop10ByViewCount(@Param("userId") Long userId, Pageable pageable);
 	@Query("""
-		    SELECT new pProject.pPro.post.DTO.PostListDTO(p,true)
+		    SELECT new pProject.pPro.post.DTO.PostListDTO(p,false)
 		    FROM PostEntity p
 		    ORDER BY p.viewCount DESC
 		""")

@@ -17,14 +17,13 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import pProject.pPro.EntityUtils;
+import pProject.pPro.ServiceUtils;
 import pProject.pPro.RoomUser.HostUserRepository;
 import pProject.pPro.RoomUser.DTO.RoomAddress;
 import pProject.pPro.User.UserRepository;
 import pProject.pPro.chat.ChatRepository;
 import pProject.pPro.chat.DTO.MessageResponseDTO;
 import pProject.pPro.entity.HostUserEntity;
-import pProject.pPro.entity.ImageStorageService;
 import pProject.pPro.entity.RoomEntity;
 import pProject.pPro.entity.UserEntity;
 import pProject.pPro.room.DTO.RoomDTO;
@@ -41,14 +40,13 @@ public class RoomService {
 	private final RoomRepository roomRepository;
 	private final HostUserRepository hostUserRepository;
 	private final ChatRepository chatRepository;
-	private final ImageStorageService imageStorageService;
 	private final BCryptPasswordEncoder passwordEncoder;
-	private final EntityUtils utils;
+	private final ServiceUtils utils;
 	// 방 생성
 	public RoomDTO createRoom(RoomDTO room, String email) {
 		UserEntity user = utils.findUser(email);
 		RoomEntity roomEntity = new RoomEntity(room);
-		roomEntity.setRoomImg(imageStorageService.saveImage(room.getRoomSaveImg()));
+		roomEntity.setRoomImg(utils.saveImage(room.getRoomSaveImg()));
 		roomEntity.setCreateUser(user);
 		roomEntity.setAddress(new RoomAddress(room.getSido(), room.getSigungu()));
 
@@ -62,7 +60,7 @@ public class RoomService {
 	}
 
 	public String savedImage(MultipartFile file) {
-		return imageStorageService.saveImage(file);
+		return utils.saveImage(file);
 	}
 
 	public RoomDTO findRoom(String roomId) {

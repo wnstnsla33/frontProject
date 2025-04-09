@@ -16,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
@@ -33,6 +34,7 @@ public class RoomEntity {
 	@Column(name = "room_id")
 	private String roomId;
 	private String roomTitle;
+	@Lob
 	private String roomContent;
 	private int roomMaxParticipants;
 	private int curPaticipants;

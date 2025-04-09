@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.EntityUtils;
+import pProject.pPro.ServiceUtils;
 import pProject.pPro.User.UserRepository;
 import pProject.pPro.User.UserService;
 import pProject.pPro.bookmark.exception.BookmarkErrorCode;
@@ -27,7 +27,7 @@ public class BookmarkService {
 
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
-	private final EntityUtils utils;
+	private final ServiceUtils utils;
 	public boolean toggle(Long postId, String email) {
 		UserEntity user = utils.findUser(email);
 		PostEntity post = utils.findPost(postId);

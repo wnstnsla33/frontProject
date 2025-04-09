@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import pProject.pPro.CommonResponse;
+import pProject.pPro.ControllerUtils;
 import pProject.pPro.User.DTO.*;
 import pProject.pPro.entity.UserEntity;
 import pProject.pPro.post.DTO.PassWordDTO;
@@ -18,7 +19,7 @@ import pProject.pPro.post.DTO.PassWordDTO;
 public class UserController {
 
     private final UserService userService;
-
+    private final ControllerUtils utils;
     void makeMessage(String methodName) {
         System.out.println("********************************" + methodName);
     }
@@ -41,7 +42,8 @@ public class UserController {
     // 내 정보 조회
     @GetMapping("/user")
     public ResponseEntity<CommonResponse<UserInfoDTO>> myInfo(@AuthenticationPrincipal UserDetails loginUser) {
-        UserEntity user = userService.findUserSync(loginUser.getUsername());
+    	if(loginUser==null)return ResponseEntity.ok(CommonResponse.success("미로그인 상태입니다."));
+        UserEntity user = userService.findUserSync(utils.findEmail(loginUser));
         return ResponseEntity.ok(CommonResponse.success("내 정보 조회 성공", new UserInfoDTO(user)));
     }
 
@@ -60,7 +62,7 @@ public class UserController {
             @ModelAttribute ProfileEditDTO profileEditDTO,
             @AuthenticationPrincipal UserDetails loginUser) {
         makeMessage("profileEdit");
-        UserEntity userInfo = userService.updateUser(profileEditDTO, loginUser.getUsername());
+        UserEntity userInfo = userService.updateUser(profileEditDTO, utils.findEmail(loginUser));
         return ResponseEntity.ok(CommonResponse.success("프로필 수정 성공", new UserInfoDTO(userInfo)));
     }
 
@@ -69,7 +71,7 @@ public class UserController {
     public ResponseEntity<CommonResponse<Void>> deleteUser(@AuthenticationPrincipal UserDetails loginUser,
                                                               @RequestBody PassWordDTO pwd) {
         makeMessage("deleteUser");
-        userService.deleteUser(loginUser.getUsername(), pwd.getPwd());
+        userService.deleteUser(utils.findEmail(loginUser), pwd.getPwd());
         return ResponseEntity.ok(CommonResponse.success("회원 탈퇴 완료"));
     }
 

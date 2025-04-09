@@ -20,4 +20,5 @@ public class ChatMessageDTO {
     private String roomId;
     private String senderName;
     private String message;
+    private String userImg;
 }

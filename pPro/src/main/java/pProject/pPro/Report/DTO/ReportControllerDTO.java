@@ -18,6 +18,9 @@ public class ReportControllerDTO<T> {
     public static <T> ReportControllerDTO<T> success(String message, T data) {
         return new ReportControllerDTO<>(true, message, data);
     }
+    public static <T> ReportControllerDTO<T> success(String message) {
+        return new ReportControllerDTO<>(true, message, null);
+    }
 
     // 실패용 static 생성자
     public static <T> ReportControllerDTO<T> fail(String message) {

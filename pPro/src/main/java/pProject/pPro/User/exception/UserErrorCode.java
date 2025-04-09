@@ -1,4 +1,4 @@
-package pProject.pPro.User.Exception;
+package pProject.pPro.User.exception;
 
 public enum UserErrorCode {
     EXIST_ID,

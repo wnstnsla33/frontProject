@@ -14,7 +14,7 @@ import pProject.pPro.entity.ChatEntity;
 
 @Repository
 public interface ChatRepository extends JpaRepository<ChatEntity, Long>{
-	@Query("select c from ChatEntity c where c.room.roomId=:roomId")
+	@Query("select c from ChatEntity c join fetch c.user u  where c.room.roomId=:roomId")
 	List<ChatEntity> chatListByRoom(@Param("roomId")String roomId);
 	@Query("SELECT c FROM ChatEntity c JOIN FETCH c.room r " +
 		       "WHERE c.user.userId = :userId AND LOWER(r.roomTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) " +

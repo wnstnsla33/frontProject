@@ -17,7 +17,7 @@ import pProject.pPro.entity.UserEntity;
 public interface ReportRepository extends JpaRepository<ReportEntity, Long> {
 
 	@Query("select r from ReportEntity r join fetch r.reporter join fetch r.reportedUser "
-			+ "where r.reporter.userId = :reportId")
+			+ "where r.reportId = :reportId")
 	Optional<ReportEntity> findReport(@Param("reportId") Long reportId);
 
 	@Query("select r from ReportEntity r join fetch r.reporter rep " +
@@ -29,7 +29,7 @@ public interface ReportRepository extends JpaRepository<ReportEntity, Long> {
 
 	@Query("select count(r) > 0 from ReportEntity r " +
 		       "where r.reporter = :reporterId and r.targetId = :targetId and r.targetType = :targetType")
-		boolean isAlreadyReported(@Param("reporterId") Long id,
+		boolean isAlreadyReported(@Param("reporterId") UserEntity user,
 		                          @Param("targetId") String targetId,
 		                          @Param("targetType") ReportTargetType targetType);
 	

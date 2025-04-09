@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,15 +19,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import pProject.pPro.EntityUtils;
+import pProject.pPro.ServiceUtils;
 import pProject.pPro.User.UserRepository;
-import pProject.pPro.User.Exception.UserErrorCode;
-import pProject.pPro.User.Exception.UserException;
+import pProject.pPro.User.exception.UserErrorCode;
+import pProject.pPro.User.exception.UserException;
 import pProject.pPro.bookmark.BookmarkRepository;
 import pProject.pPro.entity.BookmarkEntity;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.UserEntity;
 import pProject.pPro.post.DTO.PostListDTO;
+import pProject.pPro.post.DTO.PostPageDTO;
 import pProject.pPro.post.DTO.WritePostDTO;
 import pProject.pPro.post.exception.PostErrorCode;
 import pProject.pPro.post.exception.PostException;
@@ -37,12 +39,11 @@ import pProject.pPro.post.exception.PostException;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
     private final BookmarkRepository bookmarkRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final PostMapper postMapper;
-    private final EntityUtils utils;
-    public List<PostListDTO> getPostList(String email, int page, int sortNumber, String keyword) {
+//    private final PostMapper postMapper;
+    private final ServiceUtils utils;
+    public PostPageDTO getPostList(String email, int page, int sortNumber, String keyword) {
         int pageSize = 10;
         Pageable pageable = switch (sortNumber) {
             case 1 -> PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
@@ -51,16 +52,17 @@ public class PostService {
             default -> PageRequest.of(page, pageSize);
         };
 
-        Optional<UserEntity> user = userRepository.findByEmail(email);
+        Optional<UserEntity> user =  utils.findUserOptional(email);
         if (user.isPresent()) {
             Page<PostListDTO> postList = postRepository.findPostsWithBookmarkInfo(user.get().getUserId(), keyword, pageable);
-            return postList.getContent();
+            return new PostPageDTO(postList.getContent(), postList.getTotalPages());
         }
         Page<PostEntity> postList = postRepository.findPosts(keyword, pageable);
-        return postList.getContent().stream().map(PostListDTO::new).toList();
+        List<PostListDTO> list =  postList.getContent().stream().map(PostListDTO::new).toList();
+        return new PostPageDTO(list, postList.getTotalPages());
     }
 
-    public List<PostListDTO> getPostBookmarkList(String email, int page, int sortNumber) {
+    public PostPageDTO getPostBookmarkList(String email, int page, int sortNumber) {
         int pageSize = 10;
         Pageable pageable = switch (sortNumber) {
             case 1 -> PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
@@ -69,7 +71,7 @@ public class PostService {
             default -> PageRequest.of(page, pageSize);
         };
         Page<PostListDTO> postList = bookmarkRepository.bookmarkListByUser(email, pageable);
-        return postList.getContent();
+        return new PostPageDTO(postList.getContent(),postList.getTotalPages());
     }
 
     public void writePost(WritePostDTO writePostDTO, String email) {
@@ -137,9 +139,7 @@ public class PostService {
 	}
 
     public List<PostListDTO> getMyPostList(String email) {
-        Long id = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(UserErrorCode.INVALID_EMAIL))
-                .getUserId();
+        Long id = utils.findUser(email).getUserId();
         List<PostEntity> postEntities = postRepository.getMyPostList(id);
         return postEntities.stream()
                 .map(post -> {
@@ -149,7 +149,11 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    public String saveImg(MultipartFile file) {
+    	return utils.saveImage(file);
+    }
     public List<PostListDTO> getTop10Posts(String email) {
+    	Long id;
         PageRequest top10 = PageRequest.of(0, 10);
         if (email == null) {
             return postRepository.findTop10ByViewCount(top10);

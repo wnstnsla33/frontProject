@@ -37,7 +37,10 @@ public class ChatController {
 	@MessageMapping("/chat/delete")
 	public void deleteChat(ChatMessageDTO message,Principal principal) {
 		log.info("메시지 수신(delete): {}", message);
-		redisPublisher.publish(message.getRoomId().toString(), message);
+		//첫방문이면 방문하였습니다 메세지
+		boolean isHost = chatService.isHost(message.getRoomId(), principal.getName());
+		if(!isHost)redisPublisher.publish(message.getRoomId().toString(), message);
+		
 	}
 	
 }

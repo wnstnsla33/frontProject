@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.EntityUtils;
+import pProject.pPro.ServiceUtils;
 import pProject.pPro.Admin.dto.AdminUserDTO;
 import pProject.pPro.Admin.dto.SearchDTO;
 import pProject.pPro.Admin.dto.UserChatByAdmin;
@@ -45,7 +45,7 @@ public class AdminService {
 	private final ReplyRepository replyRepository;
 	private final HostUserRepository hostUserRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
-	private final EntityUtils utils;
+	private final ServiceUtils utils;
 	public void deleteUserById(Long id) {
 			userRepository.deleteById(id);
 	}

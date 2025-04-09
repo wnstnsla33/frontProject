@@ -1,4 +1,4 @@
-package pProject.pPro.User.Exception;
+package pProject.pPro.User.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,6 @@ public class UserExceptionHandler {
 	public ResponseEntity<CommonResponse<Void>> handleUserException(UserException e) {
 	    log.warn("UserException 발생: {}", e.getErrorCode());
 
-	    // customMessage가 있으면 우선 사용
 	    String message = (e.getCustomMessage() != null) ? e.getCustomMessage() : switch (e.getErrorCode()) {
 	        case EXIST_ID -> "이미 존재하는 아이디입니다.";
 	        case NO_EXIST_ID, INVALID_ID -> "존재하지 않는 아이디입니다.";
@@ -30,12 +29,14 @@ public class UserExceptionHandler {
 	    };
 
 	    HttpStatus status = switch (e.getErrorCode()) {
-	        case EXIST_ID -> HttpStatus.CONFLICT;
-	        case NO_EXIST_ID, INVALID_ID, INVALID_EMAIL -> HttpStatus.NOT_FOUND;
-	        case INVALID_PASSWORD -> HttpStatus.UNAUTHORIZED;
-	        case INVALID_BIRTH_DAY, INVALID_NAME, ISSOCIAL -> HttpStatus.BAD_REQUEST;
-	        default -> HttpStatus.INTERNAL_SERVER_ERROR;
-	    };
+	    case EXIST_ID -> HttpStatus.CONFLICT;
+	    case NO_EXIST_ID, INVALID_ID, INVALID_EMAIL -> HttpStatus.NOT_FOUND;
+	    case INVALID_PASSWORD -> HttpStatus.UNAUTHORIZED;
+	    case INVALID_BIRTH_DAY, INVALID_NAME, ISSOCIAL -> HttpStatus.BAD_REQUEST;
+	    case REQUIRED_LOGIN -> HttpStatus.FORBIDDEN; // ✅ 추가
+	    default -> HttpStatus.INTERNAL_SERVER_ERROR;
+	};
+
 
 	    return ResponseEntity.status(status)
 	            .body(CommonResponse.fail(message));

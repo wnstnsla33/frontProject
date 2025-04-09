@@ -9,16 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.EntityUtils;
+import pProject.pPro.ServiceUtils;
 import pProject.pPro.User.UserRepository;
+import pProject.pPro.User.exception.UserErrorCode;
+import pProject.pPro.User.exception.UserException;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.ReplyEntity;
 import pProject.pPro.entity.UserEntity;
 import pProject.pPro.post.PostRepository;
 import pProject.pPro.post.exception.PostException;
 import pProject.pPro.post.exception.PostErrorCode;
-import pProject.pPro.User.Exception.UserException;
-import pProject.pPro.User.Exception.UserErrorCode;
 import pProject.pPro.reply.DTO.ReplyListDTO;
 import pProject.pPro.reply.DTO.ReplyRegDTO;
 import pProject.pPro.reply.exception.ReplyException;
@@ -29,10 +29,8 @@ import pProject.pPro.reply.exception.ReplyErrorCode;
 @RequiredArgsConstructor
 public class ReplyService {
 
-	private final UserRepository userRepository;
-	private final PostRepository postRepository;
 	private final ReplyRepository replyRepository;
-	private final EntityUtils utils;
+	private final ServiceUtils utils;
 	public ReplyListDTO saveReply(Long postId, ReplyRegDTO replyRegDTO, String email) {
 		UserEntity user = utils.findUser(email);
 		PostEntity post = utils.findPost(postId);

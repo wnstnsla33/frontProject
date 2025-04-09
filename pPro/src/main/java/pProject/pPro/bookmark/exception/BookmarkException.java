@@ -1,6 +1,6 @@
 package pProject.pPro.bookmark.exception;
 
-import pProject.pPro.User.Exception.UserErrorCode;
+import pProject.pPro.User.exception.UserErrorCode;
 
 public class BookmarkException extends RuntimeException{
 	 private final BookmarkErrorCode errorCode;

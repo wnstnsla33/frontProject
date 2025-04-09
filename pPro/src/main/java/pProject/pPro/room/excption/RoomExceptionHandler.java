@@ -40,10 +40,4 @@ public class RoomExceptionHandler {
                 .body(CommonResponse.fail(message));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<CommonResponse<Void>> handleUnknownException(Exception e) {
-        log.error("Room 처리 중 알 수 없는 예외 발생", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(CommonResponse.fail("서버 오류입니다. 잠시 후 다시 시도해주세요."));
-    }
 }

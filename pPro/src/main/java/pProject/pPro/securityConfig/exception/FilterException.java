@@ -1,23 +1,21 @@
-package pProject.pPro.post.exception;
+package pProject.pPro.securityConfig.exception;
 
 import lombok.Getter;
-import pProject.pPro.User.exception.UserErrorCode;
 
 @Getter
-
-public class PostException extends RuntimeException{
-	  private final PostErrorCode errorCode;
+public class FilterException extends RuntimeException{
+	  private final FilterErrorCode errorCode;
 	    private final String customMessage;
 
 	    // 에러 코드만 전달 (기본 메시지 사용)
-	    public PostException(PostErrorCode errorCode) {
+	    public FilterException(FilterErrorCode errorCode) {
 	        super(errorCode.name());
 	        this.errorCode = errorCode;
 	        this.customMessage = null;
 	    }
 
 	    // 에러 코드 + 사용자 정의 메시지 전달
-	    public PostException(PostErrorCode errorCode, String customMessage) {
+	    public FilterException(FilterErrorCode errorCode, String customMessage) {
 	        super(customMessage);
 	        this.errorCode = errorCode;
 	        this.customMessage = customMessage;

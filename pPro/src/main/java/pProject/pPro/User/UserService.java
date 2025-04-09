@@ -15,15 +15,14 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.EntityUtils;
+import pProject.pPro.ServiceUtils;
 import pProject.pPro.User.DTO.ProfileEditDTO;
 import pProject.pPro.User.DTO.SignupLoginDTO;
 import pProject.pPro.User.DTO.UserInfoDTO;
-import pProject.pPro.User.Exception.UserErrorCode;
-import pProject.pPro.User.Exception.UserException;
+import pProject.pPro.User.exception.UserErrorCode;
+import pProject.pPro.User.exception.UserException;
 import pProject.pPro.entity.Address;
 import pProject.pPro.entity.Grade;
-import pProject.pPro.entity.ImageStorageService;
 import pProject.pPro.entity.UserEntity;
 
 @Service
@@ -32,8 +31,7 @@ import pProject.pPro.entity.UserEntity;
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final ImageStorageService imageStorageService;
-    private final EntityUtils utils;
+    private final ServiceUtils utils;
     public String createKey() {
         int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
@@ -71,16 +69,14 @@ public class UserService {
     }
 
     public void loginUser(SignupLoginDTO dto) {
-        UserEntity user = userRepository.findByEmail(dto.getEmail())
-            .orElseThrow(() -> new UserException(UserErrorCode.NO_EXIST_ID));
-
+        UserEntity user = utils.findUser(dto.getEmail());
         if (!passwordEncoder.matches(dto.getPassword(), user.getUserPassword())) {
             throw new UserException(UserErrorCode.INVALID_PASSWORD);
         }
     }
 
     public UserEntity expUp(String email) {
-        UserEntity user = userRepository.findByEmail(email).get();
+        UserEntity user = utils.findUser(email);
         int exp = user.getUserExp() + 20;
         if (exp >= 100) {
             user.setUserLevel(user.getUserLevel() + 1);
@@ -130,10 +126,7 @@ public class UserService {
         if (utils.isSocialAccount(dto.getUserEmail())) {
             throw new UserException(UserErrorCode.ISSOCIAL);
         }
-
-        UserEntity user = userRepository.findByEmail(dto.getUserEmail())
-            .orElseThrow(() -> new UserException(UserErrorCode.INVALID_EMAIL));
-
+        UserEntity user = utils.findUser(dto.getUserEmail());
         if (!user.getUserName().equals(dto.getUserName())) {
             throw new UserException(UserErrorCode.INVALID_NAME);
         }
@@ -157,7 +150,7 @@ public class UserService {
         if (dto.getUserInfo() != null) user.setUserInfo(dto.getUserInfo());
         if (dto.getUserImg() != null) {
             try {
-                user.setUserImg(imageStorageService.saveImage(dto.getUserImg()));
+                user.setUserImg(utils.saveImage(dto.getUserImg()));
             } catch (Exception e) {
                 e.printStackTrace();
             }

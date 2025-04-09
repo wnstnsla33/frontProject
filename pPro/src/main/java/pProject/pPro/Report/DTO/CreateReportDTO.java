@@ -4,16 +4,16 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import pProject.pPro.Report.ReportTargetType;
 @Getter
 @Setter
 @NoArgsConstructor
-
+@ToString
 public class CreateReportDTO {
 		@NotNull
 	 	private String targetId;
 
-	    // 신고 대상 타입 (예: POST, COMMENT, CHAT, USER)
 		@NotNull
 	    private ReportTargetType targetType;
 

@@ -32,17 +32,18 @@ public class ReportResponseDTO {
 	private int reportedCount;
 	// 상태, 날짜
 	private ReportStatus status;
+	private String chatText;
 	private LocalDateTime createdAt;
-	
+	private String parentId;
 	public ReportResponseDTO(ReportEntity report) {
 		this.reportId = report.getReportId();
-
+		this.parentId = report.getParentId();
 		this.reporterId = report.getReporter().getUserId();
-		this.reporterEmail = report.getReporter().getUserNickName();
+		this.reporterNickName = report.getReporter().getUserNickName();
 		this.reportedCount = report.getReportedUser().getReportedCount();
 		this.reportedUserId = report.getReportedUser().getUserId();
 		this.reportedUserNickName = report.getReportedUser().getUserNickName();
-		
+		this.chatText = report.getChatText();
 		this.targetId = report.getTargetId();
 		this.targetType = report.getTargetType();
 		this.reason = report.getReason();

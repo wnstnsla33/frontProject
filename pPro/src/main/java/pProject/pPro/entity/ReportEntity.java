@@ -33,6 +33,7 @@ public class ReportEntity {
 	@JoinColumn(name = "reporter_id", nullable = false)
 	private UserEntity reporter;
 
+	private String chatText;
 	// 나를 신고한 사람 (신고 대상자, 선택적)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "reported_user_id")
@@ -44,6 +45,8 @@ public class ReportEntity {
 	
 	@Column(nullable = false)
 	private String reason;
+	
+	private String parentId;
 	
 	private String targetId;
 	@Enumerated(EnumType.STRING)

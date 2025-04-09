@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,6 +18,13 @@ import pProject.pPro.Admin.dto.UserChatByAdmin;
 import pProject.pPro.CommonResponse;
 import pProject.pPro.Admin.dto.AdminUserDTO;
 import pProject.pPro.Admin.dto.UserDetailByAdmimDTO;
+import pProject.pPro.Report.ReportService;
+import pProject.pPro.Report.ReportStatus;
+import pProject.pPro.Report.DTO.ReportControllerDTO;
+import pProject.pPro.Report.DTO.ReportPageDTO;
+import pProject.pPro.Report.DTO.ReportResponseDTO;
+import pProject.pPro.Report.DTO.ReportSearchDTO;
+import pProject.pPro.Report.DTO.ReportStatusDTO;
 import pProject.pPro.room.DTO.RoomDTO;
 import pProject.pPro.post.DTO.PostListDTO;
 
@@ -23,7 +32,7 @@ import pProject.pPro.post.DTO.PostListDTO;
 @RequiredArgsConstructor
 public class AdminController {
 	private final AdminService adminService;
-
+	private final ReportService reportService;
 	@GetMapping("/admin")
 	public ResponseEntity<?> getLoginUserRole() {
 		return ResponseEntity.ok(CommonResponse.success("관리자 권한 계정입니다"));
@@ -85,4 +94,26 @@ public class AdminController {
 		adminService.deleteRoomByAdmin(roomId);
 		return ResponseEntity.ok(CommonResponse.success("방이 삭제되었습니다."));
 	}
+	 // ✅ 2. 신고 단일 조회
+    @GetMapping("/admin/reports/{reportId}")
+    public ResponseEntity<ReportControllerDTO<ReportResponseDTO>> findReport(@PathVariable("reportId") Long id) {
+        ReportResponseDTO result = reportService.findReport(id);
+        return ResponseEntity.ok(ReportControllerDTO.success("신고 조회 성공", result));
+    }
+
+    // ✅ 3. 신고 상태 변경 (관리자)
+    @PutMapping("/admin/reports/{reportId}")
+    public ResponseEntity<ReportControllerDTO<ReportStatus>> updateStatus(@PathVariable("reportId") Long reportId,
+                                                                   @RequestBody ReportStatusDTO dto) {
+    	System.out.println(dto.getStatus()+"****************상태"+reportId
+    			);
+    	ReportStatus status =  reportService.updateStatus(dto.getStatus(), reportId);
+        return ResponseEntity.ok(ReportControllerDTO.success("신고 상태가 "+status+"로변경되었습니다.",status));
+    }
+
+    // ✅ 4. 관리자 신고 리스트 조회 (검색 + 페이징)
+    @GetMapping("/admin/reports")
+    public ResponseEntity<ReportControllerDTO<ReportPageDTO>> getReportList(@ModelAttribute ReportSearchDTO dto) {
+        return ResponseEntity.ok(ReportControllerDTO.success("신고 리스트 조회 성공", reportService.getReportList(dto)));
+    }
 }
