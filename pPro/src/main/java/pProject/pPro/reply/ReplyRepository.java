@@ -15,4 +15,7 @@ public interface ReplyRepository extends JpaRepository<ReplyEntity, Long>{
 	@Query("select r from ReplyEntity r join fetch r.user where r.post.postId = :postId and r.parent IS NULL")
 	List<ReplyEntity> findReplyByPost(@Param("postId") Long postId, Sort sort);
 
+	@Query("select count(r) from ReplyEntity r where r.user.userId=:userId")
+	Long replyCount(@Param("userId")Long userId);
+	
 }

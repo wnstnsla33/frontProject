@@ -10,5 +10,6 @@ public enum UserErrorCode {
     INVALID_NAME,
     ISSOCIAL,
     UNKNOWN,
-    REQUIRED_LOGIN;
+    REQUIRED_LOGIN,
+    EXIST_NICKNAME;
 }

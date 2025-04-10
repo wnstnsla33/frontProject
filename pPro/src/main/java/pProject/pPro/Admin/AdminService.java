@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import pProject.pPro.ServiceUtils;
 import pProject.pPro.Admin.dto.AdminUserDTO;
 import pProject.pPro.Admin.dto.SearchDTO;
@@ -34,6 +35,7 @@ import pProject.pPro.reply.ReplyRepository;
 import pProject.pPro.room.RoomRepository;
 import pProject.pPro.room.DTO.RoomDTO;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -46,11 +48,14 @@ public class AdminService {
 	private final HostUserRepository hostUserRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ServiceUtils utils;
+
 	public void deleteUserById(Long id) {
-			userRepository.deleteById(id);
+		log.info("********** deleteUserById() 호출 **********");
+		userRepository.deleteById(id);
 	}
 
 	public List<AdminUserDTO> getUserList(SearchDTO dto) {
+		log.info("********** getUserList() 호출 **********");
 		Pageable pageable = PageRequest.of(dto.getPage(), 10, Sort.by("userCreateDate").descending());
 		Page<UserEntity> pageResult = (dto.getName() != null && !dto.getName().isEmpty())
 				? userRepository.findByUserNameContainingIgnoreCase(dto.getName(), pageable)
@@ -59,11 +64,20 @@ public class AdminService {
 	}
 
 	public UserDetailByAdmimDTO getUserDetailInfo(Long userId) {
+		log.info("********** getUserDetailInfo() 호출 **********");
 		UserEntity user = utils.findUserById(userId);
-		return new UserDetailByAdmimDTO(user);
+		Long replyCount = replyRepository.replyCount(userId);
+		Long postCount = postRepository.postCount(userId);
+		Long hostCount = hostUserRepository.hostCount(userId);
+		UserDetailByAdmimDTO dto = new UserDetailByAdmimDTO(user);
+		dto.setPostCount(postCount);
+		dto.setReplyCount(replyCount);
+		dto.setRoomCount(hostCount);
+		return dto;
 	}
 
 	public List<PostListDTO> getPostListByAdmin(SearchDTO searchDTO) {
+		log.info("********** getPostListByAdmin() 호출 **********");
 		Pageable pageable = PageRequest.of(searchDTO.getPage(), 10, Sort.by("createDate").descending());
 		Page<PostEntity> pageResult = postRepository.searchPostsByAdmin(
 				searchDTO.getName() != null ? searchDTO.getName() : "", pageable);
@@ -71,29 +85,35 @@ public class AdminService {
 	}
 
 	public List<RoomDTO> getRoomListByAdmin(SearchDTO searchDTO) {
+		log.info("********** getRoomListByAdmin() 호출 **********");
 		Pageable pageable = PageRequest.of(searchDTO.getPage(), 10, Sort.by("roomCreatDate").descending());
 		Page<RoomEntity> pageResult = roomRepository.findAll(pageable);
 		return pageResult.getContent().stream().map(room -> new RoomDTO(room, true)).toList();
 	}
 
 	public List<RoomDTO> getUserRoomsByAdmin(Long userId) {
+		log.info("********** getUserRoomsByAdmin() 호출 **********");
 		List<HostUserEntity> hostRooms = hostUserRepository.findRoomsByUserId(userId);
 		return hostRooms.stream().map(hu -> new RoomDTO(hu, true)).toList();
 	}
 
 	public void deleteRoom(String roomId) {
-			roomRepository.deleteById(roomId);
+		log.info("********** deleteRoom() 호출 **********");
+		roomRepository.deleteById(roomId);
 	}
 
 	public void deletePostById(Long postId) {
-			postRepository.deleteById(postId);
+		log.info("********** deletePostById() 호출 **********");
+		postRepository.deleteById(postId);
 	}
 
 	public void deleteRoomByAdmin(String roomId) {
-			roomRepository.deleteById(roomId);
+		log.info("********** deleteRoomByAdmin() 호출 **********");
+		roomRepository.deleteById(roomId);
 	}
 
 	public List<UserChatByAdmin> getUserChatsByAdmin(Long userId, int page, String keyword) {
+		log.info("********** getUserChatsByAdmin() 호출 **********");
 		Pageable pageable = PageRequest.of(page, 20, Sort.by("createTime").descending());
 		Page<ChatEntity> chatPage = chatRepository.searchUserChatsWithRoomTitle(userId, keyword, pageable);
 		return chatPage.getContent().stream().map(UserChatByAdmin::new).toList();
@@ -101,6 +121,7 @@ public class AdminService {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void createAdmin() {
+		log.info("********** createAdmin() 호출 **********");
 		UserEntity user = new UserEntity();
 		user.setUserEmail("admin@naver.com");
 		user.setUserPassword(passwordEncoder.encode("adminadmin1234"));

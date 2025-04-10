@@ -15,7 +15,6 @@ public class UserDetailByAdmimDTO {
 	private long userId;
 	private String userEmail;
 	//암호화됨
-	private String userPassword;
 	
 	private String userNickName;
 	//실명
@@ -36,9 +35,11 @@ public class UserDetailByAdmimDTO {
 //	private String Hint;
 	
 	private String userImg;
-
+	private Long replyCount;
+	private Long postCount;
+	private Long roomCount;
 	private int userExp;
-
+	private int reportedCount;
 	private int userLevel;
 	private LocalDateTime recentLoginTime;
 	public UserDetailByAdmimDTO(UserEntity userEntity) {
@@ -53,10 +54,10 @@ public class UserDetailByAdmimDTO {
 		this.userCreateDate = userEntity.getUserCreateDate();
 		this.userSex = userEntity.getUserSex();
 		this.userInfo = userEntity.getUserInfo();
-//		this.Hint = userEntity.getHint();
 		this.userImg = userEntity.getUserImg();
 		this.userExp = userEntity.getUserExp();
 		this.userLevel = userEntity.getUserLevel();
 		this.recentLoginTime = userEntity.getRecentLoginTime();
+		this.reportedCount = userEntity.getReportedCount();
 	}
 }

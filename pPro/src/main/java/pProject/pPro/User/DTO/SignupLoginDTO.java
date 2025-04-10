@@ -3,6 +3,7 @@ package pProject.pPro.User.DTO;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,8 @@ public class SignupLoginDTO {
 	private String nickname;
 	@NotNull(message= "필수 값을 적어주세요")
 	private String realName;
+	@Min(value = 15,message = "15세 이상만 가입할 수 있습니다.")
+	private int age;
 	@NotNull(message= "필수 값을 적어주세요")
 	private LocalDate birthDate;
 	@NotNull(message= "필수 값을 적어주세요")

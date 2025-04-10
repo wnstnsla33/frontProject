@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import pProject.pPro.CommonResponse;
 import pProject.pPro.ControllerUtils;
 import pProject.pPro.User.UserService;
+import pProject.pPro.entity.UserEntity;
 import pProject.pPro.post.DTO.PassWordDTO;
 import pProject.pPro.post.DTO.PostListDTO;
 import pProject.pPro.post.DTO.PostPageDTO;
@@ -26,17 +27,13 @@ public class PostController {
 	private final PostService postService;
 	private final UserService userService;
 	private final ControllerUtils utils;
-	private void makeMessage(String methodName) {
-		System.out.println("********************************" + methodName);
-	}
 
 	@PostMapping("/post/new")
 	public ResponseEntity<?> newPost(@ModelAttribute WritePostDTO writePostDTO,
 	                                 @AuthenticationPrincipal UserDetails loginUser) {
-		makeMessage("newPost");
 		String email = utils.findEmail(loginUser);
-		userService.expUp(email);
-		postService.writePost(writePostDTO, email);
+		UserEntity user= userService.expUp(email);
+		postService.writePost(writePostDTO, user);
 		return ResponseEntity.ok(CommonResponse.success("정상적으로 등록되었습니다", null));
 	}
 
@@ -66,7 +63,6 @@ public class PostController {
 	public ResponseEntity<?> bookmarkPostList(@AuthenticationPrincipal UserDetails user,
 	                                          @RequestParam(value = "page", defaultValue = "0") int page,
 	                                          @RequestParam(value = "sortType", defaultValue = "1") int sortNumber) {
-		makeMessage("post/bookmark");
 		PostPageDTO list = postService.getPostBookmarkList(utils.findEmail(user), page - 1, sortNumber);
 		return ResponseEntity.ok(CommonResponse.success("북마크 게시글 조회 성공", list));
 	}
@@ -74,7 +70,6 @@ public class PostController {
 	@GetMapping("/post/{postId}")
 	public ResponseEntity<?> getPostDetail(@PathVariable("postId") long postId,
 	                                       @AuthenticationPrincipal UserDetails loginUser) {
-		makeMessage("post/postId");
 		String email = utils.findEmailOrNull(loginUser);
 		PostListDTO dto = postService.incrementAndGetPost(postId, email);
 		return ResponseEntity.ok(CommonResponse.success("게시글 상세 조회 성공", dto));
@@ -84,7 +79,6 @@ public class PostController {
 	public ResponseEntity<?> updatePost(@PathVariable("postId") long postId,
 	                                    @RequestBody PostListDTO updatePost,
 	                                    @AuthenticationPrincipal UserDetails loginUser) {
-		makeMessage("update post/postId");
 		PostListDTO updated = postService.updatePost(postId, updatePost, utils.findEmail(loginUser));
 		return ResponseEntity.ok(CommonResponse.success("게시글 수정 완료", updated));
 	}
@@ -92,7 +86,6 @@ public class PostController {
 	@DeleteMapping("/post/{postId}")
 	public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId,
 	                                    @AuthenticationPrincipal UserDetails loginUser) {
-		makeMessage("delete post/postId");
 		postService.deletePost(postId, utils.findEmail(loginUser));
 		return ResponseEntity.ok(CommonResponse.success("삭제되었습니다", null));
 	}
@@ -101,7 +94,6 @@ public class PostController {
 	public ResponseEntity<?> getSecretePost(@PathVariable("postId") Long postId,
 	                                        @RequestBody PassWordDTO passWordDTO,
 	                                        @AuthenticationPrincipal UserDetails user) {
-		makeMessage("secrete post/postId" + postId + passWordDTO.getPwd());
 		String email = utils.findEmailOrNull(user);
 		PostListDTO dto = postService.getSecretePost(postId, passWordDTO.getPwd(), email);
 		return ResponseEntity.ok(CommonResponse.success("비밀 게시글 조회 성공", dto));
@@ -109,7 +101,6 @@ public class PostController {
 
 	@GetMapping("/post/myPost")
 	public ResponseEntity<?> getMyPostLists(@AuthenticationPrincipal UserDetails user) {
-		makeMessage("내가 쓴 게시물 보기");
 		List<PostListDTO> list = postService.getMyPostList(utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("내 게시글 조회 성공", list));
 	}

@@ -20,14 +20,10 @@ public class UserController {
 
     private final UserService userService;
     private final ControllerUtils utils;
-    void makeMessage(String methodName) {
-        System.out.println("********************************" + methodName);
-    }
 
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<CommonResponse<Void>> login(@RequestBody SignupLoginDTO signupDTO) {
-        makeMessage("login");
         userService.loginUser(signupDTO);
         return ResponseEntity.ok(CommonResponse.success("로그인 성공"));
     }
@@ -35,6 +31,7 @@ public class UserController {
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<CommonResponse<Void>> signup(@RequestBody @Valid SignupLoginDTO dto) {
+    	
         userService.signup(dto);
         return ResponseEntity.ok(CommonResponse.success("회원가입 성공"));
     }
@@ -51,7 +48,6 @@ public class UserController {
     // 로그아웃
     @PostMapping("/auth/logout")
     public ResponseEntity<CommonResponse<Void>> logout(HttpServletResponse response) {
-        makeMessage("logout");
         userService.logout(response);
         return ResponseEntity.ok(CommonResponse.success("로그아웃 성공"));
     }
@@ -61,7 +57,6 @@ public class UserController {
     public ResponseEntity<CommonResponse<UserInfoDTO>> profileEdit(
             @ModelAttribute ProfileEditDTO profileEditDTO,
             @AuthenticationPrincipal UserDetails loginUser) {
-        makeMessage("profileEdit");
         UserEntity userInfo = userService.updateUser(profileEditDTO, utils.findEmail(loginUser));
         return ResponseEntity.ok(CommonResponse.success("프로필 수정 성공", new UserInfoDTO(userInfo)));
     }
@@ -70,7 +65,6 @@ public class UserController {
     @DeleteMapping("/user/delete")
     public ResponseEntity<CommonResponse<Void>> deleteUser(@AuthenticationPrincipal UserDetails loginUser,
                                                               @RequestBody PassWordDTO pwd) {
-        makeMessage("deleteUser");
         userService.deleteUser(utils.findEmail(loginUser), pwd.getPwd());
         return ResponseEntity.ok(CommonResponse.success("회원 탈퇴 완료"));
     }
@@ -78,7 +72,6 @@ public class UserController {
     // 아이디 찾기
     @PostMapping("/find/id")
     public ResponseEntity<CommonResponse<String>> findId(@RequestBody UserInfoDTO userInfoDTO) {
-        makeMessage("findId");
         String email = userService.findId(userInfoDTO);
         return ResponseEntity.ok(CommonResponse.success("아이디 찾기 성공", email));
     }
@@ -86,7 +79,6 @@ public class UserController {
     // 비밀번호 찾기
     @PostMapping("/find/pwd")
     public ResponseEntity<CommonResponse<String>> findPwd(@RequestBody UserInfoDTO userInfoDTO) {
-        makeMessage("findPwd");
         String result = userService.findPwd(userInfoDTO);
         return ResponseEntity.ok(CommonResponse.success("비밀번호 찾기 성공", result));
     }

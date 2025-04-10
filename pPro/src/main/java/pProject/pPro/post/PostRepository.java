@@ -91,4 +91,6 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 		""")
 		Page<PostEntity> searchPostsByAdmin(@Param("keyword") String keyword, Pageable pageable);
 
+	@Query("select count(p) from PostEntity p where p.user.userId =:userId")
+	Long postCount(@Param("userId")Long userId);
 }

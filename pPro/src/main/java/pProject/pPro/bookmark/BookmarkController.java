@@ -29,9 +29,8 @@ public class BookmarkController {
 	@PostMapping("/post/bookmark/{postId}")
 	@Transactional
 	public ResponseEntity postRemoveBookmark(@PathVariable("postId")Long postId,@AuthenticationPrincipal UserDetails loginUser) {
-		boolean isBookmarked = bookmarkService.toggle(postId, utils.findEmail(loginUser));
-		PostEntity updatePost = postService.incrementBookmarkCount(postId, isBookmarked);
-		return ResponseEntity.ok(CommonResponse.success("북마크 되었습니다.",new PostBookmarkResponseDTO(updatePost, isBookmarked)));
+		PostBookmarkResponseDTO post = bookmarkService.toggle(postId, utils.findEmail(loginUser));
+		return ResponseEntity.ok(CommonResponse.success("북마크 되었습니다.",post));
 	}
 	
 }

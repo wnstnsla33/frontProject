@@ -24,20 +24,16 @@ public class ChatController {
 	
 	@MessageMapping("/chat/message")
 	public void message(ChatMessageDTO message,Principal principal) {
-		log.info("메시지 수신: {}", message);
 		// 실시간 전송
 		redisPublisher.publish(message.getRoomId().toString(), message);
 		chatService.saveMessage(message, principal.getName());
 	}
 	@MessageMapping("/chat/enter")
 	public void enterChat(ChatMessageDTO message,Principal principal) {
-		log.info("메시지 수신(enter): {}", message);
 		redisPublisher.publish(message.getRoomId().toString(), message);
 	}
 	@MessageMapping("/chat/delete")
 	public void deleteChat(ChatMessageDTO message,Principal principal) {
-		log.info("메시지 수신(delete): {}", message);
-		//첫방문이면 방문하였습니다 메세지
 		boolean isHost = chatService.isHost(message.getRoomId(), principal.getName());
 		if(!isHost)redisPublisher.publish(message.getRoomId().toString(), message);
 		

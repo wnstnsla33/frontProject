@@ -17,6 +17,8 @@ import pProject.pPro.room.DTO.SearchRoomDTO;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequiredArgsConstructor
 public class RoomController {
@@ -24,7 +26,7 @@ public class RoomController {
 	private final RoomService roomService;
 	private final ControllerUtils utils;
 	@PostMapping("/chatRoom")
-	public ResponseEntity<?> createRoom(@ModelAttribute RoomDTO dto,
+	public ResponseEntity<?> createRoom(@ModelAttribute @Valid RoomDTO dto,
 	                                    @AuthenticationPrincipal UserDetails user) {
 		RoomDTO createdRoom = roomService.createRoom(dto, utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방이 생성되었습니다", createdRoom));

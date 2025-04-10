@@ -105,8 +105,6 @@ public class AdminController {
     @PutMapping("/admin/reports/{reportId}")
     public ResponseEntity<ReportControllerDTO<ReportStatus>> updateStatus(@PathVariable("reportId") Long reportId,
                                                                    @RequestBody ReportStatusDTO dto) {
-    	System.out.println(dto.getStatus()+"****************상태"+reportId
-    			);
     	ReportStatus status =  reportService.updateStatus(dto.getStatus(), reportId);
         return ResponseEntity.ok(ReportControllerDTO.success("신고 상태가 "+status+"로변경되었습니다.",status));
     }

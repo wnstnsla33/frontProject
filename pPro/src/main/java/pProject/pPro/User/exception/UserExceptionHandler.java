@@ -26,10 +26,11 @@ public class UserExceptionHandler {
 	        case ISSOCIAL -> "소셜 계정은 해당 기능을 사용할 수 없습니다.";
 	        case UNKNOWN -> "서버 오류입니다. 잠시 후 다시 시도해주세요.";
 	        case REQUIRED_LOGIN ->"로그인이 필요한 서비스입니다.";
+	        case EXIST_NICKNAME ->"중복 닉네임이 있습니다.";
 	    };
 
 	    HttpStatus status = switch (e.getErrorCode()) {
-	    case EXIST_ID -> HttpStatus.CONFLICT;
+	    case EXIST_ID,EXIST_NICKNAME -> HttpStatus.CONFLICT;
 	    case NO_EXIST_ID, INVALID_ID, INVALID_EMAIL -> HttpStatus.NOT_FOUND;
 	    case INVALID_PASSWORD -> HttpStatus.UNAUTHORIZED;
 	    case INVALID_BIRTH_DAY, INVALID_NAME, ISSOCIAL -> HttpStatus.BAD_REQUEST;

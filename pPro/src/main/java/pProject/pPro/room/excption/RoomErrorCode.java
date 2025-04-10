@@ -9,5 +9,6 @@ public enum RoomErrorCode {
 	    NO_PERMISSION,
 	    NOT_JOINED,
 	    UNKNOWN_ERROR,
-	    INVALID_ID
+	    INVALID_ID,
+	    DUPLICATE_ROOM
 }

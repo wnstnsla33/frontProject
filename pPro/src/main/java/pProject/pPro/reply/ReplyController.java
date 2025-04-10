@@ -26,15 +26,12 @@ public class ReplyController {
 	@PostMapping("/post/{postId}/reply")
 	public ResponseEntity<?> createReply(@PathVariable("postId") Long postId, @AuthenticationPrincipal UserDetails user,
 			@RequestBody ReplyRegDTO replyRegDTO) {
-		System.out.println("댓글생성");
 		ReplyListDTO result = replyService.saveReply(postId, replyRegDTO, utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("댓글이 등록되었습니다.", result));
 	}
 
 	@GetMapping("/post/{postId}/reply")
 	public ResponseEntity<?> findReplyList(@PathVariable("postId") Long postId) {
-		System.out.println("댓글보기");
-		System.out.println("UserException 클래스: " + UserException.class.getClassLoader());
 		List<ReplyListDTO> replyList = replyService.findReplyByPost(postId);
 		return ResponseEntity.ok(CommonResponse.success("댓글 목록 조회 성공", replyList));
 	}
@@ -42,7 +39,6 @@ public class ReplyController {
 	@DeleteMapping("/post/{postId}/{replyId}")
 	public ResponseEntity<?> deleteReply(@PathVariable("postId") Long postId, @PathVariable("replyId") Long replyId,
 			@AuthenticationPrincipal UserDetails user) {
-		System.out.println("댓글지우기");
 		replyService.deleteReply(postId, replyId, utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("댓글이 삭제되었습니다."));
 	}
@@ -50,7 +46,6 @@ public class ReplyController {
 	@PutMapping("/post/{replyId}/reply")
 	public ResponseEntity<?> updateReply(@PathVariable("replyId") Long replyId,
 			@AuthenticationPrincipal UserDetails user, @RequestBody ReplyRegDTO replyRegDTO) {
-		System.out.println("댓글 수정하기");
 		ReplyListDTO updated = replyService.updateReply(replyId, replyRegDTO.getContent(), utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("댓글이 수정되었습니다.", updated));
 	}
