@@ -17,7 +17,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import pProject.pPro.ServiceUtils;
 import pProject.pPro.User.DTO.ProfileEditDTO;
 import pProject.pPro.User.DTO.SignupLoginDTO;
 import pProject.pPro.User.DTO.UserDetailDTO;
@@ -27,6 +26,7 @@ import pProject.pPro.User.exception.UserException;
 import pProject.pPro.entity.Address;
 import pProject.pPro.entity.Grade;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.ServiceUtils;
 @Slf4j
 @Service
 @Transactional

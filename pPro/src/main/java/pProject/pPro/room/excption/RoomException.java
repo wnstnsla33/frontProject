@@ -1,27 +1,13 @@
 package pProject.pPro.room.excption;
 
-public class RoomException extends RuntimeException {
+import pProject.pPro.User.exception.UserErrorCode;
+import pProject.pPro.global.CustomException;
 
-    private final RoomErrorCode errorCode;
-    private final String customMessage;
-
+public class RoomException extends CustomException {
     public RoomException(RoomErrorCode errorCode) {
-        super(errorCode.name());
-        this.errorCode = errorCode;
-        this.customMessage = null;
+        super(errorCode);
     }
-
     public RoomException(RoomErrorCode errorCode, String customMessage) {
-        super(customMessage);
-        this.errorCode = errorCode;
-        this.customMessage = customMessage;
-    }
-
-    public RoomErrorCode getErrorCode() {
-        return errorCode;
-    }
-
-    public String getCustomMessage() {
-        return customMessage;
+        super(errorCode, customMessage);
     }
 }

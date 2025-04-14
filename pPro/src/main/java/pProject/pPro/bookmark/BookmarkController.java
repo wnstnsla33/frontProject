@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.CommonResponse;
-import pProject.pPro.ControllerUtils;
 import pProject.pPro.bookmark.DTO.PostBookmarkResponseDTO;
 import pProject.pPro.entity.BookmarkEntity;
 import pProject.pPro.entity.PostEntity;
+import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.post.PostService;
 
 @RestController

@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.CommonResponse;
-import pProject.pPro.ControllerUtils;
 import pProject.pPro.User.UserService;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.post.DTO.PassWordDTO;
 import pProject.pPro.post.DTO.PostListDTO;
 import pProject.pPro.post.DTO.PostPageDTO;

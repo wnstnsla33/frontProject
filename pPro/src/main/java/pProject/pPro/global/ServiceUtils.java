@@ -1,4 +1,4 @@
-package pProject.pPro;
+package pProject.pPro.global;
 
 import java.io.File;
 import java.util.Optional;
@@ -97,26 +97,7 @@ public class ServiceUtils {
 
 	private static final String UPLOAD_DIR = "C:/myproject/uploads/";
 
-	public String saveImage(MultipartFile imageFile) {
-		File dir = new File(UPLOAD_DIR);
-		if (!dir.exists())
-			dir.mkdirs();
-
-		String originalFilename = imageFile.getOriginalFilename();
-		String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-		String savedFileName = UUID.randomUUID() + extension;
-
-		File savedFile = new File(UPLOAD_DIR + savedFileName);
-		try {
-
-			imageFile.transferTo(savedFile);
-		} catch (Exception e) {
-			e.printStackTrace();
-			// TODO: handle exception
-		}
-
-		return "/uploads/" + savedFileName;
-	}
+	
 
 	public UserEntity findUser(String email, String errMsg) {
 		return userRepository.findByEmail(email)
@@ -153,5 +134,30 @@ public class ServiceUtils {
 	
 	public FriendsEntity findFriendsEntity(Long fId) {
 		return friendsRepository.findById(fId).orElseThrow(()->new FriendsException(FriendsErrorCode.NOT_FOUND_FRIENDS_ID));
+	}
+	
+	public HostUserEntity findHostUser(String rId,Long userId) {
+		return hostUserRepository.findLoginId(rId, userId).orElseThrow(()->new RoomException(RoomErrorCode.INVALID_ID));
+	}
+	
+	public String saveImage(MultipartFile imageFile) {
+		File dir = new File(UPLOAD_DIR);
+		if (!dir.exists())
+			dir.mkdirs();
+
+		String originalFilename = imageFile.getOriginalFilename();
+		String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+		String savedFileName = UUID.randomUUID() + extension;
+
+		File savedFile = new File(UPLOAD_DIR + savedFileName);
+		try {
+
+			imageFile.transferTo(savedFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO: handle exception
+		}
+
+		return "/uploads/" + savedFileName;
 	}
 }

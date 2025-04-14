@@ -18,8 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import pProject.pPro.ServiceUtils;
 import pProject.pPro.RoomUser.HostUserRepository;
+import pProject.pPro.RoomUser.DTO.HostUserStatus;
 import pProject.pPro.RoomUser.DTO.RoomAddress;
 import pProject.pPro.User.UserRepository;
 import pProject.pPro.chat.ChatRepository;
@@ -27,6 +27,7 @@ import pProject.pPro.chat.DTO.MessageResponseDTO;
 import pProject.pPro.entity.HostUserEntity;
 import pProject.pPro.entity.RoomEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.room.DTO.RoomDTO;
 import pProject.pPro.room.DTO.RoomWithChatDTO;
 import pProject.pPro.room.DTO.SearchRoomDTO;
@@ -97,83 +98,127 @@ public class RoomService {
 				.map(RoomDTO::new);
 	}
 
+	public Page<RoomDTO> searchRooms(SearchRoomDTO dto, String email) {
+		UserEntity user = utils.findUser(email);
+		dto.setSido(user.getAddress().getSido());
+		dto.setSigungu(user.getAddress().getSigungu());
+		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by("roomCreatDate").descending());
+		return roomRepository.searchRooms(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
+				.map(RoomDTO::new);
+	}
+
 	public RoomWithChatDTO joinRoom(String roomId, String email) {
-		log.info("********** joinRoom() 호출 - roomId: {}, email: {} **********", roomId, email);
+		log.info("🔔 joinRoom() 호출 - roomId: {}, email: {}", roomId, email);
 
 		boolean isAdmin = email.equals("admin@naver.com");
 		UserEntity user = utils.findUser(email);
-		Optional<HostUserEntity> findHostUser = hostUserRepository.findLoginEmail(roomId, user.getUserId());
-		RoomEntity room = roomRepository.fetchRoomWithHostUsers(roomId).orElseThrow(()->new RoomException(RoomErrorCode.INVALID_ID));
-		if (findHostUser.isPresent()) {
-			List<MessageResponseDTO> messages = chatRepository.chatListByRoom(roomId).stream()
-					.map(MessageResponseDTO::new).collect(Collectors.toList());
-			return new RoomWithChatDTO(messages, new RoomDTO(room));
+		RoomEntity room = roomRepository.fetchRoomWithHostUsers(roomId)
+				.orElseThrow(() -> new RoomException(RoomErrorCode.INVALID_ID));
+
+		Optional<HostUserEntity> optionalHostUser = hostUserRepository.findLoginId(roomId, user.getUserId());
+
+		HostUserEntity hostUser;
+
+		if (optionalHostUser.isPresent()) {
+			hostUser = optionalHostUser.get();
+			switch (hostUser.getStatus()) {
+			case BANNED -> throw new RoomException(RoomErrorCode.ISBANNED);
+			case LEFT -> {
+				if (!isAdmin && room.getRoomMaxParticipants() <= room.getCurPaticipants()) {
+					throw new RoomException(RoomErrorCode.FULL_CAPACITY);
+				}
+				hostUser.setStatus(HostUserStatus.JOINED);
+				room.getHostUsers().add(hostUser);
+				room.setCurPaticipants(room.getCurPaticipants() + 1);
+			}
+			case JOINED -> {
+			}
+			}
+		} else {
+			if (!isAdmin && room.getRoomMaxParticipants() <= room.getCurPaticipants()) {
+				throw new RoomException(RoomErrorCode.FULL_CAPACITY);
+			}
+			hostUser = hostUserRepository.save(new HostUserEntity(room, user));
+			room.getHostUsers().add(hostUser); // ✅ 새로운 유저는 당연히 넣어줘야 함
+			if (!isAdmin)
+				room.setCurPaticipants(room.getCurPaticipants() + 1);
 		}
 
-		if (!isAdmin && room.getRoomMaxParticipants() <= room.getCurPaticipants()) {
-			log.warn("🚫 방 인원 초과 - roomId: {}", roomId);
-			throw new RoomException(RoomErrorCode.FULL_CAPACITY);
-		}
+		List<MessageResponseDTO> messages = chatRepository.chatListByRoom(roomId).stream().map(MessageResponseDTO::new)
+				.toList();
 
-		HostUserEntity hostUser = hostUserRepository.save(new HostUserEntity(room, user));
-		if (!isAdmin) 
-			room.setCurPaticipants(room.getCurPaticipants() + 1);
-		room.getHostUsers().add(hostUser);
-		List<MessageResponseDTO> messages = chatRepository.chatListByRoom(roomId).stream()
-				.map(MessageResponseDTO::new).collect(Collectors.toList());
 		return new RoomWithChatDTO(messages, new RoomDTO(room));
 	}
 
-	public RoomDTO joinPwdRoom(String roomId, String email, String pwd) {
-		log.info("********** joinPwdRoom() 호출 - roomId: {}, email: {} **********", roomId, email);
+	public RoomWithChatDTO joinPwdRoom(String roomId, String email, String pwd) {
 		UserEntity user = utils.findUser(email);
-		RoomEntity room = roomRepository.fetchRoomWithHostUsers(roomId).orElseThrow(()->new RoomException(RoomErrorCode.INVALID_ID));
+		RoomEntity room = roomRepository.fetchRoomWithHostUsers(roomId)
+				.orElseThrow(() -> new RoomException(RoomErrorCode.INVALID_ID));
+
 		if (!passwordEncoder.matches(pwd, room.getSecretePassword())) {
 			throw new RoomException(RoomErrorCode.INVALID_PASSWORD);
 		}
-		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, user.getUserId());
-		if (hostUser.isPresent()) {
-			log.info("⚠️ 이미 참여중인 유저 - 비밀방 - email: {}", email);
-			return new RoomDTO(room, true);
-		}
-		if (room.getRoomMaxParticipants() <= room.getCurPaticipants()) {
-			throw new RoomException(RoomErrorCode.FULL_CAPACITY);
+
+		Optional<HostUserEntity> optionalHostUser = hostUserRepository.findLoginId(roomId, user.getUserId());
+		HostUserEntity hostUser;
+		if (optionalHostUser.isPresent()) {
+			hostUser = optionalHostUser.get();
+
+			switch (hostUser.getStatus()) {
+			case BANNED -> throw new RoomException(RoomErrorCode.ISBANNED);
+			case LEFT -> {
+				if (room.getRoomMaxParticipants() <= room.getCurPaticipants()) {
+					throw new RoomException(RoomErrorCode.FULL_CAPACITY);
+				}
+				hostUser.setStatus(HostUserStatus.JOINED);
+				room.getHostUsers().add(hostUser);
+				room.setCurPaticipants(room.getCurPaticipants() + 1);
+			}
+			case JOINED -> {
+				List<MessageResponseDTO> messages = chatRepository.chatListByRoom(roomId).stream()
+						.map(MessageResponseDTO::new).toList();
+				return new RoomWithChatDTO(messages, new RoomDTO(room, true));
+			}
+			}
+		} else {
+			if (room.getRoomMaxParticipants() <= room.getCurPaticipants()) {
+				throw new RoomException(RoomErrorCode.FULL_CAPACITY);
+			}
+
+			hostUser = hostUserRepository.save(new HostUserEntity(room, user));
+			room.getHostUsers().add(hostUser);
+			room.setCurPaticipants(room.getCurPaticipants() + 1);
 		}
 
-		
-		HostUserEntity newHostUser =  hostUserRepository.save(new HostUserEntity(room, user));
-		room.setCurPaticipants(room.getCurPaticipants() + 1);
-		room.getHostUsers().add(newHostUser);
-		return new RoomDTO(room, true);
+		List<MessageResponseDTO> messages = chatRepository.chatListByRoom(roomId).stream().map(MessageResponseDTO::new)
+				.toList();
+
+		return new RoomWithChatDTO(messages, new RoomDTO(room, true));
 	}
 
-	public void deleteRoom(String roomId, String email) {
+	public void leftRoom(String roomId, String email) {
 		log.info("********** deleteRoom() 호출 - roomId: {}, email: {} **********", roomId, email);
 
 		RoomEntity room = utils.findRoom(roomId);
 		UserEntity user = utils.findUser(email);
 		if (!room.getCreateUser().getUserEmail().equals(email)) {
-			Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, user.getUserId());
+			Optional<HostUserEntity> hostUser = hostUserRepository.findLoginId(roomId, user.getUserId());
 			if (hostUser.isPresent()) {
-				hostUserRepository.delete(hostUser.get());
+				hostUser.get().setStatus(HostUserStatus.LEFT);
 				room.setCurPaticipants(room.getCurPaticipants() - 1);
-				log.info("🚪 유저 방 퇴장 처리 완료 - email: {}", email);
 				return;
 			}
-			log.warn("🚫 방 삭제 권한 없음 - email: {}", email);
 			throw new RoomException(RoomErrorCode.NO_PERMISSION);
 		}
 
 		roomRepository.delete(room);
-		log.info("🗑️ 방 삭제 완료 - roomId: {}", roomId);
 	}
 
 	public RoomDTO updateRoom(RoomDTO room, String roomId, String email) {
 		log.info("********** updateRoom() 호출 - roomId: {}, email: {} **********", roomId, email);
-
+		UserEntity user = utils.findUser(email);
 		RoomEntity roomEntity = utils.findRoom(roomId);
-		if (!roomEntity.getCreateUser().getUserEmail().equals(email)) {
-			log.warn("🚫 방 수정 권한 없음 - email: {}", email);
+		if (!(roomEntity.getCreateUser().getUserId()==user.getUserId())) {
 			throw new RoomException(RoomErrorCode.NO_PERMISSION);
 		}
 
@@ -188,24 +233,18 @@ public class RoomService {
 	}
 
 	public List<RoomDTO> getMyJoinRooms(String email) {
-		log.info("********** getMyJoinRooms() 호출 - email: {} **********", email);
-		List<HostUserEntity> hosts = hostUserRepository.findRoomsByUser(email);
+		UserEntity user = utils.findUser(email);
+		List<HostUserEntity> hosts = hostUserRepository.findRoomsByUser(user.getUserId());
 		return hosts.stream().map(RoomDTO::new).toList();
 	}
 
-//	public List<MessageResponseDTO> getChatList(String roomId, String email) {
-//		log.info("********** getChatList() 호출 - roomId: {}, email: {} **********", roomId, email);
-//
-//		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, email);
-//		if (hostUser.isEmpty()) {
-//			log.warn("🚫 채팅 접근 권한 없음 - email: {}", email);
-//			throw new RoomException(RoomErrorCode.NOT_JOINED);
-//		}
-//
-//		List<MessageResponseDTO> messages = chatRepository.chatListByRoom(roomId).stream().map(MessageResponseDTO::new)
-//				.collect(Collectors.toList());
-//
-//		log.info("💬 채팅 메시지 수: {}", messages.size());
-//		return messages;
-//	}
+	public void bannedUser(Long bannedUserId, String roomId, String email) {
+		UserEntity host = utils.findUser(email);
+		HostUserEntity hostUser = utils.findHostUser(roomId, bannedUserId);
+		if (!(hostUser.getRoom().getCreateUser().getUserId() == host.getUserId())) {
+			throw new RoomException(RoomErrorCode.IS_ONLY_HOST);
+		}
+		hostUser.setStatus(HostUserStatus.BANNED);
+		hostUser.getRoom().setCurPaticipants(hostUser.getRoom().getCurPaticipants() - 1);
+	}
 }

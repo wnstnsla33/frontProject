@@ -1,4 +1,4 @@
-package pProject.pPro;
+package pProject.pPro.global;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;

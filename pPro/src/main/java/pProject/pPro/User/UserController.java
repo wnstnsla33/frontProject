@@ -8,10 +8,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import pProject.pPro.CommonResponse;
-import pProject.pPro.ControllerUtils;
 import pProject.pPro.User.DTO.*;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.post.DTO.PassWordDTO;
 
 @RestController

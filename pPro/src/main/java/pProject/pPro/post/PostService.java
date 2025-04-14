@@ -19,11 +19,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import pProject.pPro.ServiceUtils;
 import pProject.pPro.bookmark.BookmarkRepository;
 import pProject.pPro.entity.BookmarkEntity;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.post.DTO.PostListDTO;
 import pProject.pPro.post.DTO.PostPageDTO;
 import pProject.pPro.post.DTO.WritePostDTO;

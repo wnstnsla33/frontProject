@@ -2,16 +2,17 @@ package pProject.pPro.room;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.CommonResponse;
-import pProject.pPro.ControllerUtils;
 import pProject.pPro.chat.DTO.ChatMessageDTO;
 import pProject.pPro.chat.DTO.MessageResponseDTO;
+import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.room.DTO.RoomDTO;
 import pProject.pPro.room.DTO.RoomWithChatDTO;
 import pProject.pPro.room.DTO.SearchRoomDTO;
@@ -50,14 +51,14 @@ public class RoomController {
 	public ResponseEntity<?> joinWithPassword(@PathVariable("roomId") String roomId,
 	                                           @RequestParam("password") String password,
 	                                           @AuthenticationPrincipal UserDetails user) {
-		RoomDTO joinedRoom = roomService.joinPwdRoom(roomId, utils.findEmail(user), password);
+		RoomWithChatDTO joinedRoom = roomService.joinPwdRoom(roomId, utils.findEmail(user), password);
 		return ResponseEntity.ok(CommonResponse.success("비밀방 참가 완료", joinedRoom));
 	}
 
 	@DeleteMapping("/chatRoom/{roomId}")
 	public ResponseEntity<?> deleteRoom(@PathVariable("roomId") String roomId,
 	                                    @AuthenticationPrincipal UserDetails user) {
-		roomService.deleteRoom(roomId,utils.findEmail(user));
+		roomService.leftRoom(roomId,utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방 삭제 또는 퇴장 처리 완료", null));
 	}
 
@@ -90,7 +91,12 @@ public class RoomController {
 
 	@GetMapping("/chatRoom/search")
 	public ResponseEntity<?> searchRooms(@ModelAttribute SearchRoomDTO dto) {
-		var pageResult = roomService.searchRooms(dto);
+		Page<RoomDTO> pageResult = roomService.searchRooms(dto);
+		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", pageResult));
+	}
+	@GetMapping("/chatRoom/search/near")
+	public ResponseEntity<?> searchNearRooms(@AuthenticationPrincipal UserDetails user, @ModelAttribute SearchRoomDTO dto) {
+		Page<RoomDTO> pageResult = roomService.searchRooms(dto,utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", pageResult));
 	}
 }

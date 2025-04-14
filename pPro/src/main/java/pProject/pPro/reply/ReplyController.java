@@ -9,10 +9,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.CommonResponse;
-import pProject.pPro.ControllerUtils;
 import pProject.pPro.User.exception.UserErrorCode;
 import pProject.pPro.User.exception.UserException;
+import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.reply.DTO.ReplyListDTO;
 import pProject.pPro.reply.DTO.ReplyRegDTO;
 

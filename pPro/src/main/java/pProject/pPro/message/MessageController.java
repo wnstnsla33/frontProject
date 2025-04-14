@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.CommonResponse;
-import pProject.pPro.ControllerUtils;
+import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.message.DTO.MessageListDTO;
 import pProject.pPro.message.DTO.MessageResponseDTO;
 import pProject.pPro.message.DTO.SaveMessageDTO;

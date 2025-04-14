@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import pProject.pPro.ServiceUtils;
 import pProject.pPro.RoomUser.HostUserRepository;
 import pProject.pPro.User.UserRepository;
 import pProject.pPro.chat.DTO.ChatMessageDTO;
@@ -15,6 +14,7 @@ import pProject.pPro.entity.ChatEntity;
 import pProject.pPro.entity.HostUserEntity;
 import pProject.pPro.entity.RoomEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.room.RoomRepository;
 
 @Slf4j
@@ -42,7 +42,7 @@ public class ChatService {
 	public boolean isHost(String roomId, String email) {
 		log.info("********** isHost() 호출 - roomId: {}, email: {} **********", roomId, email);
 		UserEntity user = utils.findUser(email);
-		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, user.getUserId()); 
+		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginId(roomId, user.getUserId()); 
 		boolean result = hostUser.isPresent();
 
 		return result;

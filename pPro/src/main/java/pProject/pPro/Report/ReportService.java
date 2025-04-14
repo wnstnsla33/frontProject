@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import pProject.pPro.ServiceUtils;
 import pProject.pPro.Report.DTO.CreateReportDTO;
 import pProject.pPro.Report.DTO.ReportPageDTO;
 import pProject.pPro.Report.DTO.ReportResponseDTO;
@@ -29,6 +28,7 @@ import pProject.pPro.entity.ReplyEntity;
 import pProject.pPro.entity.ReportEntity;
 import pProject.pPro.entity.RoomEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.message.MessageRepository;
 import pProject.pPro.message.DTO.MessageType;
 @Service

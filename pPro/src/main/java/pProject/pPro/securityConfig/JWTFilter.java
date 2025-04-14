@@ -93,7 +93,7 @@ public class JWTFilter extends OncePerRequestFilter {
 		response.setContentType("application/json;charset=UTF-8");
 
 		String json = new com.fasterxml.jackson.databind.ObjectMapper()
-				.writeValueAsString(pProject.pPro.CommonResponse.fail(message));
+				.writeValueAsString(pProject.pPro.global.CommonResponse.fail(message));
 
 		response.getWriter().write(json);
 	}

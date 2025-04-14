@@ -14,7 +14,7 @@ import pProject.pPro.Report.DTO.ReportControllerDTO;
 import pProject.pPro.Report.DTO.ReportPageDTO;
 import pProject.pPro.Report.DTO.ReportResponseDTO;
 import pProject.pPro.Report.DTO.ReportStatusDTO;
-import pProject.pPro.ControllerUtils;
+import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.Report.ReportStatus;
 
 import java.security.Principal;

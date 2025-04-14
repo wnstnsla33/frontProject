@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import pProject.pPro.ServiceUtils;
 import pProject.pPro.User.UserRepository;
 import pProject.pPro.bookmark.DTO.PostBookmarkResponseDTO;
 import pProject.pPro.bookmark.exception.BookmarkErrorCode;
@@ -15,6 +14,7 @@ import pProject.pPro.bookmark.exception.BookmarkException;
 import pProject.pPro.entity.BookmarkEntity;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.post.PostRepository;
 
 @Slf4j

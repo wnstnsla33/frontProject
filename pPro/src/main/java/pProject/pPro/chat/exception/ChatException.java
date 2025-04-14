@@ -1,16 +1,9 @@
 package pProject.pPro.chat.exception;
 
-public class ChatException extends RuntimeException{
-	 private final ChatErrorCode errorCode;
+import pProject.pPro.global.CustomException;
 
-	    public ChatException(String message, ChatErrorCode errorCode) {
-	        super(message);
-	        this.errorCode = errorCode;
-	    }
-	    public ChatException(ChatErrorCode errorCode) {
-	        this.errorCode = errorCode;
-	    }
-	    public ChatErrorCode getErrorCode() {
-	        return errorCode;
-	    }
+public class ChatException extends CustomException {
+    public ChatException(ChatErrorCode errorCode) {
+        super(errorCode);
+    }
 }

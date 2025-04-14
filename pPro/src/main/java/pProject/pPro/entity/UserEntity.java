@@ -22,7 +22,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +36,9 @@ import pProject.pPro.User.DTO.SignupLoginDTO;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(
+	    indexes = {@Index(name = "idx_user_email", columnList = "user_email")  }
+	)
 public class UserEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)

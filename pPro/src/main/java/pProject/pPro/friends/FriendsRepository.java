@@ -22,8 +22,8 @@ public interface FriendsRepository extends JpaRepository<FriendsEntity, Long>{
 	@Query("select count(f) from FriendsEntity f where f.my.userId = :userId and f.friend.userId = :friendId and f.type = 'ACCEPT'")
 	int findRequest (@Param("userId") Long userId, @Param("friendId") Long friendId);
 
-	@Query("select count(f) from FriendsEntity f where f.my.userId = :userId and f.friend.userId = :friendId")
-	int requestCount (@Param("userId") Long userId, @Param("friendId") Long friendId);
+	@Query("select count(f) from FriendsEntity f where f.my.userId = :userId and f.friend.userId = :friendId and f.type ='REQUEST'")
+	int duplicateRequest (@Param("userId") Long userId, @Param("friendId") Long friendId);
 
 	
 	@Query("select count(f) from FriendsEntity f where f.friend.userId =:userId and f.type ='REQUEST'")

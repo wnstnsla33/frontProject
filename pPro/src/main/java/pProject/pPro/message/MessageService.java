@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import pProject.pPro.ServiceUtils;
 import pProject.pPro.User.UserRepository;
 import pProject.pPro.entity.MessageEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.message.DTO.MessageListDTO;
 import pProject.pPro.message.DTO.MessageResponseDTO;
 import pProject.pPro.message.DTO.SaveMessageDTO;

@@ -1,4 +1,4 @@
-package pProject.pPro;
+package pProject.pPro.global;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

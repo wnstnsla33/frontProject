@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import pProject.pPro.Admin.dto.SearchDTO;
 import pProject.pPro.Admin.dto.UserChatByAdmin;
-import pProject.pPro.CommonResponse;
 import pProject.pPro.Admin.dto.AdminPagingDTO;
 import pProject.pPro.Admin.dto.AdminUserDTO;
 import pProject.pPro.Admin.dto.UserDetailByAdmimDTO;
@@ -29,6 +28,7 @@ import pProject.pPro.Report.DTO.ReportPageDTO;
 import pProject.pPro.Report.DTO.ReportResponseDTO;
 import pProject.pPro.Report.DTO.ReportSearchDTO;
 import pProject.pPro.Report.DTO.ReportStatusDTO;
+import pProject.pPro.global.CommonResponse;
 import pProject.pPro.room.DTO.RoomDTO;
 import pProject.pPro.post.DTO.PostListDTO;
 
