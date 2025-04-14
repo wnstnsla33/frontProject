@@ -82,4 +82,9 @@ public class UserController {
         String result = userService.findPwd(userInfoDTO);
         return ResponseEntity.ok(CommonResponse.success("비밀번호 찾기 성공", result));
     }
+    @GetMapping("/user/detail/{userId}")
+    public ResponseEntity detailUserInfo(@PathVariable("userId")Long userId) {
+    	UserDetailDTO user = userService.getUserInfo(userId);
+    	return ResponseEntity.ok(CommonResponse.success("해당 유저의 정보입니다.", user));
+    }
 }

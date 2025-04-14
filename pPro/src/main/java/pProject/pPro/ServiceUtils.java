@@ -21,6 +21,7 @@ import pProject.pPro.chat.ChatRepository;
 import pProject.pPro.chat.exception.ChatErrorCode;
 import pProject.pPro.chat.exception.ChatException;
 import pProject.pPro.entity.ChatEntity;
+import pProject.pPro.entity.FriendsEntity;
 import pProject.pPro.entity.HostUserEntity;
 import pProject.pPro.entity.MessageEntity;
 import pProject.pPro.entity.PostEntity;
@@ -28,6 +29,9 @@ import pProject.pPro.entity.ReplyEntity;
 import pProject.pPro.entity.ReportEntity;
 import pProject.pPro.entity.RoomEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.friends.FriendsRepository;
+import pProject.pPro.friends.exception.FriendsErrorCode;
+import pProject.pPro.friends.exception.FriendsException;
 import pProject.pPro.message.MessageRepository;
 import pProject.pPro.message.exception.MessageErrorCode;
 import pProject.pPro.message.exception.MessageExeption;
@@ -52,6 +56,8 @@ public class ServiceUtils {
 	private final HostUserRepository hostUserRepository;
 	private final ReportRepository reportRepository;
 	private final MessageRepository messageRepository;
+	private final FriendsRepository friendsRepository;
+	
 	public boolean isSocialAccount(String email) {
 		return email.startsWith("naver ") || email.startsWith("google ") || email.startsWith("kakao ");
 	}
@@ -145,4 +151,7 @@ public class ServiceUtils {
 		return chatRepository.findById(chatId).orElseThrow(() -> new ChatException(ChatErrorCode.NOT_FOUND_CHAT));
 	}
 	
+	public FriendsEntity findFriendsEntity(Long fId) {
+		return friendsRepository.findById(fId).orElseThrow(()->new FriendsException(FriendsErrorCode.NOT_FOUND_FRIENDS_ID));
+	}
 }

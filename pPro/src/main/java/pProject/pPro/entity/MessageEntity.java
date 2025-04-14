@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pProject.pPro.Report.DTO.ReportStatusDTO;
 import pProject.pPro.message.DTO.MessageType;
 import pProject.pPro.message.DTO.SaveMessageDTO;
 
@@ -53,5 +54,15 @@ public class MessageEntity {
         this.sender=sender;
         this.receiver=receiver;
         this.messagetype= dto.getType();
+    } 
+	
+	public MessageEntity(ReportStatusDTO dto,UserEntity sender,UserEntity receiver) {
+        this.title = "신고 접수로 인해 주의가 필요합니다.";
+        this.content = dto.getReason();
+        this.sendDate = LocalDateTime.now();
+        this.isRead = false;
+        this.sender=sender;
+        this.receiver=receiver;
+        this.messagetype= MessageType.WARNING;
     } 
 }

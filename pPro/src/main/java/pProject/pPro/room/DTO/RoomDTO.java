@@ -78,24 +78,25 @@ public class RoomDTO {
 		}
 
 	}
-	public RoomDTO(RoomEntity room,boolean verify) {
-			this.roomId = room.getRoomId();
-			this.roomTitle = room.getRoomTitle();
-			this.roomType = room.getRoomType();
-			this.roomContent = room.getRoomContent();
-			this.maxParticipants = room.getRoomMaxParticipants();
-			this.meetingTime = room.getMeetingTime();
-			this.curPaticipants = room.getCurPaticipants();
-			this.roomCreatedAt = room.getRoomCreatDate();
-			this.roomModifiedDate = room.getRoomModifiedDate();
-			this.hostName = room.getCreateUser().getUserName();
-			this.roomImg = room.getRoomImg();
 
-			this.roomMembers = room.getHostUsers().stream()
-					.map(hostUser -> new RoomMemberDTO(hostUser.getUser().getUserImg(),
-							hostUser.getUser().getUserNickName(), hostUser.getUser().getUserId()))
-					.toList();
-			this.isPrivate = room.getSecretePassword()!=null?true:false;
+	public RoomDTO(RoomEntity room, boolean verify) {
+		this.roomId = room.getRoomId();
+		this.roomTitle = room.getRoomTitle();
+		this.roomType = room.getRoomType();
+		this.roomContent = room.getRoomContent();
+		this.maxParticipants = room.getRoomMaxParticipants();
+		this.meetingTime = room.getMeetingTime();
+		this.curPaticipants = room.getCurPaticipants();
+		this.roomCreatedAt = room.getRoomCreatDate();
+		this.roomModifiedDate = room.getRoomModifiedDate();
+		this.hostName = room.getCreateUser().getUserName();
+		this.roomImg = room.getRoomImg();
+
+		this.roomMembers = room.getHostUsers().stream()
+				.map(hostUser -> new RoomMemberDTO(hostUser.getUser().getUserImg(),
+						hostUser.getUser().getUserNickName(), hostUser.getUser().getUserId()))
+				.toList();
+		this.isPrivate = room.getSecretePassword() != null ? true : false;
 	}
 
 	public RoomDTO(HostUserEntity hostUserEntity) {
@@ -118,7 +119,8 @@ public class RoomDTO {
 		}
 
 	}
-	public RoomDTO(HostUserEntity hostUserEntity,boolean verify) {
+
+	public RoomDTO(HostUserEntity hostUserEntity, boolean verify) {
 		this.roomId = hostUserEntity.getRoom().getRoomId();
 		this.roomTitle = hostUserEntity.getRoom().getRoomTitle();
 		this.roomType = hostUserEntity.getRoom().getRoomType();
@@ -130,6 +132,6 @@ public class RoomDTO {
 		this.roomModifiedDate = hostUserEntity.getRoom().getRoomModifiedDate();
 		this.hostName = hostUserEntity.getRoom().getCreateUser().getUserName();
 		this.roomImg = hostUserEntity.getRoom().getRoomImg();
-	
-}
+
+	}
 }

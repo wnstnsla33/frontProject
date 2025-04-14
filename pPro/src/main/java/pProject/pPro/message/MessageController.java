@@ -58,7 +58,8 @@ public class MessageController {
 	}
 	
 	@GetMapping("/messages/{messageId}")
-	public ResponseEntity detailMsg(@PathVariable("messageId")Long messageId) {
-		return ResponseEntity.ok(CommonResponse.success("메세지 상세 입니다.",messageService.messageDetail(messageId)));
+	public ResponseEntity detailMsg(@PathVariable("messageId")Long messageId,@AuthenticationPrincipal UserDetails user) {
+		String email = utils.findEmail(user);
+		return ResponseEntity.ok(CommonResponse.success("메세지 상세 입니다.",messageService.messageDetail(messageId,email)));
 	}
 }

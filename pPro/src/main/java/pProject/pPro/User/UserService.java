@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import pProject.pPro.ServiceUtils;
 import pProject.pPro.User.DTO.ProfileEditDTO;
 import pProject.pPro.User.DTO.SignupLoginDTO;
+import pProject.pPro.User.DTO.UserDetailDTO;
 import pProject.pPro.User.DTO.UserInfoDTO;
 import pProject.pPro.User.exception.UserErrorCode;
 import pProject.pPro.User.exception.UserException;
@@ -193,5 +194,10 @@ public class UserService {
         }
 
         return user;
+    }
+    public UserDetailDTO getUserInfo(Long userId) {
+    	Optional<UserEntity> user = userRepository.getUserInfo(userId);
+    	if(user.isPresent())return new UserDetailDTO(user.get());
+    	else throw new UserException(UserErrorCode.INVALID_ID);
     }
 }

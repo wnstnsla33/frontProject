@@ -29,6 +29,7 @@ public class PostListDTO {
 	private boolean secreteKey;
 	private String userNickName;
 	private String userName;
+	private String userImg;
 	private boolean isPrivate;
 	private int replyCount;
 	public PostListDTO(PostEntity postEntity) {
@@ -49,6 +50,7 @@ public class PostListDTO {
 			this.bookmarkCount = postEntity.getBookmarkCount();
 			this.userNickName = postEntity.getUser().getUserNickName();
 			this.replyCount= postEntity.getReplyCount();
+			this.userImg=postEntity.getUser().getUserImg();
 		}
 
 	}
@@ -72,6 +74,7 @@ public class PostListDTO {
 			this.bookmarkCount = postEntity.getBookmarkCount();
 			this.userNickName = postEntity.getUser().getUserNickName();
 			this.replyCount= postEntity.getReplyCount();
+			this.userImg=postEntity.getUser().getUserImg();
 		}
 
 	}
@@ -91,6 +94,7 @@ public class PostListDTO {
 		this.isPrivate = postEntity.getSecreteKey()!=null?true:false;		
 		this.replyCount=postEntity.getReplyCount();
 		this.bookmarked= isBookmarked;
+		this.userImg=postEntity.getUser().getUserImg();
 		}
 
 
@@ -127,6 +131,10 @@ public class PostListDTO {
 		this.userNickName = bookmarkEntity.getUser().getUserNickName();
 		this.replyCount= bookmarkEntity.getPost().getReplyCount();
 		this.bookmarked = true;
-		this.isPrivate = bookmarkEntity.getPost().getSecreteKey()!=null?true:false;		}
+		this.isPrivate = bookmarkEntity.getPost().getSecreteKey()!=null?true:false;		
+		this.userImg=bookmarkEntity.getUser().getUserImg();	
+	}
+	
+	
 
 }

@@ -59,8 +59,6 @@ public class ReplyService {
 		log.info("********** findReplyByPost() 호출 - postId: {} **********", postId);
 
 		List<ReplyEntity> replyList = replyRepository.findReplyByPost(postId, Sort.by(Sort.Direction.ASC, "id"));
-		log.info("📋 댓글 수: {}", replyList.size());
-
 		return replyList.stream().map(ReplyListDTO::new).toList();
 	}
 

@@ -79,7 +79,7 @@ public class SecurityConfig implements WebMvcConfigurer {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/ws-stomp/**", "/api/**","/",  "/signup/**","/find/**","/post","/auth/getToken","/uploads/**","/post/**","/chatRoom/search").permitAll() // 공개 경로
                 .requestMatchers("/user").hasAnyRole("USER","ADMIN","BANNED")
-                .requestMatchers("/user/**","/chatRoom/**","/auth/logout","/report/**").hasAnyRole("USER","ADMIN") // USER 역할 필요
+                .requestMatchers("/user/**","/chatRoom/**","/auth/logout","/report/**","/friends/**").hasAnyRole("USER","ADMIN") // USER 역할 필요
                 .requestMatchers("/admin/**","/admin").hasRole("ADMIN")
                 .anyRequest().authenticated() // 나머지 경로는 인증 필요
             )

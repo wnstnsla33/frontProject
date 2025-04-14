@@ -72,7 +72,6 @@ public class UserEntity {
 	@Embedded
 	private Address address;
 
-	@ColumnDefault("'https://i.namu.wiki/i/Bge3xnYd4kRe_IKbm2uqxlhQJij2SngwNssjpjaOyOqoRhQlNwLrR2ZiK-JWJ2b99RGcSxDaZ2UCI7fiv4IDDQ.webp'")
 	private String userImg;
 
 	@ColumnDefault("1")

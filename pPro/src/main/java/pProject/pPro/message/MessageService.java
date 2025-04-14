@@ -57,11 +57,15 @@ public class MessageService {
 		return messageRepository.notReadMsgCount(user.getUserId());
 	}
 
-	public MessageResponseDTO messageDetail(Long msgId) {
+	public MessageResponseDTO messageDetail(Long msgId, String email) {
+		Long userId = utils.findUser(email).getUserId();
 		MessageEntity msg = messageRepository.messageDetail(msgId)
 				.orElseThrow(() -> new MessageExeption(MessageErrorCode.INVIALD_ID));
-		msg.setRead(true);
-		return new MessageResponseDTO(msg);
+		if (msg.getSender().getUserId() == userId || msg.getReceiver().getUserId() == userId) {
+			msg.setRead(true);
+			return new MessageResponseDTO(msg);
+		}
+		throw new MessageExeption(MessageErrorCode.INVALID_USER_ID);
 	}
 
 }

@@ -3,6 +3,9 @@ package pProject.pPro.Admin;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticatedPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import pProject.pPro.Admin.dto.SearchDTO;
 import pProject.pPro.Admin.dto.UserChatByAdmin;
 import pProject.pPro.CommonResponse;
+import pProject.pPro.Admin.dto.AdminPagingDTO;
 import pProject.pPro.Admin.dto.AdminUserDTO;
 import pProject.pPro.Admin.dto.UserDetailByAdmimDTO;
 import pProject.pPro.Report.ReportService;
@@ -40,7 +44,7 @@ public class AdminController {
 
 	@GetMapping("/admin/user")
 	public ResponseEntity<?> getUsersList(@ModelAttribute SearchDTO searchDTO) {
-		List<AdminUserDTO> users = adminService.getUserList(searchDTO);
+		AdminPagingDTO users = adminService.getUserList(searchDTO);
 		return ResponseEntity.ok(CommonResponse.success("유저 리스트 조회 성공", users));
 	}
 
@@ -104,8 +108,8 @@ public class AdminController {
     // ✅ 3. 신고 상태 변경 (관리자)
     @PutMapping("/admin/reports/{reportId}")
     public ResponseEntity<ReportControllerDTO<ReportStatus>> updateStatus(@PathVariable("reportId") Long reportId,
-                                                                   @RequestBody ReportStatusDTO dto) {
-    	ReportStatus status =  reportService.updateStatus(dto.getStatus(), reportId);
+                                                                   @RequestBody ReportStatusDTO dto,@AuthenticationPrincipal UserDetails user) {
+    	ReportStatus status =  reportService.updateStatus(dto, reportId,user.getUsername());
         return ResponseEntity.ok(ReportControllerDTO.success("신고 상태가 "+status+"로변경되었습니다.",status));
     }
 

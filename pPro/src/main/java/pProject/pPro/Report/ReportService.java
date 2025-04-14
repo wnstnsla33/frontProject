@@ -18,15 +18,19 @@ import pProject.pPro.Report.DTO.CreateReportDTO;
 import pProject.pPro.Report.DTO.ReportPageDTO;
 import pProject.pPro.Report.DTO.ReportResponseDTO;
 import pProject.pPro.Report.DTO.ReportSearchDTO;
+import pProject.pPro.Report.DTO.ReportStatusDTO;
 import pProject.pPro.Report.exception.ReportErrorCode;
 import pProject.pPro.Report.exception.ReportException;
 import pProject.pPro.entity.ChatEntity;
 import pProject.pPro.entity.Grade;
+import pProject.pPro.entity.MessageEntity;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.ReplyEntity;
 import pProject.pPro.entity.ReportEntity;
 import pProject.pPro.entity.RoomEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.message.MessageRepository;
+import pProject.pPro.message.DTO.MessageType;
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -34,7 +38,7 @@ import pProject.pPro.entity.UserEntity;
 public class ReportService {
 	private final ReportRepository reportRepository;
 	private final ServiceUtils utils;
-
+	private final MessageRepository messageRepository;
 	// 신고 생성
 	public void createReport(CreateReportDTO dto, String email) {
 		log.info("********** createReport() 호출 - email: {}, targetId: {}, targetType: {} **********", email, dto.getTargetId(), dto.getTargetType());
@@ -93,14 +97,15 @@ public class ReportService {
 	}
 
 	// 신고 상태 변경
-	public ReportStatus updateStatus(ReportStatus status, long reportId) {
-		log.info("********** updateStatus() 호출 - reportId: {}, status: {} **********", reportId, status);
-
+	public ReportStatus updateStatus(ReportStatusDTO dto, long reportId,String email) {
+		ReportStatus status = dto.getStatus();
+		UserEntity sender = utils.findUser(email);
 		ReportEntity report = utils.findReportWithUser(reportId);
 		if (status == ReportStatus.ACCEPT) {
 			UserEntity user = report.getReportedUser();
 			log.info("📛 신고 수락됨 - 신고 유저: {}, 현재 누적: {}", user.getUserEmail(), user.getReportedCount());
-
+			MessageEntity message = new MessageEntity(dto,sender,user);
+			messageRepository.save(message);
 			if (user.getReportedCount() > 2) {
 				log.info("🚫 유저 정지 처리 - 유저: {}", user.getUserEmail());
 				user.setReportedDate(LocalDateTime.now());

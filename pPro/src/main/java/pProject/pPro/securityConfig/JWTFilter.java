@@ -40,7 +40,7 @@ public class JWTFilter extends OncePerRequestFilter {
 		}
 
 		String requestURI = request.getRequestURI();
-		System.out.println(requestURI + "token:" + token);
+		System.out.println(requestURI);
 
 		// 허용할 경로는 무조건 필터를 통과시킴
 		boolean isAllowedPath = isPublicPath(requestURI);
@@ -92,7 +92,6 @@ public class JWTFilter extends OncePerRequestFilter {
 		response.setStatus(statusCode);
 		response.setContentType("application/json;charset=UTF-8");
 
-		// 사장님이 쓰는 CommonResponse 사용해서 JSON 응답 생성
 		String json = new com.fasterxml.jackson.databind.ObjectMapper()
 				.writeValueAsString(pProject.pPro.CommonResponse.fail(message));
 

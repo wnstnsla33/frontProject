@@ -35,7 +35,6 @@ public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHan
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
-		System.out.println("인증 성공!");
 		UserDetails customUserDetails = (UserDetails) authentication.getPrincipal();
 
 		String username = customUserDetails.getUsername();

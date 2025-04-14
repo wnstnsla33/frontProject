@@ -39,7 +39,6 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
                 userId = loginDto.getEmail();
                 userPassword = loginDto.getPassword();
 
-                logger.info("JSON 접속. USERID : " + userId + ", USERPW : " + userPassword);
             } catch(IOException e){
                 e.printStackTrace();
             }

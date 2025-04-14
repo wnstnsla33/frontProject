@@ -13,6 +13,7 @@ import pProject.pPro.ControllerUtils;
 import pProject.pPro.chat.DTO.ChatMessageDTO;
 import pProject.pPro.chat.DTO.MessageResponseDTO;
 import pProject.pPro.room.DTO.RoomDTO;
+import pProject.pPro.room.DTO.RoomWithChatDTO;
 import pProject.pPro.room.DTO.SearchRoomDTO;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -41,7 +42,7 @@ public class RoomController {
 	@GetMapping("/chatRoom/{roomId}")
 	public ResponseEntity<?> findRoom(@PathVariable("roomId") String roomId,
 	                                  @AuthenticationPrincipal UserDetails user) {
-		RoomDTO joinedRoom = roomService.joinRoom(roomId, utils.findEmail(user));
+		RoomWithChatDTO joinedRoom = roomService.joinRoom(roomId, utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방 참가 완료", joinedRoom));
 	}
 
@@ -74,12 +75,12 @@ public class RoomController {
 		return ResponseEntity.ok(CommonResponse.success("참여 중인 방 목록 조회 성공", list));
 	}
 
-	@GetMapping("/chatRoom/{roomId}/messages")
-	public ResponseEntity<?> getChatList(@PathVariable("roomId") String roomId,
-	                                     @AuthenticationPrincipal UserDetails user) {
-		List<MessageResponseDTO> chatList = roomService.getChatList(roomId, utils.findEmail(user));
-		return ResponseEntity.ok(CommonResponse.success("채팅 내역 조회 성공", chatList));
-	}
+//	@GetMapping("/chatRoom/{roomId}/messages")
+//	public ResponseEntity<?> getChatList(@PathVariable("roomId") String roomId,
+//	                                     @AuthenticationPrincipal UserDetails user) {
+//		List<MessageResponseDTO> chatList = roomService.getChatList(roomId, utils.findEmail(user));
+//		return ResponseEntity.ok(CommonResponse.success("채팅 내역 조회 성공", chatList));
+//	}
 
 	@PostMapping("/chatRoom/image")
 	public ResponseEntity<?> uploadRoomImage(@RequestPart("image") MultipartFile imageFile) {

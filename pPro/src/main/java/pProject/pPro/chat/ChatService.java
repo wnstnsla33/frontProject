@@ -41,11 +41,9 @@ public class ChatService {
 
 	public boolean isHost(String roomId, String email) {
 		log.info("********** isHost() 호출 - roomId: {}, email: {} **********", roomId, email);
-
-		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, email); 
+		UserEntity user = utils.findUser(email);
+		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginEmail(roomId, user.getUserId()); 
 		boolean result = hostUser.isPresent();
-
-		log.info("********** isHost 결과 - {} **********", result ? "호스트입니다 ✅" : "호스트 아닙니다 ❌");
 
 		return result;
 	}

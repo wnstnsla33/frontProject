@@ -61,7 +61,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         for (Cookie cookie : cookies) {
                             if (cookie.getName().equals("access")) {
                                 String token = cookie.getValue();
-                                System.out.println(token+ "토큰값잘들어옴");
                                 if (jwtTokenProvider.validateToken(token)) {
                                     Authentication auth = jwtTokenProvider.getAuthentication(token);
                                     attributes.put("user", auth.getPrincipal());

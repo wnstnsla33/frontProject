@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
@@ -19,6 +20,16 @@ public class GlobalExceptionHandler {
             .map(error -> error.getDefaultMessage())
             .findFirst()
             .orElse("요청 값이 유효하지 않습니다.");
+
+        log.warn("유효성 검증 실패: {}", message);
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(CommonResponse.fail(message));
+    }
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<CommonResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        String message = "요청 값이 잘못되었습니다.";
 
         log.warn("유효성 검증 실패: {}", message);
 

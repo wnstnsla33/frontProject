@@ -1,7 +1,8 @@
 package pProject.pPro.message.exception;
 
+import lombok.Getter;
 import pProject.pPro.reply.exception.ReplyErrorCode;
-
+@Getter
 public class MessageExeption extends RuntimeException{
 	private final MessageErrorCode errorCode;
     private final String customMessage;

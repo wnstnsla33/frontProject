@@ -43,7 +43,6 @@ public class CustomUserDetails implements UserDetails {
 	@Override
 	public String getUsername() {
 		// TODO Auto-generated method stub
-		System.out.println(userEntity.getUserEmail());
 		return userEntity.getUserEmail();
 	}
 	public String getName() {

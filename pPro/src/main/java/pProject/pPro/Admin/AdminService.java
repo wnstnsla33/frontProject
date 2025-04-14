@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import pProject.pPro.ServiceUtils;
+import pProject.pPro.Admin.dto.AdminPagingDTO;
 import pProject.pPro.Admin.dto.AdminUserDTO;
 import pProject.pPro.Admin.dto.SearchDTO;
 import pProject.pPro.Admin.dto.UserChatByAdmin;
@@ -54,13 +55,14 @@ public class AdminService {
 		userRepository.deleteById(id);
 	}
 
-	public List<AdminUserDTO> getUserList(SearchDTO dto) {
+	public AdminPagingDTO getUserList(SearchDTO dto) {
 		log.info("********** getUserList() 호출 **********");
 		Pageable pageable = PageRequest.of(dto.getPage(), 10, Sort.by("userCreateDate").descending());
 		Page<UserEntity> pageResult = (dto.getName() != null && !dto.getName().isEmpty())
 				? userRepository.findByUserNameContainingIgnoreCase(dto.getName(), pageable)
 				: userRepository.findAll(pageable);
-		return pageResult.getContent().stream().map(AdminUserDTO::new).toList();
+		List<AdminUserDTO> list =pageResult.getContent().stream().map(AdminUserDTO::new).toList();
+		return new AdminPagingDTO(list,pageResult.getTotalPages());
 	}
 
 	public UserDetailByAdmimDTO getUserDetailInfo(Long userId) {
@@ -87,7 +89,7 @@ public class AdminService {
 	public List<RoomDTO> getRoomListByAdmin(SearchDTO searchDTO) {
 		log.info("********** getRoomListByAdmin() 호출 **********");
 		Pageable pageable = PageRequest.of(searchDTO.getPage(), 10, Sort.by("roomCreatDate").descending());
-		Page<RoomEntity> pageResult = roomRepository.findAll(pageable);
+		Page<RoomEntity> pageResult = roomRepository.searchRooms(searchDTO.getName(),pageable);
 		return pageResult.getContent().stream().map(room -> new RoomDTO(room, true)).toList();
 	}
 
