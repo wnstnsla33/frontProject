@@ -1,26 +1,27 @@
 package pProject.pPro.securityConfig;
 
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import pProject.pPro.global.CommonResponse;
 import pProject.pPro.securityConfig.JWTUtil;
 
 @RestController
+@RequiredArgsConstructor
 public class TokenController {
 
     private final JWTUtil jwtUtil;
-
-    public TokenController(JWTUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
 
     @GetMapping("/auth/getToken")
     public ResponseEntity<?> getToken(HttpServletRequest request, HttpServletResponse response) {
@@ -64,4 +65,8 @@ public class TokenController {
         System.out.println("토큰 재발급");
         return ResponseEntity.ok("새 access 토큰이 발급되었습니다.");
     }
+    
+    
+   
+
 }

@@ -20,10 +20,10 @@ public interface HostUserRepository extends JpaRepository<HostUserEntity, Long> 
 
 	@Query("""
 			    SELECT h FROM HostUserEntity h JOIN FETCH h.room r
-			    JOIN FETCH r.createUser WHERE h.user.userId = :userId and h.status ='JOINED'
+			    JOIN FETCH r.createUser c WHERE h.user.userId = :userId and h.status='JOINED'
 			""")
 	List<HostUserEntity> findRoomsByUserId(@Param("userId") Long userId);
 
-	@Query("select count(h) from HostUserEntity h where h.user.userId=:userId h.status ='JOINED'")
+	@Query("select count(h) from HostUserEntity h where h.user.userId=:userId and h.status ='JOINED'")
 	Long hostCount(@Param("userId") Long userId);
 }

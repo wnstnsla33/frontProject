@@ -45,7 +45,10 @@ public class UserDetailDTO {
 						room.getRoomId(),
 						room.getRoomTitle(),
 						room.getRoomImg(),
-						room.getRoomType()
+						room.getRoomType(),
+						room.getCurPaticipants(),
+						room.getRoomMaxParticipants(),
+						room.getSecretePassword()!=null
 					);
 				})
 				.collect(Collectors.toList());

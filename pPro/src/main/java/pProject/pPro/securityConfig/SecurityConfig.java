@@ -58,36 +58,48 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-        // CustomUsernamePasswordAuthenticationFilter 필터 생성
+        // 🔧 Custom 로그인 필터
         CustomUsernamePasswordAuthenticationFilter customFilter = new CustomUsernamePasswordAuthenticationFilter();
-        customFilter.setAuthenticationManager(authenticationManager); // AuthenticationManager 설정
-        customFilter.setFilterProcessesUrl("/login"); // 로그인 URL 설정
+        customFilter.setAuthenticationManager(authenticationManager);
+        customFilter.setFilterProcessesUrl("/login");
         customFilter.setAuthenticationSuccessHandler(customSuccessHandlerNoSNS);
         customFilter.setAuthenticationFailureHandler(customFailureHandler);
 
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정
-            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (테스트용)
-            .addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class) // Custom 필터 추가
-            .httpBasic(httpBasic -> httpBasic.disable()) // HTTP 기본 인증 비활성화
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            
+            // ✅ [1] 전역 요청 로깅 필터 추가 (모든 요청 URI 출력)
+
+            // ✅ [2] 커스텀 로그인 필터 추가
+            .addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class)
+
+            .httpBasic(httpBasic -> httpBasic.disable())
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(customOAuth2UserService)
                 )
                 .successHandler(customSuccessHandler)
+
+                // ✅ [3] 실패 핸들러 추가 (카카오 실패 시 /login fallback 막기)
+                .failureHandler((request, response, exception) -> {
+                    System.out.println("❌ OAuth2 로그인 실패: " + exception.getMessage());
+                    response.sendRedirect("http://localhost:3000/login-failed");
+                })
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/ws-stomp/**", "/api/**","/",  "/signup/**","/find/**","/post","/auth/getToken","/uploads/**","/post/**","/chatRoom/search").permitAll() // 공개 경로
+                .requestMatchers("/ws-stomp/**", "/api/**","/",  "/signup/**","/find/**","/post","/auth/getToken","/uploads/**","/post/**","/chatRoom/search").permitAll()
                 .requestMatchers("/user").hasAnyRole("USER","ADMIN","BANNED")
-                .requestMatchers("/user/**","/chatRoom/**","/auth/logout","/report/**","/friends/**").hasAnyRole("USER","ADMIN") // USER 역할 필요
+                .requestMatchers("/user/**","/chatRoom/**","/auth/logout","/report/**","/friends/**").hasAnyRole("USER","ADMIN")
                 .requestMatchers("/admin/**","/admin").hasRole("ADMIN")
-                .anyRequest().authenticated() // 나머지 경로는 인증 필요
+                .anyRequest().authenticated()
             )
-            .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
+            .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용 안 함
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
 
         return http.build();
     }
+
 }

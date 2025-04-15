@@ -14,6 +14,7 @@ public enum RoomErrorCode implements BaseErrorCode {
     INVALID_ID("해당 채팅방이 존재하지 않습니다.", 404),
     ISBANNED("방입장이 금지되었습니다.",403),
     IS_ONLY_HOST("방장만이 밴할수 있습니다.",403),
+    INVALID_REQUEST("잘못된 요청입니다",400),
     DUPLICATE_ROOM("채팅방을 중복 생성할 수 없습니다.", 400);
 
     private final String message;

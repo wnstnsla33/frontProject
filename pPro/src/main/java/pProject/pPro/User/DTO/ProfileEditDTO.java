@@ -1,4 +1,7 @@
 package pProject.pPro.User.DTO;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.AllArgsConstructor;
@@ -18,4 +21,5 @@ public class ProfileEditDTO {
     private String userNewPassword;
     private String sido;
 	private String sigungu;
+	private LocalDate birthDay;
 }

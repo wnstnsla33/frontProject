@@ -94,7 +94,7 @@ public class RoomService {
 				dto.getRoomType(), dto.getSido(), dto.getSigungu());
 
 		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by("roomCreatDate").descending());
-		return roomRepository.searchRooms(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
+		return roomRepository.searchRoomsWithSido(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
 				.map(RoomDTO::new);
 	}
 
@@ -103,7 +103,7 @@ public class RoomService {
 		dto.setSido(user.getAddress().getSido());
 		dto.setSigungu(user.getAddress().getSigungu());
 		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by("roomCreatDate").descending());
-		return roomRepository.searchRooms(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
+		return roomRepository.searchRoomsWithSido(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
 				.map(RoomDTO::new);
 	}
 
@@ -128,7 +128,6 @@ public class RoomService {
 					throw new RoomException(RoomErrorCode.FULL_CAPACITY);
 				}
 				hostUser.setStatus(HostUserStatus.JOINED);
-				room.getHostUsers().add(hostUser);
 				room.setCurPaticipants(room.getCurPaticipants() + 1);
 			}
 			case JOINED -> {
@@ -139,7 +138,7 @@ public class RoomService {
 				throw new RoomException(RoomErrorCode.FULL_CAPACITY);
 			}
 			hostUser = hostUserRepository.save(new HostUserEntity(room, user));
-			room.getHostUsers().add(hostUser); // ✅ 새로운 유저는 당연히 넣어줘야 함
+			room.getHostUsers().add(hostUser); 
 			if (!isAdmin)
 				room.setCurPaticipants(room.getCurPaticipants() + 1);
 		}
@@ -240,11 +239,12 @@ public class RoomService {
 
 	public void bannedUser(Long bannedUserId, String roomId, String email) {
 		UserEntity host = utils.findUser(email);
-		HostUserEntity hostUser = utils.findHostUser(roomId, bannedUserId);
-		if (!(hostUser.getRoom().getCreateUser().getUserId() == host.getUserId())) {
+		if(host.getUserId()==bannedUserId)throw new RoomException(RoomErrorCode.INVALID_REQUEST);
+		HostUserEntity roomUser = utils.findHostUser(roomId, bannedUserId);
+		if (!(roomUser.getRoom().getCreateUser().getUserId() == host.getUserId())) {
 			throw new RoomException(RoomErrorCode.IS_ONLY_HOST);
 		}
-		hostUser.setStatus(HostUserStatus.BANNED);
-		hostUser.getRoom().setCurPaticipants(hostUser.getRoom().getCurPaticipants() - 1);
+		roomUser.setStatus(HostUserStatus.BANNED);
+		roomUser.getRoom().setCurPaticipants(roomUser.getRoom().getCurPaticipants() - 1);
 	}
 }

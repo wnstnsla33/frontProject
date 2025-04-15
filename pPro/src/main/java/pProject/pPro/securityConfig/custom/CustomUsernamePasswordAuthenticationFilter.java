@@ -23,6 +23,9 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    	System.out.println("🔥 필터 통과 URI: " + request.getRequestURI());
+    	System.out.println("🔥 Content-Type: " + request.getContentType());
+    	System.out.println("🔥 Method: " + request.getMethod());
         UsernamePasswordAuthenticationToken authenticationToken = null;
 
         String userId = null;

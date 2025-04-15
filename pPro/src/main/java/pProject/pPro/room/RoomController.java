@@ -13,6 +13,7 @@ import pProject.pPro.chat.DTO.ChatMessageDTO;
 import pProject.pPro.chat.DTO.MessageResponseDTO;
 import pProject.pPro.global.CommonResponse;
 import pProject.pPro.global.ControllerUtils;
+import pProject.pPro.room.DTO.PasswordDTO;
 import pProject.pPro.room.DTO.RoomDTO;
 import pProject.pPro.room.DTO.RoomWithChatDTO;
 import pProject.pPro.room.DTO.SearchRoomDTO;
@@ -49,9 +50,9 @@ public class RoomController {
 
 	@PostMapping("/chatRoom/{roomId}/verify")
 	public ResponseEntity<?> joinWithPassword(@PathVariable("roomId") String roomId,
-	                                           @RequestParam("password") String password,
+	                                           @RequestBody PasswordDTO password,
 	                                           @AuthenticationPrincipal UserDetails user) {
-		RoomWithChatDTO joinedRoom = roomService.joinPwdRoom(roomId, utils.findEmail(user), password);
+		RoomWithChatDTO joinedRoom = roomService.joinPwdRoom(roomId, utils.findEmail(user), password.getPassword());
 		return ResponseEntity.ok(CommonResponse.success("비밀방 참가 완료", joinedRoom));
 	}
 
@@ -99,4 +100,10 @@ public class RoomController {
 		Page<RoomDTO> pageResult = roomService.searchRooms(dto,utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", pageResult));
 	}
+	@PutMapping("/chatRoom/banned/{roomId}")
+	public ResponseEntity<?> bannedUser(@AuthenticationPrincipal UserDetails user, @PathVariable("roomId")String roomId,
+			@RequestParam("userId")Long userId) {
+		roomService.bannedUser(userId, roomId, user.getUsername());
+		return ResponseEntity.ok(CommonResponse.success("방 검색 결과"));
+	} 
 }

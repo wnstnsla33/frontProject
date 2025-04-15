@@ -10,4 +10,8 @@ public class UserRoomDTO {
 	private String roomtitle;
 	private String roomImg;
 	private String roomType;
+	private int curPaticipants;
+	private int roomMaxParticipants;
+	private boolean isPrivate;
+	
 }

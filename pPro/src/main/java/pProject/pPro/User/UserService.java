@@ -3,6 +3,7 @@ package pProject.pPro.User;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Random;
@@ -168,7 +169,10 @@ public class UserService {
             user.setAddress(new Address(dto.getSido(), dto.getSigungu()));
         if(dto.getUserNewPassword()!=null)
         	user.setUserPassword(passwordEncoder.encode(dto.getUserNewPassword()));
-
+        if (dto.getBirthDay() != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            user.setUserBirthDay(dto.getBirthDay().format(formatter));
+        }
         return userRepository.save(user);
     }
 

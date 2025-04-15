@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pProject.pPro.RoomUser.DTO.HostUserStatus;
 import pProject.pPro.entity.HostUserEntity;
 import pProject.pPro.entity.RoomEntity;
 
@@ -28,6 +29,7 @@ public class RoomDTO {
 	private String roomTitle;
 	@NotBlank(message = "채팅방 타입을 선택해주세요.")
 	private String roomType;
+	private Long HostId;
 	private MultipartFile roomSaveImg;
 	private String roomImg;
 	@NotBlank(message = "채팅방 소개를 입력해주세요.")
@@ -58,6 +60,7 @@ public class RoomDTO {
 			this.isPrivate = true;
 			this.roomId = room.getRoomId();
 			this.roomTitle = room.getRoomTitle();
+			this.hostName = room.getCreateUser().getUserName();
 		} else {
 			this.roomId = room.getRoomId();
 			this.roomTitle = room.getRoomTitle();
@@ -70,11 +73,16 @@ public class RoomDTO {
 			this.roomModifiedDate = room.getRoomModifiedDate();
 			this.hostName = room.getCreateUser().getUserName();
 			this.roomImg = room.getRoomImg();
-
+			this.HostId = room.getCreateUser().getUserId();
 			this.roomMembers = room.getHostUsers().stream()
-					.map(hostUser -> new RoomMemberDTO(hostUser.getUser().getUserImg(),
-							hostUser.getUser().getUserNickName(), hostUser.getUser().getUserId()))
-					.toList();
+				    .filter(hostUser -> hostUser.getStatus() == HostUserStatus.JOINED)
+				    .map(hostUser -> new RoomMemberDTO(
+				        hostUser.getUser().getUserImg(),
+				        hostUser.getUser().getUserNickName(),
+				        hostUser.getUser().getUserId()
+				    ))
+				    .toList();
+
 		}
 
 	}
@@ -91,11 +99,15 @@ public class RoomDTO {
 		this.roomModifiedDate = room.getRoomModifiedDate();
 		this.hostName = room.getCreateUser().getUserName();
 		this.roomImg = room.getRoomImg();
-
+		this.HostId = room.getCreateUser().getUserId();
 		this.roomMembers = room.getHostUsers().stream()
-				.map(hostUser -> new RoomMemberDTO(hostUser.getUser().getUserImg(),
-						hostUser.getUser().getUserNickName(), hostUser.getUser().getUserId()))
-				.toList();
+			    .filter(hostUser -> hostUser.getStatus() == HostUserStatus.JOINED)
+			    .map(hostUser -> new RoomMemberDTO(
+			        hostUser.getUser().getUserImg(),
+			        hostUser.getUser().getUserNickName(),
+			        hostUser.getUser().getUserId()
+			    ))
+			    .toList();
 		this.isPrivate = room.getSecretePassword() != null ? true : false;
 	}
 
@@ -104,6 +116,7 @@ public class RoomDTO {
 			this.isPrivate = true;
 			this.roomId = hostUserEntity.getRoom().getRoomId();
 			this.roomTitle = hostUserEntity.getRoom().getRoomTitle();
+			this.hostName = hostUserEntity.getRoom().getCreateUser().getUserName();
 		} else {
 			this.roomId = hostUserEntity.getRoom().getRoomId();
 			this.roomTitle = hostUserEntity.getRoom().getRoomTitle();
@@ -116,6 +129,7 @@ public class RoomDTO {
 			this.roomModifiedDate = hostUserEntity.getRoom().getRoomModifiedDate();
 			this.hostName = hostUserEntity.getRoom().getCreateUser().getUserName();
 			this.roomImg = hostUserEntity.getRoom().getRoomImg();
+			this.HostId = hostUserEntity.getRoom().getCreateUser().getUserId();
 		}
 
 	}
@@ -132,6 +146,6 @@ public class RoomDTO {
 		this.roomModifiedDate = hostUserEntity.getRoom().getRoomModifiedDate();
 		this.hostName = hostUserEntity.getRoom().getCreateUser().getUserName();
 		this.roomImg = hostUserEntity.getRoom().getRoomImg();
-
+		this.HostId = hostUserEntity.getRoom().getCreateUser().getUserId();
 	}
 }

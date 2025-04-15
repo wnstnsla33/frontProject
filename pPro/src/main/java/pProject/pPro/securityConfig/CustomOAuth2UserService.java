@@ -33,7 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         }
       
         else {
-        	return null;
+        	 oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
         }
         String userEmail = oAuth2Response.getProvider()+" "+oAuth2Response.getproviderId();
         Optional< UserEntity> optionalUser = userRepository.findByEmail(userEmail);
@@ -49,7 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	userEntity.setReportedCount(0);
         	userEntity.setUserAge(Integer.parseInt( oAuth2Response.getAge()));
         	int num =0;
-        	if(oAuth2Response.getSex().equals("M")) {
+        	if(oAuth2Response.getSex()==null||oAuth2Response.getSex().equals("M")) {
         		 num = (int)(Math.random() * 9) + 1;
         		userEntity.setUserSex("남성");
         	}
