@@ -16,7 +16,7 @@ build/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
-pPro/src/main/resources/application.properties
+application.properties
 ### IntelliJ IDEA ###
 .idea
 *.iws
