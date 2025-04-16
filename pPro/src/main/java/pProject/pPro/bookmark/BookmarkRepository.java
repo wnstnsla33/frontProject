@@ -20,7 +20,6 @@ public interface BookmarkRepository extends JpaRepository<BookmarkEntity, Long> 
 	@Query("DELETE FROM BookmarkEntity b WHERE b.post.postId = :postId AND b.user.userEmail = :userEmail")
 	void deleteBookmark(@Param("postId") Long postId, @Param("userEmail") String userEmail);
 
-
 	// 로그인한 계정이 북마크한 postList
 	@Query("""
 			    SELECT new pProject.pPro.post.DTO.PostListDTO(b.post,true)
