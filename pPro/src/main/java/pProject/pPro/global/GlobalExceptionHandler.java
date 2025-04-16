@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(CustomException.class)
 	public ResponseEntity<CommonResponse<Void>> handleCustomException(CustomException e) {
 		String message = (e.getCustomMessage() != null) ? e.getCustomMessage() : e.getErrorCode().getMessage();
-
+		log.info("예외 발생 :{}",e);
 		return ResponseEntity.status(e.getErrorCode().getStatus()).body(CommonResponse.fail(message));
 	}
 

@@ -35,8 +35,6 @@ public class ChatService {
 		UserEntity user = utils.findUser(email);
 		ChatEntity entity = new ChatEntity(msg.getMessage(), room, user);
 		chatRepository.save(entity);
-
-		log.info("********** 채팅 저장 완료 - user: {}, room: {} **********", user.getUserName(), room.getRoomTitle());
 	}
 
 	public boolean isHost(String roomId, String email) {

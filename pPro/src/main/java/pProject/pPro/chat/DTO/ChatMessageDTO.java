@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 public class ChatMessageDTO {
 	public enum MessageType {
-        ENTER, TALK, QUIT
+        ENTER, TALK, QUIT,BANNED
     }
 
     private MessageType type;
@@ -21,4 +21,5 @@ public class ChatMessageDTO {
     private String senderName;
     private String message;
     private String userImg;
+    private Long userId;
 }

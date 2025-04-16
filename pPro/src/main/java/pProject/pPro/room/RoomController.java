@@ -13,6 +13,7 @@ import pProject.pPro.chat.DTO.ChatMessageDTO;
 import pProject.pPro.chat.DTO.MessageResponseDTO;
 import pProject.pPro.global.CommonResponse;
 import pProject.pPro.global.ControllerUtils;
+import pProject.pPro.room.DTO.BannedUserDTO;
 import pProject.pPro.room.DTO.PasswordDTO;
 import pProject.pPro.room.DTO.RoomDTO;
 import pProject.pPro.room.DTO.RoomWithChatDTO;
@@ -100,10 +101,9 @@ public class RoomController {
 		Page<RoomDTO> pageResult = roomService.searchRooms(dto,utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", pageResult));
 	}
-	@PutMapping("/chatRoom/banned/{roomId}")
-	public ResponseEntity<?> bannedUser(@AuthenticationPrincipal UserDetails user, @PathVariable("roomId")String roomId,
-			@RequestParam("userId")Long userId) {
-		roomService.bannedUser(userId, roomId, user.getUsername());
-		return ResponseEntity.ok(CommonResponse.success("방 검색 결과"));
+	@PutMapping("/chatRoom/banned")
+	public ResponseEntity<?> bannedUser(@AuthenticationPrincipal UserDetails user, @RequestBody BannedUserDTO dto) {
+		roomService.bannedUser(dto.getUserId(), dto.getRoomId(), user.getUsername());
+		return ResponseEntity.ok(CommonResponse.success("강퇴 하였습니다."));
 	} 
 }

@@ -94,7 +94,7 @@ public class AdminController {
 	}
 
 	@DeleteMapping("/admin/room/{roomId}")
-	public ResponseEntity<?> deleteRoom(@PathVariable String roomId) {
+	public ResponseEntity<?> deleteRoom(@PathVariable("roomId") String roomId) {
 		adminService.deleteRoomByAdmin(roomId);
 		return ResponseEntity.ok(CommonResponse.success("방이 삭제되었습니다."));
 	}

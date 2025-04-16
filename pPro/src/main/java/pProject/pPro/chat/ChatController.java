@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import pProject.pPro.chat.DTO.ChatMessageDTO;
 import pProject.pPro.chat.DTO.ChatMessageDTO.MessageType;
+import pProject.pPro.room.RoomService;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class ChatController {
 	private final RedisPublisher redisPublisher;
 
 	private final ChatService chatService;
-	
+	private final RoomService roomService;
 	
 	@MessageMapping("/chat/message")
 	public void message(ChatMessageDTO message,Principal principal) {
@@ -30,13 +31,12 @@ public class ChatController {
 	}
 	@MessageMapping("/chat/enter")
 	public void enterChat(ChatMessageDTO message,Principal principal) {
+		
 		redisPublisher.publish(message.getRoomId().toString(), message);
 	}
 	@MessageMapping("/chat/delete")
 	public void deleteChat(ChatMessageDTO message,Principal principal) {
 		boolean isHost = chatService.isHost(message.getRoomId(), principal.getName());
 		if(!isHost)redisPublisher.publish(message.getRoomId().toString(), message);
-		
 	}
-	
 }

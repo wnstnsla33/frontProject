@@ -33,6 +33,7 @@ public class MessageService {
 		MessageEntity message = new MessageEntity(dto, sender, receiver);
 		messageRepository.save(message);
 	}
+	
 
 	public MessageListDTO getReceivedMessages(String email, String keyword, Pageable pageable) {
 		Long userId = utils.findUser(email).getUserId();

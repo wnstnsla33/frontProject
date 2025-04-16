@@ -15,7 +15,7 @@ public interface HostUserRepository extends JpaRepository<HostUserEntity, Long> 
 			+ "WHERE r.roomId = :roomId AND h.user.userId = :userId")
 	Optional<HostUserEntity> findLoginId(@Param("roomId") String roomId, @Param("userId") Long userId);
 
-	@Query("SELECT h FROM HostUserEntity h JOIN FETCH h.room r WHERE h.user.userId = :userId")
+	@Query("SELECT h FROM HostUserEntity h JOIN FETCH h.room r WHERE h.user.userId = :userId and h.status='JOINED'")
 	List<HostUserEntity> findRoomsByUser(@Param("userId") Long userId);
 
 	@Query("""

@@ -4,10 +4,12 @@ import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
+@AllArgsConstructor
 public class SaveMessageDTO {
 	@NotNull
 	@NotBlank(message = "제목은 필수 입력 항목입니다.")

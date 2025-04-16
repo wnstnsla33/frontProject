@@ -30,7 +30,7 @@ public class AdminUserDTO {
 	private String userInfo;
 
 	private String Hint;
-
+	private int reportCount;
 	private String userImg;
 	private LocalDateTime recentLoginTime;
 	private int userExp;
@@ -54,6 +54,7 @@ public class AdminUserDTO {
 		this.userExp = userEntity.getUserExp();
 		this.userLevel = userEntity.getUserLevel();
 		this.recentLoginTime = userEntity.getRecentLoginTime();
+		this.reportCount = userEntity.getReportedCount();
 	}
 
 }
