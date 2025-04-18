@@ -32,8 +32,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
             oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
         }
       
-        else {
+        else if(registraionid.equals("kakao")){
         	 oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+        }
+        else {
+        	oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         }
         String userEmail = oAuth2Response.getProvider()+" "+oAuth2Response.getproviderId();
         Optional< UserEntity> optionalUser = userRepository.findByEmail(userEmail);

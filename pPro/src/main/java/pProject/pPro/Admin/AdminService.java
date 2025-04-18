@@ -121,16 +121,4 @@ public class AdminService {
 		return chatPage.getContent().stream().map(UserChatByAdmin::new).toList();
 	}
 
-	@EventListener(ApplicationReadyEvent.class)
-	public void createAdmin() {
-		log.info("********** createAdmin() 호출 **********");
-		UserEntity user = new UserEntity();
-		user.setUserEmail("admin@naver.com");
-		user.setUserPassword(passwordEncoder.encode("adminadmin1234"));
-		user.setUserGrade(Grade.ADMIN);
-		user.setUserName("관리자");
-		user.setUserNickName("manager");
-		user.setUserImg("/uploads/classicImage/1.png");
-		userRepository.save(user);
-	}
 }

@@ -2,6 +2,7 @@ package pProject.pPro.smtp;
 
 import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -9,12 +10,16 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Configuration
 public class MailConfig {
+	@Value("${naver.email}")
+	private String Email;
+	@Value("${naver.pwd}")
+	private String pwd;
 	@Bean
 	public JavaMailSender NaverMailService() {
 		JavaMailSenderImpl jms = new JavaMailSenderImpl();
 		jms.setHost("smtp.naver.com");
-		jms.setUsername("wnstnsla3968@naver.com");
-		jms.setPassword("jarf1203");
+		jms.setUsername(Email);
+		jms.setPassword(pwd);
 		jms.setPort(465);
 		jms.setJavaMailProperties(getMailProperties());
 		return jms;

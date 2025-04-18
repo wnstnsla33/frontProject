@@ -39,7 +39,7 @@ public class RoomEntity {
 	@Column(name = "room_id")
 	private String roomId;
 	private String roomTitle;
-	@Lob
+	@Column(columnDefinition = "TEXT")
 	private String roomContent;
 	private int roomMaxParticipants;
 	private int curPaticipants;
