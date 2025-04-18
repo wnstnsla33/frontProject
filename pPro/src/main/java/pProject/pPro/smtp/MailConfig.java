@@ -1,6 +1,5 @@
 
-<<<<<<< HEAD
-=======
+package pProject.pPro.smtp;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -37,4 +36,3 @@ public class MailConfig {
         return properties;
     }
 }
->>>>>>> add_STOMP
