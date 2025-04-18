@@ -32,8 +32,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
             oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
         }
       
+        else if(registraionid.equals("kakao")){
+        	 oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+        }
         else {
-        	return null;
+        	oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         }
         String userEmail = oAuth2Response.getProvider()+" "+oAuth2Response.getproviderId();
         Optional< UserEntity> optionalUser = userRepository.findByEmail(userEmail);
@@ -46,9 +49,18 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	userEntity.setUserCreateDate(createDate);
         	userEntity.setUserGrade(Grade.BRONZE);
         	userEntity.setUserEmail(userEmail);
+        	userEntity.setReportedCount(0);
         	userEntity.setUserAge(Integer.parseInt( oAuth2Response.getAge()));
-        	userEntity.setUserSex(oAuth2Response.getSex()=="M"?"남성":"여성");
-        	userEntity.setUserImg("https://i.namu.wiki/i/Bge3xnYd4kRe_IKbm2uqxlhQJij2SngwNssjpjaOyOqoRhQlNwLrR2ZiK-JWJ2b99RGcSxDaZ2UCI7fiv4IDDQ.webp");
+        	int num =0;
+        	if(oAuth2Response.getSex()==null||oAuth2Response.getSex().equals("M")) {
+        		 num = (int)(Math.random() * 9) + 1;
+        		userEntity.setUserSex("남성");
+        	}
+        	else {
+        		 num = (int)(Math.random() * 6) + 10;
+        		userEntity.setUserSex("여성");
+        	}
+        	userEntity.setUserImg("/uploads/classicImage/" + num + ".png");
         	userEntity.setUserLevel(1);
         	userEntity.setUserExp(0);
         	userRepository.save(userEntity);
@@ -71,6 +83,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
              userDTO.setEmail(userEmail);
              userDTO.setName(oAuth2Response.getName());
              if(existData.getUserGrade()==Grade.ADMIN) userDTO.setRole("ROLE_ADMIN");
+             else if(existData.getUserGrade()==Grade.BANNED) userDTO.setRole("ROLE_BANNED");
              else userDTO.setRole("ROLE_USER");
              return new CustomOAuth2User(userDTO);
         }

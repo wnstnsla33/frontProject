@@ -13,9 +13,10 @@ import pProject.pPro.entity.UserEntity;
 @NoArgsConstructor
 
 public class UserInfoDTO {
+	private long userId;
 	private String userEmail;
 	//암호화됨
-	private String userPassword;
+//	private String userPassword;
 	
 	private String userNickName;
 	//실명
@@ -33,16 +34,17 @@ public class UserInfoDTO {
 	
 	private String userInfo;
 	
-	private String Hint;
+//	private String Hint;
 	
 	private String userImg;
 
 	private int userExp;
 
 	private int userLevel;
-
+	
 	public UserInfoDTO(UserEntity userEntity) {
 		super();
+		this.userId = userEntity.getUserId();
 		this.userEmail = userEntity.getUserEmail();
 		this.userNickName = userEntity.getUserNickName();
 		this.userName = userEntity.getUserName();
@@ -52,9 +54,11 @@ public class UserInfoDTO {
 		this.userCreateDate = userEntity.getUserCreateDate();
 		this.userSex = userEntity.getUserSex();
 		this.userInfo = userEntity.getUserInfo();
-		this.Hint = userEntity.getHint();
+//		this.Hint = userEntity.getHint();
 		this.userImg = userEntity.getUserImg();
 		this.userExp = userEntity.getUserExp();
 		this.userLevel = userEntity.getUserLevel();
 	}
+	
+	
 }

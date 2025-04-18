@@ -23,7 +23,9 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        System.out.println("CustomUsernamePasswordAuthenticationFilter - attemptAuthentication START");
+    	System.out.println("🔥 필터 통과 URI: " + request.getRequestURI());
+    	System.out.println("🔥 Content-Type: " + request.getContentType());
+    	System.out.println("🔥 Method: " + request.getMethod());
         UsernamePasswordAuthenticationToken authenticationToken = null;
 
         String userId = null;
@@ -40,7 +42,6 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
                 userId = loginDto.getEmail();
                 userPassword = loginDto.getPassword();
 
-                logger.info("JSON 접속. USERID : " + userId + ", USERPW : " + userPassword);
             } catch(IOException e){
                 e.printStackTrace();
             }
@@ -64,7 +65,6 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
 
         authenticationToken = new UsernamePasswordAuthenticationToken(userId, userPassword);
         this.setDetails(request, authenticationToken);
-        System.out.println("CustomUsernamePasswordAuthenticationFilter - attemptAuthentication END");
         return this.getAuthenticationManager().authenticate(authenticationToken);
 
     }

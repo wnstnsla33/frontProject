@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="pProject.pPro.post.PostMapper">
+
+    <resultMap id="PostMap" type="pProject.pPro.entity.PostEntity">
+        <id property="postId" column="post_id" />
+        <result property="title" column="title" />
+        <result property="titleImg" column="title_img" />
+        <result property="content" column="content" />
+        <result property="createDate" column="create_date" />
+        <result property="modifiedDate" column="modified_date" />
+        <result property="viewCount" column="view_count" />
+        <result property="bookmarkCount" column="bookmark_count" />
+        <result property="secreteKey" column="secrete_key" />
+        <association property="user" column="user_id" javaType="pProject.pPro.entity.UserEntity" fetchType="lazy" />
+    </resultMap>
+
+    <select id="getPostDetail" resultMap="PostMap">
+        SELECT * FROM post_entity WHERE post_id = #{postId}
+    </select>
+
+    <update id="incrementViewCount">
+        UPDATE post_entity SET view_count = view_count + 1 WHERE post_id = #{postId}
+    </update>
+
+    <select id="getMyPostList" resultMap="PostMap">
+        SELECT * FROM post_entity WHERE user_id = (SELECT user_id FROM user_entity WHERE email = #{email})
+    </select>
+
+    <insert id="insertPost" parameterType="pProject.pPro.entity.PostEntity" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO post_entity (title, title_img, content, create_date, user_id, secrete_key)
+        VALUES (#{title}, #{titleImg}, #{content}, SYSDATE, #{user.userId}, #{secreteKey})
+    </insert>
+
+    <update id="updatePost" parameterType="pProject.pPro.entity.PostEntity">
+        UPDATE post_entity SET
+            title = #{title},
+            title_img = #{titleImg},
+            content = #{content},
+            modified_date = SYSDATE
+        WHERE post_id = #{postId}
+    </update>
+
+    <delete id="deletePost">
+        DELETE FROM post_entity WHERE post_id = #{postId}
+    </delete>
+
+    <update id="updateBookmarkCount">
+        UPDATE post_entity SET bookmark_count = bookmark_count + #{count} WHERE post_id = #{postId}
+    </update>
+
+</mapper>

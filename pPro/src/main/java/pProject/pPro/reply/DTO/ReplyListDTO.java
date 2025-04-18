@@ -12,19 +12,22 @@ import pProject.pPro.entity.ReplyEntity;
 @Setter
 
 public class ReplyListDTO {
-
+	private Long userId;
+	private Long replyId;
 	private String content;
 	private String userNickname;
-	private String userName;
+	private String userImg;
 	private LocalDate createDate;
 	private LocalDate modifiedDate;
 	private Long postId;
 	private List<ReplyListDTO> replys;
 	public ReplyListDTO(ReplyEntity reply) {
 		super();
+		this.userId = reply.getUser().getUserId();
+		this.replyId = reply.getReplyId();
 		this.content = reply.getContent();
 		this.userNickname = reply.getUser().getUserNickName();
-		this.userName = reply.getUser().getUserName();
+		this.userImg = reply.getUser().getUserImg();
 		this.createDate = reply.getCreateDate();
 		this.modifiedDate = reply.getModifiedDate();
 		this.postId = reply.getPost().getPostId();

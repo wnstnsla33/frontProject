@@ -1,107 +1,90 @@
 package pProject.pPro.User;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import pProject.pPro.User.DTO.ProfileEditDTO;
-import pProject.pPro.User.DTO.ResponseUserDTO;
-import pProject.pPro.User.DTO.SignupLoginDTO;
-import pProject.pPro.User.DTO.UserInfoDTO;
-import pProject.pPro.User.DTO.userServiceResponseDTO;
+import pProject.pPro.User.DTO.*;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ControllerUtils;
+import pProject.pPro.post.DTO.PassWordDTO;
 
 @RestController
-
+@RequiredArgsConstructor
 public class UserController {
-	void makeMessage(String methodName) {
-		System.out.println("********************************"+methodName);
-	}
-	@Autowired
-	private UserService userService;
-	ResponseUserDTO responseUserDTO;
-//	@PostMapping("/login")
-//	public String main(@RequestBody SignupLoginDTO signupDTO) {
-//		System.out.println(signupDTO.getEmail());
-//		return "main";
-//	}
-	
-	@GetMapping("/auth")
-	public String auth() {
-		return "auth";
-	}
-	@PostMapping("/signup")
-	public ResponseEntity signUpUser(@RequestBody SignupLoginDTO signupDTO){
-		makeMessage("signiup");
-		String isSaved =  userService.saveUser(signupDTO);
-		if(isSaved.equals("existId"))return responseUserDTO.existId();
-		else if(isSaved.equals("success")) return responseUserDTO.signupSuccess();
-		else return responseUserDTO.failInMsg("회원 가입에 실패하였습니다");
-	}
-	@GetMapping("user")
-	public ResponseEntity myInfo(@AuthenticationPrincipal UserDetails loginUser){
-		makeMessage("profile");
-		return ResponseEntity.status(HttpStatus.OK).body(userService.userInfo(loginUser.getUsername()));
-	}
-	@PostMapping("user/logout")
-	public ResponseEntity logout(HttpServletResponse response) {
-		makeMessage("logout");
-		userService.logout(response);
-	    return responseUserDTO.logoutSuccess();
-	}
-	@PostMapping("/user/edit")
-	public ResponseEntity profileEdit(@RequestBody ProfileEditDTO profileEditDTO,
-	                                     @AuthenticationPrincipal  UserDetails loginUser) {
-		makeMessage("profileEdit");
-		UserEntity userInfo = userService.updateUser(profileEditDTO, loginUser.getUsername());
-		if(userInfo==null) return responseUserDTO.loginFail();
-		else return ResponseUserDTO.userInfo(userInfo);
-	}
 
-	@DeleteMapping("/user/delete")//이거 프론트에 수정해야돼
-	public ResponseEntity deleteUser(@AuthenticationPrincipal  UserDetails loginUser) {
-		makeMessage("delete User");
-		if(userService.deleteUser(loginUser.getUsername())) return responseUserDTO.userDelete();
-		else return responseUserDTO.failInMsg("계정이 삭제되지 않았습니다");
-	}
-	
-	@PostMapping("/find/id")
-	public ResponseEntity findId(@RequestBody UserInfoDTO userInfoDTO) {
-	    makeMessage("find/id " + userInfoDTO);
-	    userServiceResponseDTO response = userService.findId(userInfoDTO);
+    private final UserService userService;
+    private final ControllerUtils utils;
 
-	    return switch (response.getStatus()) {
-	        case NO_EXIST -> responseUserDTO.accountNotFound();
-	        case FIND_FAIL -> responseUserDTO.failInMsg("생일이 잘못되었습니다");
-	        case SNS_ID -> responseUserDTO.failInMsg("SNS 로그인 계정은 ID 찾기 불가합니다.");
-	        case SUCCESS -> responseUserDTO.okInMsg("이메일은 " + response.getData() + "입니다.");
-	    };
-	}
+    // 로그인
+    @PostMapping("/login")
+    public ResponseEntity<CommonResponse<Void>> login(@RequestBody SignupLoginDTO signupDTO) {
+        userService.loginUser(signupDTO);
+        return ResponseEntity.ok(CommonResponse.success("로그인 성공"));
+    }
 
-	@PostMapping("/find/pwd")
-	public ResponseEntity findPwd(@RequestBody UserInfoDTO userInfoDTO) {
-	    makeMessage("find/pwd " + userInfoDTO);
-	    userServiceResponseDTO response = userService.findPwd(userInfoDTO);
+    // 회원가입
+    @PostMapping("/signup")
+    public ResponseEntity<CommonResponse<Void>> signup(@RequestBody @Valid SignupLoginDTO dto) {
+    	
+        userService.signup(dto);
+        return ResponseEntity.ok(CommonResponse.success("회원가입 성공"));
+    }
 
-	    return switch (response.getStatus()) {
-	        case NO_EXIST -> responseUserDTO.accountNotFound();
-	        case SNS_ID -> responseUserDTO.failInMsg("SNS 로그인 계정은 비밀번호 찾기 불가합니다.");
-	        case FIND_FAIL -> responseUserDTO.failInMsg("이름이 잘못되었습니다");
-	        case SUCCESS -> responseUserDTO.okInMsg(response.getData() + "로 비밀번호가 재설정되었습니다.");
-	    };
-	}
+    // 내 정보 조회
+    @GetMapping("/user")
+    public ResponseEntity<CommonResponse<UserInfoDTO>> myInfo(@AuthenticationPrincipal UserDetails loginUser) {
+    	if(loginUser==null)return ResponseEntity.ok(CommonResponse.success("미로그인 상태입니다."));
+        UserEntity user = userService.findUserSync(utils.findEmail(loginUser));
+        return ResponseEntity.ok(CommonResponse.success("내 정보 조회 성공", new UserInfoDTO(user)));
+    }
 
+
+    // 로그아웃
+    @PostMapping("/auth/logout")
+    public ResponseEntity<CommonResponse<Void>> logout(HttpServletResponse response) {
+        userService.logout(response);
+        return ResponseEntity.ok(CommonResponse.success("로그아웃 성공"));
+    }
+
+    // 프로필 수정
+    @PostMapping("/user/edit")
+    public ResponseEntity<CommonResponse<UserInfoDTO>> profileEdit(
+            @ModelAttribute ProfileEditDTO profileEditDTO,
+            @AuthenticationPrincipal UserDetails loginUser) {
+        UserEntity userInfo = userService.updateUser(profileEditDTO, utils.findEmail(loginUser));
+        return ResponseEntity.ok(CommonResponse.success("프로필 수정 성공", new UserInfoDTO(userInfo)));
+    }
+
+    // 회원 탈퇴
+    @DeleteMapping("/user/delete")
+    public ResponseEntity<CommonResponse<Void>> deleteUser(@AuthenticationPrincipal UserDetails loginUser,
+                                                              @RequestBody PassWordDTO pwd) {
+        userService.deleteUser(utils.findEmail(loginUser), pwd.getPwd());
+        return ResponseEntity.ok(CommonResponse.success("회원 탈퇴 완료"));
+    }
+
+    // 아이디 찾기
+    @PostMapping("/find/id")
+    public ResponseEntity<CommonResponse<String>> findId(@RequestBody UserInfoDTO userInfoDTO) {
+        String email = userService.findId(userInfoDTO);
+        return ResponseEntity.ok(CommonResponse.success("아이디 찾기 성공", email));
+    }
+
+    // 비밀번호 찾기
+    @PostMapping("/find/pwd")
+    public ResponseEntity<CommonResponse<String>> findPwd(@RequestBody UserInfoDTO userInfoDTO) {
+        String result = userService.findPwd(userInfoDTO);
+        return ResponseEntity.ok(CommonResponse.success("비밀번호 찾기 성공", result));
+    }
+    @GetMapping("/user/detail/{userId}")
+    public ResponseEntity detailUserInfo(@PathVariable("userId")Long userId) {
+    	UserDetailDTO user = userService.getUserInfo(userId);
+    	return ResponseEntity.ok(CommonResponse.success("해당 유저의 정보입니다.", user));
+    }
 }

@@ -1,87 +1,121 @@
 package pProject.pPro.post;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import lombok.RequiredArgsConstructor;
 import pProject.pPro.User.UserService;
+import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.post.DTO.PassWordDTO;
 import pProject.pPro.post.DTO.PostListDTO;
-import pProject.pPro.post.DTO.PostResponseDTO;
+import pProject.pPro.post.DTO.PostPageDTO;
+import pProject.pPro.post.DTO.PostSearchDTO;
 import pProject.pPro.post.DTO.WritePostDTO;
+import pProject.pPro.post.exception.PostErrorCode;
+import pProject.pPro.post.exception.PostException;
 
 @RestController
+@RequiredArgsConstructor
 public class PostController {
-	private PostResponseDTO postResponseDTO;
-	@Autowired
-	private PostService postService;
-	@Autowired
-	private UserService userService;
-	void makeMessage(String methodName) {
-		System.out.println("********************************" + methodName);
-	}
-	@PostMapping("/post/new")//게시물 등록
-	public ResponseEntity newPost(@ModelAttribute WritePostDTO writePostDTO,
-			@AuthenticationPrincipal UserDetails loginUser) {
-		makeMessage("newPost");
-		String email = loginUser.getUsername();
-		userService.expUp(email);
-		return postService.writePost(writePostDTO, email);
+	private final PostService postService;
+	private final UserService userService;
+	private final ControllerUtils utils;
+
+	@PostMapping("/post/new")
+	public ResponseEntity<?> newPost(@ModelAttribute WritePostDTO writePostDTO,
+	                                 @AuthenticationPrincipal UserDetails loginUser) {
+		String email = utils.findEmail(loginUser);
+		UserEntity user= userService.expUp(email);
+		postService.writePost(writePostDTO, user);
+		return ResponseEntity.ok(CommonResponse.success("정상적으로 등록되었습니다", null));
 	}
 
+	@PostMapping("/post/image")
+	public ResponseEntity<?> imageUpload(@RequestPart("image") MultipartFile imageFile) {
+		if (imageFile.isEmpty()) {
+			throw new PostException(PostErrorCode.UNKNOWN_ERROR);
+		}
+		String imageUrl = postService.saveImg(imageFile);
+		return ResponseEntity.ok(CommonResponse.success("이미지 업로드 성공", imageUrl));
+	}
 
-	@GetMapping("/post")//게시물들(paging)
-	public ResponseEntity postList(@RequestParam(value = "page", defaultValue = "0") int page,@RequestParam(value ="sortType",defaultValue = "1") int sortNumber){
-		makeMessage("post");
-		return postResponseDTO.getPostList(postService.getPostList(page-1,sortNumber),postService.postCount());
+	@GetMapping("/post")
+	public ResponseEntity<?> postList(@ModelAttribute PostSearchDTO searchDTO,
+	                                  @AuthenticationPrincipal UserDetails userDetails) {
+		String email = utils.findEmailOrNull(userDetails);
+		PostPageDTO list = postService.getPostList(
+				email,
+				searchDTO.getPage() - 1,
+				searchDTO.getSortType(),
+				searchDTO.getKeyword()
+		);
+		return ResponseEntity.ok(CommonResponse.success("게시글 목록 조회 성공", list));
 	}
-	@GetMapping("/post/mybookmark")//게시물들(paging)
-	public ResponseEntity bookmarkPostList(@AuthenticationPrincipal UserDetails user, @RequestParam(value = "page", defaultValue = "0") int page,
-			@RequestParam(value ="sortType",defaultValue = "1") int sortNumber) {
-		makeMessage("post/bookmark");
-		return postResponseDTO.getPostList(postService.getPostBookmarkList(user.getUsername(), page-1,sortNumber),postService.postBookmarkCount(user.getUsername()));
+
+	@GetMapping("/post/mybookmark")
+	public ResponseEntity<?> bookmarkPostList(@AuthenticationPrincipal UserDetails user,
+	                                          @RequestParam(value = "page", defaultValue = "0") int page,
+	                                          @RequestParam(value = "sortType", defaultValue = "1") int sortNumber) {
+		PostPageDTO list = postService.getPostBookmarkList(utils.findEmail(user), page - 1, sortNumber);
+		return ResponseEntity.ok(CommonResponse.success("북마크 게시글 조회 성공", list));
 	}
-	@GetMapping("/post/{postId}")//게시물 상세
-	public ResponseEntity getPostDetail(@PathVariable("postId") long postId,@AuthenticationPrincipal UserDetails loginUser) {
-		makeMessage("post/postId");
-		String email = loginUser.getUsername();
-		return postResponseDTO.getPost(postService.incrementAndGetPost(postId, email));
-		
+
+	@GetMapping("/post/{postId}")
+	public ResponseEntity<?> getPostDetail(@PathVariable("postId") long postId,
+	                                       @AuthenticationPrincipal UserDetails loginUser) {
+		String email = utils.findEmailOrNull(loginUser);
+		PostListDTO dto = postService.incrementAndGetPost(postId, email);
+		return ResponseEntity.ok(CommonResponse.success("게시글 상세 조회 성공", dto));
 	}
-	@PutMapping("/post/{postId}")//해당 게시물 수정
-	public ResponseEntity updatePost(@PathVariable("postId") long postId ,@RequestBody PostListDTO postListDTO,@AuthenticationPrincipal UserDetails loginuser) {
-		makeMessage("update post/postId");
-		return postResponseDTO.getPost(postService.updatePost(postId,postListDTO,loginuser.getUsername()));
+
+	@PutMapping("/post/{postId}")
+	public ResponseEntity<?> updatePost(@PathVariable("postId") long postId,
+	                                    @RequestBody PostListDTO updatePost,
+	                                    @AuthenticationPrincipal UserDetails loginUser) {
+		PostListDTO updated = postService.updatePost(postId, updatePost, utils.findEmail(loginUser));
+		return ResponseEntity.ok(CommonResponse.success("게시글 수정 완료", updated));
 	}
-	@DeleteMapping("/post/{postId}")//게시물 삭제
-	public ResponseEntity deletePost(@PathVariable("postId")Long postId,@AuthenticationPrincipal UserDetails loginuser) {
-		makeMessage("delete post/postId");
-		boolean isDeleted = postService.deletePost(postId, loginuser.getUsername());
-		if(isDeleted)return postResponseDTO.postSuccess("정상 삭제 완료");
-		else return postResponseDTO.postFail("잘못된 요청입니다");
+
+	@DeleteMapping("/post/{postId}")
+	public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId,
+	                                    @AuthenticationPrincipal UserDetails loginUser) {
+		postService.deletePost(postId, utils.findEmail(loginUser));
+		return ResponseEntity.ok(CommonResponse.success("삭제되었습니다", null));
 	}
-	
-	@PostMapping("/post/secrete/{postId}")//비밀 게시물(아직 구현X)
-	public ResponseEntity getSecretePost(@PathVariable("postId")Long postId,@RequestBody PassWordDTO passWordDTO) {
-		makeMessage("secrete post/postId"+postId+passWordDTO.getPwd());
-		PostListDTO postListDTO = postService.getSecretePost(postId,passWordDTO.getPwd());
-		if(postListDTO==null)return postResponseDTO.postFail("잘못된 비밀번호 입니다");
-		else return postResponseDTO.getPost(postListDTO);
+
+	@PostMapping("/post/secrete/{postId}")
+	public ResponseEntity<?> getSecretePost(@PathVariable("postId") Long postId,
+	                                        @RequestBody PassWordDTO passWordDTO,
+	                                        @AuthenticationPrincipal UserDetails user) {
+		String email = utils.findEmailOrNull(user);
+		PostListDTO dto = postService.getSecretePost(postId, passWordDTO.getPwd(), email);
+		return ResponseEntity.ok(CommonResponse.success("비밀 게시글 조회 성공", dto));
 	}
-	@GetMapping("/post/myPost")//내가쓴 게시물들
-	public ResponseEntity getMyPostLists(@AuthenticationPrincipal UserDetails user) {
-		makeMessage("내가 쓴 게시물 보기");
-		return postResponseDTO.getPostList(postService.getMyPostList(user.getUsername()));
+
+	@GetMapping("/post/myPost")
+	public ResponseEntity<?> getMyPostLists(@AuthenticationPrincipal UserDetails user) {
+		List<PostListDTO> list = postService.getMyPostList(utils.findEmail(user));
+		return ResponseEntity.ok(CommonResponse.success("내 게시글 조회 성공", list));
 	}
-	
+
+	@GetMapping("/post/topView")
+	public ResponseEntity<?> getTop10Post(@AuthenticationPrincipal UserDetails user) {
+		String email = utils.findEmailOrNull(user);
+		List<PostListDTO> list = postService.getTop10Posts(email);
+		return ResponseEntity.ok(CommonResponse.success("TOP10 게시글 조회 성공", list));
+	}
+
+	@GetMapping("/post/notice")
+	public ResponseEntity<?> getNoticeList(@AuthenticationPrincipal UserDetails user) {
+		String email = utils.findEmailOrNull(user);
+		List<PostListDTO> list = postService.getNoticeList(email);
+		return ResponseEntity.ok(CommonResponse.success("공지 게시글 조회 성공", list));
+	}
 }

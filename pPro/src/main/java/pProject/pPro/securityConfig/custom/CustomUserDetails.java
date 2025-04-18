@@ -22,8 +22,13 @@ public class CustomUserDetails implements UserDetails {
 			
 			@Override
 			public String getAuthority() {
-				if(userEntity.getUserGrade()==Grade.ADMIN)return "ROLE_ADMIN";
-				else return "ROLE_USER";
+				if(userEntity.getUserGrade()==Grade.ADMIN) {
+					return "ROLE_ADMIN";
+				}
+				else if(userEntity.getUserGrade()==Grade.BANNED)return "ROLE_BANNED";
+				else {
+					return "ROLE_USER";
+				}
 			}
 		});	
 		return collection;
@@ -38,7 +43,6 @@ public class CustomUserDetails implements UserDetails {
 	@Override
 	public String getUsername() {
 		// TODO Auto-generated method stub
-		System.out.println(userEntity.getUserEmail());
 		return userEntity.getUserEmail();
 	}
 	public String getName() {

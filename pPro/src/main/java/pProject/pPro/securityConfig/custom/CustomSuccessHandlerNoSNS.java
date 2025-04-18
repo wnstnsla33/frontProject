@@ -2,9 +2,11 @@ package pProject.pPro.securityConfig.custom;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,11 +17,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import pProject.pPro.User.UserRepository;
+import pProject.pPro.entity.UserEntity;
 import pProject.pPro.securityConfig.JWTUtil;
 
 @Component
 public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHandler {
 	private final JWTUtil jwtUtil;
+	@Autowired
+	private UserRepository userRepository;
 
 	public CustomSuccessHandlerNoSNS(JWTUtil jwtUtil) {
 
@@ -29,18 +35,21 @@ public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHan
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
-		System.out.println("인증 성공!");
 		UserDetails customUserDetails = (UserDetails) authentication.getPrincipal();
 
 		String username = customUserDetails.getUsername();
-
+		UserEntity user = userRepository.findByEmail(username).get();
+		user.setRecentLoginTime(LocalDateTime.now());
+		userRepository.save(user);
 		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 		Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
 		GrantedAuthority auth = iterator.next();
 		String role = auth.getAuthority();
 
-		String token = jwtUtil.createJwt(username, role, 600 * 60 * 60L);
-		response.addCookie(createCookie("Authorization", token));
+		String access = jwtUtil.createJwt("access",username, role, 60 * 60 * 10000L);
+		String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+		response.addCookie(createCookie("access", access,1));
+		response.addCookie(createCookie("refresh", refresh,2));
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().write("{\"message\": \"로그인 성공!\"}");
@@ -48,12 +57,16 @@ public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHan
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
-	private Cookie createCookie(String key, String value) {
+	private Cookie createCookie(String key, String value,int cookieType) {
 
 		Cookie cookie = new Cookie(key, value);
-		cookie.setMaxAge(60 * 60 * 60);
-		// cookie.setSecure(true);
-		cookie.setPath("/");
+		if (cookieType == 1) { // access
+			cookie.setPath("/");
+			cookie.setMaxAge(20*60 * 60); // 1시간 (3600초)
+		} else { // refresh
+			cookie.setPath("/auth");
+			cookie.setMaxAge(7 * 24 * 60 * 60); // 7일 (604800초)
+		}
 		cookie.setHttpOnly(true);
 
 		return cookie;

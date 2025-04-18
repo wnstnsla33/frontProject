@@ -13,6 +13,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import pProject.pPro.User.UserDTO;
+import pProject.pPro.securityConfig.exception.FilterErrorCode;
+import pProject.pPro.securityConfig.exception.FilterException;
 
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -25,41 +27,44 @@ public class JWTFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-		String authorization = null;
+
+		String token = null;
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for (Cookie cookie : cookies) {
-				if (cookie.getName().equals("Authorization")) {
-
-					authorization = cookie.getValue();
+				if (cookie.getName().equals("access")) {
+					token = cookie.getValue();
 					break;
 				}
 			}
 		}
 
-		String token = authorization;
 		String requestURI = request.getRequestURI();
+		System.out.println(requestURI);
 
-		// 허용할 경로: /post, /post/{id}
-		boolean isAllowedPath = requestURI.equals("/post") || requestURI.matches("/post/\\d+")
-				|| requestURI.equals("/signup") || requestURI.equals("/signup/confirm") || requestURI.equals("/login")
-				|| requestURI.equals("/my")||requestURI.startsWith("/find");
-
-		if (isAllowedPath && token == null) {
+		// 허용할 경로는 무조건 필터를 통과시킴
+		boolean isAllowedPath = isPublicPath(requestURI);
+		if (token == null && isAllowedPath) {
+			System.out.println("토큰없음,권한 true");
 			filterChain.doFilter(request, response);
 			return;
 		}
+		// 여기서부터는 토큰이 필수적임
 		if (token == null) {
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "로그인이 필요합니다");
+			System.out.println("널값 토쿤");
+			sendErrorResponse(response, "로그인이 필요합니다.", HttpServletResponse.SC_FORBIDDEN); // 403
 			return;
 		}
 
-		if (jwtUtil.isExpired(token)) {
-			filterChain.doFilter(request, response);
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 만료되었습니다.");
+		try {
+			jwtUtil.isExpired(token);
+		} catch (io.jsonwebtoken.ExpiredJwtException e) {
+			sendErrorResponse(response, "Access 토큰이 만료되었습니다.", HttpServletResponse.SC_UNAUTHORIZED); // 401
 			return;
 		}
-		// TODO Auto-generated method stub
+
+
+		// 인증 정보 등록
 		String email = jwtUtil.getEmail(token);
 		String role = jwtUtil.getRole(token);
 
@@ -70,11 +75,27 @@ public class JWTFilter extends OncePerRequestFilter {
 		CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
 		Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null,
 				customOAuth2User.getAuthorities());
-		// 세션에 사용자 등록
-		SecurityContextHolder.getContext().setAuthentication(authToken);
-		
-		filterChain.doFilter(request, response);
 
+		SecurityContextHolder.getContext().setAuthentication(authToken);
+
+		filterChain.doFilter(request, response);
+	}
+
+	private boolean isPublicPath(String requestURI) {
+		return requestURI.startsWith("/post") || requestURI.startsWith("/uploads/") || requestURI.equals("/signup")
+				|| requestURI.equals("/signup/confirm") || requestURI.equals("/login") || requestURI.equals("/my")
+				|| requestURI.startsWith("/find") || requestURI.equals("/auth/getToken")
+				|| requestURI.equals("/ws-stomp") || requestURI.startsWith("/ws-stomp")
+				|| requestURI.equals("/chatRoom/search");
+	}
+	private void sendErrorResponse(HttpServletResponse response, String message, int statusCode) throws IOException {
+		response.setStatus(statusCode);
+		response.setContentType("application/json;charset=UTF-8");
+
+		String json = new com.fasterxml.jackson.databind.ObjectMapper()
+				.writeValueAsString(pProject.pPro.global.CommonResponse.fail(message));
+
+		response.getWriter().write(json);
 	}
 
 }

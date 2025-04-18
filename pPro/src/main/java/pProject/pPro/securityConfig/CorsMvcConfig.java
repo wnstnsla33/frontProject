@@ -8,20 +8,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsMvcConfig implements WebMvcConfigurer {
 
-    @Override
-    public void addCorsMappings(CorsRegistry corsRegistry) {
+	@Override
+	public void addCorsMappings(CorsRegistry corsRegistry) {
+	    corsRegistry.addMapping("/**")
+	        .allowedOrigins("https://soribox.site") // 실제 배포 주소
+	        .allowedMethods("*")
+	        .allowCredentials(true)
+	        .exposedHeaders("Set-Cookie");
+	}
 
-    	 corsRegistry.addMapping("/**")
-         .allowedOrigins("http://localhost:3000")
-         .allowedMethods("*")
-         .allowCredentials(true)
-         .exposedHeaders("Set-Cookie");
-    	 
-}
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:///C:/myproject/uploads/");
-    }
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+	    registry.addResourceHandler("/uploads/**")
+	        .addResourceLocations("file:/home/ubuntu/uploads/");
+	}
+
 
 }

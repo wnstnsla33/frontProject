@@ -1,6 +1,7 @@
 package pProject.pPro.securityConfig;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -15,41 +16,53 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import lombok.RequiredArgsConstructor;
+import pProject.pPro.User.UserRepository;
+import pProject.pPro.entity.UserEntity;
+@RequiredArgsConstructor
 @Configuration
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	private final JWTUtil jwtUtil;
-
-	public CustomSuccessHandler(JWTUtil jwtUtil) {
-
-		this.jwtUtil = jwtUtil;
-	}
+	private final UserRepository userRepository;
+	
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
-		System.out.println("인증 성공!");
-		UserDetails customUserDetails = (UserDetails) authentication.getPrincipal();
+		CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
 		String username = customUserDetails.getUsername();
-
 		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 		Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
 		GrantedAuthority auth = iterator.next();
 		String role = auth.getAuthority();
 
-		String token = jwtUtil.createJwt(username, role, 600 * 60 * 60L);
-		response.addCookie(createCookie("Authorization", token));
-		response.sendRedirect("http://localhost:3000/");
+
+		String access = jwtUtil.createJwt("access",username, role, 60 * 60 * 1000L);
+		String refresh = jwtUtil.createJwt("refresh",username, role, 86400000L);
+		
+		response.addCookie(createCookie("access", access,1));
+		response.addCookie(createCookie("refresh", refresh,2));
+		UserEntity userEntity = userRepository.findByEmail(username).get();
+		userEntity.setRecentLoginTime(LocalDateTime.now());
+		userRepository.save(userEntity);
+		if(userEntity.getUserNickName()==null) response.sendRedirect("http://localhost:3000/profileEdit"); 
+		else response.sendRedirect("http://localhost:3000/"); 
 	}
 
-	private Cookie createCookie(String key, String value) {
+	private Cookie createCookie(String key, String value,int cookieType) {
 
 		Cookie cookie = new Cookie(key, value);
-		cookie.setMaxAge(60 * 60 * 60);
+		
 		// cookie.setSecure(true);
-		cookie.setPath("/");
-		cookie.setHttpOnly(true);
+		if (cookieType == 1) { // access
+			cookie.setPath("/");
+			cookie.setMaxAge(60 * 60); // 1시간 (3600초)
+		} else { // refresh
+			cookie.setPath("/auth");
+			cookie.setMaxAge(7 * 24 * 60 * 60); // 7일 (604800초)
+		}
+		cookie.setHttpOnly(false);
 
 		return cookie;
 	}

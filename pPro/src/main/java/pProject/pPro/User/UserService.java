@@ -1,198 +1,207 @@
 package pProject.pPro.User;
 
-import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
-import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import pProject.pPro.User.DTO.ProfileEditDTO;
-import pProject.pPro.User.DTO.ResponseUserDTO;
 import pProject.pPro.User.DTO.SignupLoginDTO;
+import pProject.pPro.User.DTO.UserDetailDTO;
 import pProject.pPro.User.DTO.UserInfoDTO;
-import pProject.pPro.User.DTO.userServiceResponseDTO;
+import pProject.pPro.User.exception.UserErrorCode;
+import pProject.pPro.User.exception.UserException;
+import pProject.pPro.entity.Address;
 import pProject.pPro.entity.Grade;
 import pProject.pPro.entity.UserEntity;
-
+import pProject.pPro.global.ServiceUtils;
+@Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UserService {
-	ResponseUserDTO responseUserDTO;
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final ServiceUtils utils;
 
-	public String createKey() {
-		int leftLimit = 48; // numeral '0'
-		int rightLimit = 122; // letter 'z'
-		int targetStringLength = 10;
-		Random random = new Random();
-		String key = random.ints(leftLimit, rightLimit + 1).filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-				.limit(targetStringLength)
-				.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
-		return key;
-	}
+    public String createKey() {
+        int leftLimit = 48;
+        int rightLimit = 122;
+        int targetStringLength = 10;
+        Random random = new Random();
+        return random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+    }
 
-	public String saveUser(SignupLoginDTO signupDTO) {
-		Optional< UserEntity> isExist = userRepository.findByEmail(signupDTO.getEmail());
-		if (isExist.isPresent())
-			return "existId";
-		UserEntity userEntity = new UserEntity();
-		userEntity.setUserEmail(signupDTO.getEmail());
-		userEntity.setUserNickName(signupDTO.getNickname());
-		userEntity.setUserName(signupDTO.getRealName());
-		userEntity.setUserBirthDay(signupDTO.getBirthDate().toString());
-		LocalDate birthYearStr = signupDTO.getBirthDate();
-		LocalDate currentDate = LocalDate.now();
-		int age = Period.between(birthYearStr, currentDate).getYears();
-		userEntity.setUserAge(age);
-		userEntity.setUserSex(signupDTO.getGender());
-		userEntity.setUserGrade(Grade.BRONZE);
-		userEntity.setUserCreateDate(LocalDate.now().toString());
-		userEntity.setUserPassword(passwordEncoder.encode(signupDTO.getPassword()));
-		userEntity.setUserImg(
-				"https://i.namu.wiki/i/Bge3xnYd4kRe_IKbm2uqxlhQJij2SngwNssjpjaOyOqoRhQlNwLrR2ZiK-JWJ2b99RGcSxDaZ2UCI7fiv4IDDQ.webp");
-		userEntity.setUserLevel(1);
-		userEntity.setUserExp(0);
-		try {
-			userRepository.save(userEntity);
-			return "success";
-		} catch (Exception e) {
-			// TODO: handle exception
-			return "fail";
+    public void signup(SignupLoginDTO signupDTO) {
+        Optional<UserEntity> isEmailExist = userRepository.findByEmail(signupDTO.getEmail());
+        if (isEmailExist.isPresent()) throw new UserException(UserErrorCode.EXIST_ID);
+        Optional<UserEntity> isNickNameExist = userRepository.findByNickname(signupDTO.getNickname());
+        if (isNickNameExist.isPresent()) throw new UserException(UserErrorCode.EXIST_NICKNAME);
+        UserEntity userEntity = new UserEntity(signupDTO);
+        userEntity.setUserPassword(passwordEncoder.encode(signupDTO.getPassword()));
+        int num =0;
+    	if(signupDTO.getGender().equals("남성")) {
+    		 num = (int)(Math.random() * 9) + 1;
+    		userEntity.setUserSex("남성");
+    	}
+    	else {
+    		 num = (int)(Math.random() * 6) + 10;
+    		userEntity.setUserSex("여성");
+    	}
+        userEntity.setUserImg("/uploads/classicImage" + num + ".png");
+        try {
+        userRepository.save(userEntity);
+        }catch (DataIntegrityViolationException e) {
+        	throw new UserException(UserErrorCode.UNKNOWN);
 		}
+    }
 
-	}
+    public void loginUser(SignupLoginDTO dto) {
+        UserEntity user = utils.findUser(dto.getEmail());
+    }
 
-	public ResponseEntity LoginUser(SignupLoginDTO dto) {
-		Optional< UserEntity> isExist = userRepository.findByEmail(dto.getEmail());
-		if (isExist.isPresent())
-			return responseUserDTO.accountNotFound();
-		else if (passwordEncoder.matches(dto.getPassword(), isExist.get().getUserPassword())) {
-			return ResponseUserDTO.loginSuccess();
-		}
-		return ResponseUserDTO.loginFail();
-	}
+    public UserEntity expUp(String email) {
+        UserEntity user = utils.findUser(email);
+        int exp = user.getUserExp() + 20;
 
-	public UserInfoDTO userInfo(String email) {
-		UserEntity findEntity = userRepository.findByEmail(email).get();
-		UserInfoDTO dto = new UserInfoDTO(findEntity);
-		return dto;
-	}
+        if (exp >= 100) {
+            user.setUserLevel(user.getUserLevel() + 1);
+            user.setUserExp(0);
+            if (user.getUserLevel() >= 10) user.setUserGrade(Grade.VIP);
+            else if (user.getUserLevel() >= 7) user.setUserGrade(Grade.GOLD);
+            else if (user.getUserLevel() >= 4) user.setUserGrade(Grade.SILVER);
+        } else {
+            user.setUserExp(exp);
+        }
 
-	public UserEntity updateUser(ProfileEditDTO profileEditDTO, String email) {
-		UserEntity user = userRepository.findByEmail(email).get();
-		if (!(user.getUserPassword().startsWith("naver ") || user.getUserPassword().startsWith("google ")
-				|| user.getUserPassword().startsWith("kakao "))
-				&& !passwordEncoder.matches(profileEditDTO.getUserPassword(), user.getUserPassword())) {
-			return null;
-		}
-		if (profileEditDTO.getUserNewPassword() != null) {
-			user.setUserNickName(passwordEncoder.encode(profileEditDTO.getUserNewPassword()));
-		}
-		if (profileEditDTO.getNickName() != null) {
-			user.setUserNickName(profileEditDTO.getNickName());
-		}
-		// 이미지가 null이 아닐 때만 수정
-		if (profileEditDTO.getUserImg() != null) {
-			user.setUserImg(profileEditDTO.getUserImg());
-		}
-		// 정보가 null이 아닐 때만 수정
-		if (profileEditDTO.getUserInfo() != null) {
-			user.setUserInfo(profileEditDTO.getUserInfo());
-		}
+        log.info("💾 경험치/레벨 저장 - email: {}", email);
+        return userRepository.save(user);
+    }
 
-		return userRepository.save(user);
-	}
+    public void logout(HttpServletResponse response) {
+        Cookie accessCookie = new Cookie("access", null);
+        accessCookie.setPath("/");
+        accessCookie.setMaxAge(0);
+        response.addCookie(accessCookie);
 
-	public ResponseEntity expUp(String email) {// 게시판 등록 시 경험치 20
-		UserEntity user = userRepository.findByEmail(email).get();
-		int exp = user.getUserExp() + 20;
-		if (exp == 100) {
-			user.setUserLevel(user.getUserLevel() + 1);
-			user.setUserExp(0);
-			if (user.getUserLevel() >= 4) {
-				user.setUserGrade(Grade.SILVER);
-			} else if (user.getUserLevel() >= 7) {
-				user.setUserGrade(Grade.GOLD);
-			} else if (user.getUserLevel() >= 10) {
-				user.setUserGrade(Grade.VIP);
-			}
-		} else
-			user.setUserExp(exp);
-		return ResponseUserDTO.userInfo(userRepository.save(user));
-	}
+        Cookie refreshCookie = new Cookie("refresh", null);
+        refreshCookie.setPath("/auth");
+        refreshCookie.setMaxAge(0);
+        response.addCookie(refreshCookie);
+    }
 
-	public boolean deleteUser(String email) {
-		UserEntity user = userRepository.findByEmail(email).get();
-		try {
-			userRepository.deleteByUserEmail(email);
-			return true;
-		} catch (Exception e) {
-			return false;
-			// TODO: handle exception
-		}
-	}
+    public void deleteUser(String email, String pwd) {
+        UserEntity user = utils.findUser(email);
+        if (!(utils.isSocialAccount(email)) && !passwordEncoder.matches(pwd, user.getUserPassword())) {
+            throw new UserException(UserErrorCode.INVALID_PASSWORD);
+        }
 
-	public void logout(HttpServletResponse response) {
-		Cookie cookie = new Cookie("Authorization", null);
-		cookie.setPath("/");
-		cookie.setHttpOnly(true);
-		cookie.setMaxAge(0);
-		cookie.setSecure(true);
-		response.addCookie(cookie);
-	}
+        log.info("🗑️ 유저 삭제 - email: {}", email);
+        userRepository.deleteByUserEmail(email);
+    }
 
-	public userServiceResponseDTO findId(UserInfoDTO userInfoDTO) {
-	    UserEntity user = userRepository.findByName(userInfoDTO.getUserName());
-	    if (user == null) return new userServiceResponseDTO(UserFindResult.NO_EXIST,null);
-	    else if (!user.getUserBirthDay().equals(userInfoDTO.getUserBirthDay())) {
-	       return new userServiceResponseDTO(UserFindResult.FIND_FAIL,null);
-	    } else if (user.getUserEmail().startsWith("naver ")
-	            || user.getUserEmail().startsWith("google ")
-	            || user.getUserEmail().startsWith("kakao ")) {
-	    	return new userServiceResponseDTO(UserFindResult.SNS_ID,null);
-	    } else {
-	    	return new userServiceResponseDTO(UserFindResult.SUCCESS,user.getUserEmail());
-	    }
-	}
+    public String findId(UserInfoDTO dto) {
+        log.info("🔍 이름으로 유저 검색 - name: {}", dto.getUserName());
+        UserEntity user = userRepository.findByName(dto.getUserName());
+        if (user == null) throw new UserException(UserErrorCode.INVALID_ID);
+        if (!user.getUserBirthDay().equals(dto.getUserBirthDay())) {
+            throw new UserException(UserErrorCode.INVALID_BIRTH_DAY);
+        }
+        if (utils.isSocialAccount(dto.getUserEmail())) {
+            throw new UserException(UserErrorCode.ISSOCIAL);
+        }
+        return user.getUserEmail();
+    }
 
+    public String findPwd(UserInfoDTO dto) {
+        if (utils.isSocialAccount(dto.getUserEmail())) {
+            throw new UserException(UserErrorCode.ISSOCIAL);
+        }
+        UserEntity user = utils.findUser(dto.getUserEmail());
+        if (!user.getUserName().equals(dto.getUserName())) {
+            throw new UserException(UserErrorCode.INVALID_NAME);
+        }
 
-	public userServiceResponseDTO findPwd(UserInfoDTO userInfoDTO) {
-	    if (userInfoDTO.getUserEmail().startsWith("naver ")
-	            || userInfoDTO.getUserEmail().startsWith("google ")
-	            || userInfoDTO.getUserEmail().startsWith("kakao ")) {
-	        return new userServiceResponseDTO(UserFindResult.SNS_ID, null);
-	    }
+        String newPassword = createKey();
+        user.setUserPassword(passwordEncoder.encode(newPassword));
 
-	    Optional<UserEntity> userOpt = userRepository.findByEmail(userInfoDTO.getUserEmail());
-	    if (userOpt.isEmpty()) {
-	        return new userServiceResponseDTO(UserFindResult.NO_EXIST, null);
-	    }
+        log.info("🔐 비밀번호 재설정 저장 - email: {}", user.getUserEmail());
+        userRepository.save(user);
+        return newPassword;
+    }
 
-	    UserEntity user = userOpt.get();
-	    if (!user.getUserName().equals(userInfoDTO.getUserName())) {
-	        return new userServiceResponseDTO(UserFindResult.FIND_FAIL, null);
-	    }
+    public UserEntity updateUser(ProfileEditDTO dto, String email) {
+        UserEntity user = utils.findUser(email);
 
-	    // 비밀번호 재설정
-	    String newPassword = createKey();
-	    user.setUserPassword(passwordEncoder.encode(newPassword));
-	    userRepository.save(user);
+        if (!utils.isSocialAccount(user.getUserEmail())) {
+            if (user.getUserPassword() == null || !passwordEncoder.matches(dto.getUserPassword(), user.getUserPassword())) {
+                throw new UserException(UserErrorCode.INVALID_PASSWORD);
+            }
+        }
 
-	    return new userServiceResponseDTO(UserFindResult.SUCCESS, newPassword);
-	}
+        if (dto.getNickName() != null) {
+        	 Optional<UserEntity> isNickNameExist = userRepository.findByNickname(dto.getNickName());
+             if (isNickNameExist.isPresent()) throw new UserException(UserErrorCode.EXIST_NICKNAME);
+        	user.setUserNickName(dto.getNickName());
+        }
+        if (dto.getUserInfo() != null) 
+        	user.setUserInfo(dto.getUserInfo());
+        if (dto.getUserImg() != null) 
+                user.setUserImg(utils.saveImage(dto.getUserImg()));
+        if (dto.getSido() != null || dto.getSigungu() != null) 
+            user.setAddress(new Address(dto.getSido(), dto.getSigungu()));
+        if(dto.getUserNewPassword()!=null)
+        	user.setUserPassword(passwordEncoder.encode(dto.getUserNewPassword()));
+        if (dto.getBirthDay() != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            user.setUserBirthDay(dto.getBirthDay().format(formatter));
+        }
+        return userRepository.save(user);
+    }
 
+    public UserEntity findUserSync(String email) {
+        UserEntity user = utils.findUser(email);
+
+        if (user.getUserGrade() == Grade.BANNED && user.getReportedDate() != null) {
+            LocalDateTime today = LocalDateTime.now();
+            LocalDateTime reportedDate = user.getReportedDate();
+            long daysBetween = ChronoUnit.DAYS.between(reportedDate, today);
+
+            if (daysBetween >= 30) {
+                int level = user.getUserLevel();
+                if (level >= 10) user.setUserGrade(Grade.VIP);
+                else if (level >= 7) user.setUserGrade(Grade.GOLD);
+                else if (level >= 4) user.setUserGrade(Grade.SILVER);
+                else user.setUserGrade(Grade.BRONZE);
+                user.setReportedDate(null);
+
+                log.info("🔓 정지 해제 및 등급 복원 - email: {}", email);
+                return userRepository.save(user);
+            }
+        }
+
+        return user;
+    }
+    public UserDetailDTO getUserInfo(Long userId) {
+    	Optional<UserEntity> user = userRepository.getUserInfo(userId);
+    	if(user.isPresent())return new UserDetailDTO(user.get());
+    	else throw new UserException(UserErrorCode.INVALID_ID);
+    }
 }

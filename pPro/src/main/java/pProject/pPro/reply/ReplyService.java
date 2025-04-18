@@ -1,97 +1,96 @@
 package pProject.pPro.reply;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pProject.pPro.User.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import pProject.pPro.User.exception.UserErrorCode;
+import pProject.pPro.User.exception.UserException;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.ReplyEntity;
 import pProject.pPro.entity.UserEntity;
-import pProject.pPro.post.PostRepository;
+import pProject.pPro.global.ServiceUtils;
+import pProject.pPro.post.exception.PostErrorCode;
+import pProject.pPro.post.exception.PostException;
 import pProject.pPro.reply.DTO.ReplyListDTO;
 import pProject.pPro.reply.DTO.ReplyRegDTO;
-import pProject.pPro.reply.DTO.ReplyResponseDTO;
+import pProject.pPro.reply.exception.ReplyException;
+import pProject.pPro.reply.exception.ReplyErrorCode;
 
+@Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ReplyService {
 
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private PostRepository postRepository;
-	@Autowired
-	private ReplyRepository replyRepository;
+	private final ReplyRepository replyRepository;
+	private final ServiceUtils utils;
 
-	public ReplyServiceValue saveReply(Long postId, ReplyRegDTO replyRegDTO, String email) {
-	    // 유저와 게시글 정보 가져오기
-	    UserEntity user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-	    PostEntity post = postRepository.getPostDetail(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+	public ReplyListDTO saveReply(Long postId, ReplyRegDTO replyRegDTO, String email) {
+		log.info("********** saveReply() 호출 - postId: {}, parentReplyId: {}, email: {} **********",
+				postId, replyRegDTO.getParentReplyId(), email);
 
-	    // 부모 댓글 처리 (있으면 가져오고, 없으면 null)
-	    ReplyEntity parentReply = null;
-	    if (replyRegDTO.getParentReplyId() != null) {
-	        parentReply = replyRepository.findById(replyRegDTO.getParentReplyId())
-	            .orElseThrow(() -> new RuntimeException("Parent reply not found"));
-	    }
+		UserEntity user = utils.findUser(email);
+		PostEntity post = utils.findPost(postId);
 
-	    try {
-	        // 부모 댓글이 있으면 부모 댓글을, 없으면 null로 저장
-	        ReplyEntity reply = new ReplyEntity(post, user, replyRegDTO, parentReply);
-	        ReplyEntity regReply = replyRepository.save(reply);
-	       
-	        return new ReplyServiceValue<ReplyListDTO>(ReplyServiceEnum.SUCCESS, new ReplyListDTO(regReply));
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return new ReplyServiceValue<String>(ReplyServiceEnum.FAIL, "댓글 등록에 실패했습니다.");
-	    }
+		ReplyEntity parentReply = null;
+		if (replyRegDTO.getParentReplyId() != null) {
+			parentReply = replyRepository.findById(replyRegDTO.getParentReplyId())
+					.orElseThrow(() -> {
+						log.warn("🚫 부모 댓글 없음 - parentReplyId: {}", replyRegDTO.getParentReplyId());
+						return new ReplyException(ReplyErrorCode.PARENT_NOT_FOUND);
+					});
+		}
+
+		ReplyEntity reply = new ReplyEntity(post, user, replyRegDTO, parentReply);
+		ReplyEntity regReply = replyRepository.save(reply);
+		post.setReplyCount(post.getReplyCount() + 1);
+
+		log.info("✅ 댓글 저장 완료 - replyId: {}", regReply.getReplyId());
+		return new ReplyListDTO(regReply);
 	}
-
 
 	public List<ReplyListDTO> findReplyByPost(Long postId) {
-		List<ReplyEntity> replyList = replyRepository.findReplyByPost(postId,Sort.by(Sort.Direction.ASC, "id"));
-		List<ReplyListDTO> dtoList = replyList.stream().map(ReplyListDTO::new).toList(); // Java 16 이상이라면 .toList(), 아니면
-																							// collect(Collectors.toList())
-		return dtoList;
+		log.info("********** findReplyByPost() 호출 - postId: {} **********", postId);
+
+		List<ReplyEntity> replyList = replyRepository.findReplyByPost(postId, Sort.by(Sort.Direction.ASC, "id"));
+		return replyList.stream().map(ReplyListDTO::new).toList();
 	}
 
-	public ReplyServiceValue updateReply(Long ReplyId,String content, String email) {
-		ReplyEntity replyEntity = replyRepository.findById(ReplyId).get();
-		if (!replyEntity.getUser().getUserEmail().equals(email))
-			return new ReplyServiceValue<ReplyListDTO>(ReplyServiceEnum.EMAIL_NOTMATCH, null);
-		try {
-			replyEntity.setContent(content);
-			replyEntity.setModifiedDate(LocalDate.now());
-		} catch (NoSuchElementException e) {
-			e.printStackTrace();
-			return new ReplyServiceValue<ReplyListDTO>(ReplyServiceEnum.FAIL, null);
+	public ReplyListDTO updateReply(Long replyId, String content, String email) {
+		log.info("********** updateReply() 호출 - replyId: {}, email: {} **********", replyId, email);
+
+		ReplyEntity replyEntity = utils.findReply(replyId);
+		if (!replyEntity.getUser().getUserEmail().equals(email)) {
+			log.warn("🚫 댓글 수정 권한 없음 - 요청자: {}, 작성자: {}", email, replyEntity.getUser().getUserEmail());
+			throw new UserException(UserErrorCode.INVALID_ID, "작성자만 수정할 수 있습니다.");
 		}
-		return new ReplyServiceValue<ReplyListDTO>(ReplyServiceEnum.SUCCESS, new ReplyListDTO(replyEntity));
+
+		replyEntity.setContent(content);
+		replyEntity.setModifiedDate(LocalDate.now());
+
+		log.info("✅ 댓글 수정 완료 - replyId: {}", replyId);
+		return new ReplyListDTO(replyEntity);
 	}
 
-	public ReplyServiceValue deleteReply(Long replyId, String email) {
-		ReplyEntity reply = replyRepository.findById(replyId).get();
-		if (!reply.getUser().getUserEmail().equals(email))
-			return new ReplyServiceValue<String>(ReplyServiceEnum.EMAIL_NOTMATCH, "등록한 계정이아닙니다.");
-		try {
-			replyRepository.deleteById(reply.getReplyId());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ReplyServiceValue<String>(ReplyServiceEnum.FAIL, "댓글 삭제에 실패했습니다");
-			// TODO: handle exception
+	public void deleteReply(Long postId, Long replyId, String email) {
+		log.info("********** deleteReply() 호출 - postId: {}, replyId: {}, email: {} **********", postId, replyId, email);
+
+		PostEntity post = utils.findPost(postId);
+		ReplyEntity reply = utils.findReply(replyId);
+		if (!reply.getUser().getUserEmail().equals(email)) {
+			log.warn("🚫 댓글 삭제 권한 없음 - 요청자: {}, 작성자: {}", email, reply.getUser().getUserEmail());
+			throw new UserException(UserErrorCode.INVALID_ID, "작성자만 삭제할 수 있습니다.");
 		}
-		return new ReplyServiceValue<String>(ReplyServiceEnum.SUCCESS, "댓글 삭제에 성공했습니다");
-	}
-	//내가 적은 댓글 보기,
-	
-	
 
+		replyRepository.deleteById(reply.getReplyId());
+		post.setReplyCount(post.getReplyCount() - 1);
+
+		log.info("🗑️ 댓글 삭제 완료 - replyId: {}", replyId);
+	}
 }

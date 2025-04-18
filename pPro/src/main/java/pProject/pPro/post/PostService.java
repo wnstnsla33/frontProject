@@ -1,189 +1,187 @@
 package pProject.pPro.post;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import pProject.pPro.User.UserRepository;
-import pProject.pPro.User.UserService;
+
 import pProject.pPro.bookmark.BookmarkRepository;
 import pProject.pPro.entity.BookmarkEntity;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.post.DTO.PostListDTO;
-import pProject.pPro.post.DTO.PostResponseDTO;
+import pProject.pPro.post.DTO.PostPageDTO;
 import pProject.pPro.post.DTO.WritePostDTO;
+import pProject.pPro.post.exception.PostErrorCode;
+import pProject.pPro.post.exception.PostException;
 
+@Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PostService {
 
-	@Autowired
-	private PostRepository postRepository;
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private BookmarkRepository bookmarkRepository;
-	private PostResponseDTO postResponseDTO;
-	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+    private final PostRepository postRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final ServiceUtils utils;
 
-	public List<PostListDTO> getPostList() {
-		List<PostEntity> postEntities = postRepository.findAll();
-		// Entity → DTO 변환
-		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new) // PostListDTO 생성자 사용
-				.collect(Collectors.toList());
-		return postList;
-	}
+    public PostPageDTO getPostList(String email, int page, int sortNumber, String keyword) {
+        log.info("********** getPostList() 호출 - email: {}, page: {}, sortNumber: {}, keyword: '{}' **********", email, page, sortNumber, keyword);
+        int pageSize = 10;
+        Pageable pageable = switch (sortNumber) {
+            case 1 -> PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
+            case 2 -> PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "viewCount"));
+            case 3 -> PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "bookmarkCount"));
+            default -> PageRequest.of(page, pageSize);
+        };
 
-	public List<PostListDTO> getPostList(int page, int sortNumber) {
-		int pageSize = 10;
-		Pageable pageable = null;
-		switch (sortNumber) {
-		case 1:
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
-			break;
-		case 2:
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "viewCount"));
-			break;
-		case 3:
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "bookmarkCount"));
-			break;
-		}
-		// Pageable 객체 생성 (createDate 기준 내림차순 정렬)
+        Optional<UserEntity> user =  utils.findUserOptional(email);
+        if (user.isPresent()) {
+            log.info("📌 로그인 유저 기준 북마크 포함 게시글 조회");
+            Page<PostListDTO> postList = postRepository.findPostsWithBookmarkInfo(user.get().getUserId(), keyword, pageable);
+            return new PostPageDTO(postList.getContent(), postList.getTotalPages());
+        }
 
-		// 페이징 처리된 게시글 리스트 가져오기
-		Page<PostEntity> postEntities = postRepository.findAll(pageable);
+        log.info("📌 비로그인 기준 게시글 조회");
+        Page<PostEntity> postList = postRepository.findPosts(keyword, pageable);
+        List<PostListDTO> list =  postList.getContent().stream().map(PostListDTO::new).toList();
+        return new PostPageDTO(list, postList.getTotalPages());
+    }
 
-		// Entity → DTO 변환
-		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new).collect(Collectors.toList());
-		postList.size();
-		return postList;
-	}
+    public PostPageDTO getPostBookmarkList(String email, int page, int sortNumber) {
+        log.info("********** getPostBookmarkList() 호출 - email: {}, page: {}, sortNumber: {} **********", email, page, sortNumber);
+        int pageSize = 10;
+        Pageable pageable = switch (sortNumber) {
+            case 1 -> PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
+            case 2 -> PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.viewCount"));
+            case 3 -> PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.bookmarkCount"));
+            default -> PageRequest.of(page, pageSize);
+        };
+        Page<PostListDTO> postList = bookmarkRepository.bookmarkListByUser(email, pageable);
+        return new PostPageDTO(postList.getContent(), postList.getTotalPages());
+    }
 
-	public List<PostListDTO> getPostBookmarkList(String email, int page, int sortNumber) {
-		int pageSize = 10;
-		Pageable pageable = null;
-		switch (sortNumber) {
-		case 1: {
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createDate"));
-			break;
-		}
-		case 2: {
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.viewCount"));
-			break;
-		}
-		case 3: {
-			pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "post.bookmarkCount"));
-			break;
-		}
-		}
-		Page<BookmarkEntity> bookmarkEntities = bookmarkRepository.bookmarkListByUser(email, pageable);
-		List<PostListDTO> postList = bookmarkEntities.stream().map(bookmark -> new PostListDTO(bookmark)) // 생성자 그대로 사용
-				.collect(Collectors.toList());
-		return postList;
-	}
+    public void writePost(WritePostDTO writePostDTO,UserEntity user) {
+        log.info("********** writePost() 호출 - email: {}, title: '{}' **********",  writePostDTO.getTitle());
+        PostEntity newPost = new PostEntity(writePostDTO, user);
+        if (writePostDTO.getSecreteKey() != null) {
+            log.info("🔐 비밀글 작성 - 시크릿 키 암호화");
+            newPost.setSecreteKey(passwordEncoder.encode(writePostDTO.getSecreteKey()));
+        }
+        postRepository.save(newPost);
+        log.info("✅ 게시글 저장 완료 - postId: {}", newPost.getPostId());
+    }
 
-	public Long postCount() {
-		return postRepository.count();
-	}
+    public PostListDTO incrementAndGetPost(Long postId, String email) {
+        log.info("********** incrementAndGetPost() 호출 - postId: {}, email: {} **********", postId, email);
+        PostEntity post = utils.findPost(postId);
+        post.setViewCount(post.getViewCount() + 1);
+        PostListDTO dto = new PostListDTO(post);
+        if (email != null) {
+            bookmarkRepository.findBookmark(postId, email).ifPresent(b -> dto.setBookmarked(true));
+        }
+        return dto;
+    }
 
-	public Long postBookmarkCount(String email) {
-		return bookmarkRepository.countMyBookmark(email);
-	}
+    public PostListDTO updatePost(Long postId, PostListDTO postListDTO, String email) {
+        log.info("********** updatePost() 호출 - postId: {}, email: {} **********", postId, email);
+        PostEntity post = utils.findPost(postId);
+        UserEntity user = utils.findUser(email);
+        if (!post.getUser().getUserId().equals(user.getUserId())) {
+            log.warn("🚫 게시글 수정 권한 없음 - 유저 ID 불일치");
+            throw new PostException(PostErrorCode.WRITER_ONLY);
+        }
+        post.setContent(postListDTO.getContent());
+        post.setModifiedDate(LocalDateTime.now());
+        post.setTitle(postListDTO.getTitle());
+        log.info("✅ 게시글 수정 완료 - postId: {}", postId);
+        PostListDTO updated = new PostListDTO(post);
+        updated.setBookmarked(postListDTO.isBookmarked());
+        return updated;
+    }
 
-	public ResponseEntity writePost(WritePostDTO writePostDTO, String email) {
-		UserEntity user = userRepository.findByEmail(email).get();
-		PostEntity newPost = new PostEntity(writePostDTO, user);
-		if (writePostDTO.getSecreteKey() != null)
-			newPost.setSecreteKey(passwordEncoder.encode(writePostDTO.getSecreteKey()));
-		postRepository.save(newPost);
-		return postResponseDTO.postSuccess("정상적으로 등록되었습니다");
-	}
+    public void deletePost(Long postId, String email) {
+        log.info("********** deletePost() 호출 - postId: {}, email: {} **********", postId, email);
+        PostEntity post = utils.findPost(postId);
+        UserEntity user = utils.findUser(email);
+        if (!post.getUser().getUserId().equals(user.getUserId())) {
+            log.warn("🚫 게시글 삭제 권한 없음 - 유저 ID 불일치");
+            throw new PostException(PostErrorCode.WRITER_ONLY);
+        }
+        postRepository.delete(post);
+        log.info("🗑️ 게시글 삭제 완료 - postId: {}", postId);
+    }
 
-//	public ResponseEntity getPostDetail(Long postId) {
-//		return postResponseDTO.getPost(new PostListDTO((postRepository.getPostDetail(postId).orElseThrow(
-//				() -> new RuntimeException("게시글이 존재하지 않습니다.")))));
-//	}
-	public PostEntity incrementBookmarkCount(Long postId, boolean isBookmarked) {
-		PostEntity post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
-		if (isBookmarked)
-			post.setBookmarkCount(post.getBookmarkCount() + 1);
-		else
-			post.setBookmarkCount(post.getBookmarkCount() - 1);
-		return post;
-	}
+    public PostListDTO getSecretePost(Long postId, String pwd, String email) {
+        log.info("********** getSecretePost() 호출 - postId: {}, email: {} **********", postId, email);
+        PostEntity post = utils.findPost(postId);
+        if (passwordEncoder.matches(pwd, post.getSecreteKey())) {
+            log.info("🔓 비밀글 비밀번호 일치");
+            if (email != null)
+                return new PostListDTO(post, false, true);
+            Optional<BookmarkEntity> bookmark = bookmarkRepository.findBookmark(postId, email);
+            if (bookmark.isPresent())
+                return new PostListDTO(post, true, true);
+            else
+                return new PostListDTO(post, false, true);
+        } else {
+            log.warn("🚫 비밀글 비밀번호 불일치 - postId: {}", postId);
+            throw new PostException(PostErrorCode.INVALID_PWD);
+        }
+    }
 
-	public PostListDTO incrementAndGetPost(Long postId, String email) {
-		PostEntity post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("게시글 없음"));
-		post.setViewCount(post.getViewCount() + 1);
-		PostListDTO postListDTO = new PostListDTO(post);
-		if (email == null) {
-			System.out.println("postService 로그인 X");
-			return postListDTO;
-		} else {
-			Optional<BookmarkEntity> bookmark = bookmarkRepository.findBookmark(postId, email);
-			if (bookmark.isPresent())
-				postListDTO.setBookmarked(true);
-		}
-		return postListDTO;
-	}
+    public List<PostListDTO> getMyPostList(String email) {
+        log.info("********** getMyPostList() 호출 - email: {} **********", email);
+        Long id = utils.findUser(email).getUserId();
+        List<PostEntity> postEntities = postRepository.getMyPostList(id);
+        return postEntities.stream()
+                .map(post -> {
+                    boolean isBookmarked = post.getBookmark().stream()
+                            .anyMatch(b -> b.getUser().getUserId().equals(id));
+                    return new PostListDTO(post, isBookmarked);
+                })
+                .collect(Collectors.toList());
+    }
 
-	public PostListDTO updatePost(Long postId, PostListDTO postListDTO, String email) {
-		PostEntity post = postRepository.findById(postId).get();
-		UserEntity user = userRepository.findByEmail(email).get();
-		if (post.getUser().getUserId() != user.getUserId())
-			return null;
-		else {
-			post.setContent(postListDTO.getContent());
-			post.setModifiedDate(LocalDate.now());
-			post.setTitle(postListDTO.getTitle());
-			post.setTitleImg(postListDTO.getTitleImg());
-		}
-		PostListDTO updatePost = new PostListDTO(post);
-		updatePost.setBookmarked(postListDTO.getBookmarked());
-		return updatePost;
-	}
+    public String saveImg(MultipartFile file) {
+        log.info("********** saveImg() 호출 - 파일명: {} **********", file.getOriginalFilename());
+        return utils.saveImage(file);
+    }
 
-	public boolean deletePost(Long postId, String email) {
-		PostEntity post = postRepository.findById(postId).get();
-		UserEntity user = userRepository.findByEmail(email).get();
-		if (post.getUser().getUserId() != user.getUserId())
-			return false;
-		else {
-			postRepository.delete(post);
-			return true;
-		}
-	}
+    public List<PostListDTO> getTop10Posts(String email) {
+        log.info("********** getTop10Posts() 호출 - email: {} **********", email);
+        PageRequest top10 = PageRequest.of(0, 10);
+        if (email == null) {
+            log.info("📌 비로그인 유저 기준 인기글 조회");
+            return postRepository.findTop10ByViewCount(top10);
+        }
+        UserEntity user = utils.findUser(email);
+        return postRepository.findTop10ByViewCount(user.getUserId(), top10);
+    }
 
-	public PostListDTO getSecretePost(Long postId, String pwd) {
-		PostEntity post = postRepository.findById(postId).get();
-		if (passwordEncoder.matches(pwd, post.getSecreteKey())) {
-			return new PostListDTO(post,1);
-		} else
-			return null;
-	}
+    public List<PostListDTO> getNoticeList(String email) {
+        log.info("********** getNoticeList() 호출 - email: {} **********", email);
+        if (email == null) {
+            return postRepository.getNoticeList().stream().map(PostListDTO::new).collect(Collectors.toList());
+        }
+        UserEntity user = utils.findUser(email);
+        return postRepository.getNoticeList(user.getUserId());
+    }
 
-	public List<PostListDTO> getMyPostList(String email) {
-		List<PostEntity> postEntities = postRepository.getMyPostList(email);
-		// Entity → DTO 변환
-		List<PostListDTO> postList = postEntities.stream().map(PostListDTO::new) // PostListDTO 생성자 사용
-				.collect(Collectors.toList());
-		return postList;
-	}
 }

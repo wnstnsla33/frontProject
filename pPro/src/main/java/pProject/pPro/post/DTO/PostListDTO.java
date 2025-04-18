@@ -1,6 +1,7 @@
 package pProject.pPro.post.DTO;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.Getter;
@@ -16,91 +17,124 @@ public class PostListDTO {
 	private Long postId;
 
 	private String title;
-	private String titleImg;
 	private String content;
-	private LocalDate createDate;
-	private LocalDate modifiedDate;
+	private LocalDateTime createDate;
+	private LocalDateTime modifiedDate;
 
 	private int viewCount;
-
+	private Long userId;
 	// bookmarkCount,likeCount는 DTO에서
 	private int bookmarkCount;
+	private boolean bookmarked = false;
 	private boolean secreteKey;
+	private String userNickName;
 	private String userName;
-	private boolean bookmarked;
-
+	private String userImg;
+	private boolean isPrivate;
+	private int replyCount;
 	public PostListDTO(PostEntity postEntity) {
 		super();
 		if (postEntity.getSecreteKey() != null) {
 			this.postId = postEntity.getPostId();
 			this.title = "비밀글";
-			this.titleImg = "https://cafe24.poxo.com/ec01/sl63amg/MkCj60lH04MGF8dcvBKuW0eybFCsgGe/j2Yh65v5oJMmicHUSYBdNgf/Ld5X9bA8CqEQzGcDJdDxdOlUDXXqig==/_/web/upload/icon_202102212329010800.png";
+			this.userNickName = postEntity.getUser().getUserNickName();
+			this.viewCount = postEntity.getViewCount();
 		} else {
 			this.postId = postEntity.getPostId();
+			this.userId= postEntity.getUser().getUserId();
 			this.title = postEntity.getTitle();
-			this.titleImg = postEntity.getTitleImg();
 			this.content = postEntity.getContent();
 			this.createDate = postEntity.getCreateDate();
 			this.modifiedDate = postEntity.getModifiedDate();
 			this.viewCount = postEntity.getViewCount();
 			this.bookmarkCount = postEntity.getBookmarkCount();
-			this.userName = postEntity.getUser().getUserName();
-			this.bookmarked = false;
+			this.userNickName = postEntity.getUser().getUserNickName();
+			this.replyCount= postEntity.getReplyCount();
+			this.userImg=postEntity.getUser().getUserImg();
 		}
 
 	}
-	
-	public PostListDTO(PostEntity postEntity,int pass) {
+	public PostListDTO(PostEntity postEntity,boolean isBookmarked) {
+		super();
+		if (postEntity.getSecreteKey() != null) {
+			this.postId = postEntity.getPostId();
+			this.title = "비밀글";
+			this.userNickName = postEntity.getUser().getUserNickName();
+			this.viewCount = postEntity.getViewCount();
+			this.bookmarked = isBookmarked;
+		} else {
+			this.bookmarked = isBookmarked;
+			this.userId= postEntity.getUser().getUserId();
+			this.postId = postEntity.getPostId();
+			this.title = postEntity.getTitle();
+			this.content = postEntity.getContent();
+			this.createDate = postEntity.getCreateDate();
+			this.modifiedDate = postEntity.getModifiedDate();
+			this.viewCount = postEntity.getViewCount();
+			this.bookmarkCount = postEntity.getBookmarkCount();
+			this.userNickName = postEntity.getUser().getUserNickName();
+			this.replyCount= postEntity.getReplyCount();
+			this.userImg=postEntity.getUser().getUserImg();
+		}
+
+	}
+	public PostListDTO(PostEntity postEntity,boolean isBookmarked,boolean pass) {
 		super();
 		this.postId = postEntity.getPostId();
+		this.userId= postEntity.getUser().getUserId();
+		this.userName= postEntity.getUser().getUserName();
+		this.userNickName=postEntity.getUser().getUserNickName();
 		this.title = postEntity.getTitle();
-		this.titleImg = postEntity.getTitleImg();
 		this.content = postEntity.getContent();
 		this.createDate = postEntity.getCreateDate();
 		this.modifiedDate = postEntity.getModifiedDate();
 		this.viewCount = postEntity.getViewCount();
 		this.bookmarkCount = postEntity.getBookmarkCount();
-		this.userName = postEntity.getUser().getUserName();
-		this.bookmarked = false;
+		this.userNickName = postEntity.getUser().getUserNickName();
+		this.isPrivate = postEntity.getSecreteKey()!=null?true:false;		
+		this.replyCount=postEntity.getReplyCount();
+		this.bookmarked= isBookmarked;
+		this.userImg=postEntity.getUser().getUserImg();
 		}
 
 
 
-	public boolean getBookmarked() {
-		return bookmarked;
-	}
 
-	public PostListDTO(BookmarkEntity bookmarkEntity) {
-		super();
-		if (bookmarkEntity.getPost().getSecreteKey() != null) {
-			this.postId = bookmarkEntity.getPost().getPostId();
-			this.title = "비밀글";
-			this.titleImg = "https://cafe24.poxo.com/ec01/sl63amg/MkCj60lH04MGF8dcvBKuW0eybFCsgGe/j2Yh65v5oJMmicHUSYBdNgf/Ld5X9bA8CqEQzGcDJdDxdOlUDXXqig==/_/web/upload/icon_202102212329010800.png";
-		} else {
-			this.postId = bookmarkEntity.getPost().getPostId();
-			this.title = bookmarkEntity.getPost().getTitle();
-			this.titleImg = bookmarkEntity.getPost().getTitleImg();
-			this.content = bookmarkEntity.getPost().getContent();
-			this.createDate = bookmarkEntity.getPost().getCreateDate();
-			this.modifiedDate = bookmarkEntity.getPost().getModifiedDate();
-			this.viewCount = bookmarkEntity.getPost().getViewCount();
-			this.bookmarkCount = bookmarkEntity.getPost().getBookmarkCount();
-			this.userName = bookmarkEntity.getUser().getUserName();
-			this.bookmarked = false;
-		}
-	}
-	public PostListDTO(BookmarkEntity bookmarkEntity,int pass) {
+//	public PostListDTO(BookmarkEntity bookmarkEntity) {
+//		super();
+//		if (bookmarkEntity.getPost().getSecreteKey() != null) {
+//			this.postId = bookmarkEntity.getPost().getPostId();
+//			this.userId= bookmarkEntity.getUser().getUserId();
+//			this.title = "비밀글";
+//			this.postId = bookmarkEntity.getPost().getPostId();
+//			this.title = bookmarkEntity.getPost().getTitle();
+//			this.content = bookmarkEntity.getPost().getContent();
+//			this.createDate = bookmarkEntity.getPost().getCreateDate();
+//			this.modifiedDate = bookmarkEntity.getPost().getModifiedDate();
+//			this.viewCount = bookmarkEntity.getPost().getViewCount();
+//			this.bookmarkCount = bookmarkEntity.getPost().getBookmarkCount();
+//			this.userNickName = bookmarkEntity.getUser().getUserNickName();
+//			this.replyCount= bookmarkEntity.getPost().getReplyCount();
+//			this.bookmarked = true;
+//		}
+//	}
+	public PostListDTO(BookmarkEntity bookmarkEntity,Boolean isBookmarked,boolean verify) {
 		super();
 		this.postId = bookmarkEntity.getPost().getPostId();
 		this.title = bookmarkEntity.getPost().getTitle();
-		this.titleImg = bookmarkEntity.getPost().getTitleImg();
+		this.userId= bookmarkEntity.getUser().getUserId();
 		this.content = bookmarkEntity.getPost().getContent();
 		this.createDate = bookmarkEntity.getPost().getCreateDate();
 		this.modifiedDate = bookmarkEntity.getPost().getModifiedDate();
 		this.viewCount = bookmarkEntity.getPost().getViewCount();
 		this.bookmarkCount = bookmarkEntity.getPost().getBookmarkCount();
-		this.userName = bookmarkEntity.getUser().getUserName();
-		this.bookmarked = false;
-		}
+		this.userNickName = bookmarkEntity.getUser().getUserNickName();
+		this.replyCount= bookmarkEntity.getPost().getReplyCount();
+		this.bookmarked = true;
+		this.isPrivate = bookmarkEntity.getPost().getSecreteKey()!=null?true:false;		
+		this.userImg=bookmarkEntity.getUser().getUserImg();	
+	}
+	
+	
 
 }

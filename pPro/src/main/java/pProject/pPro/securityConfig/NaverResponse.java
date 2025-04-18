@@ -19,8 +19,6 @@ public class NaverResponse implements OAuth2Response{
 
 	@Override
 	public String getproviderId() {
-		// TODO Auto-generated method stub
-		System.out.println(attribute.get("id").toString());
 		return attribute.get("id").toString();
 	}
 
@@ -40,7 +38,6 @@ public class NaverResponse implements OAuth2Response{
         int currentYear = Year.now().getValue();
         int birthYear = Integer.parseInt(birthYearStr);
         int age = currentYear - birthYear;
-        System.out.println("나이는 ="+age);
 		return String.valueOf(age);
 	}
 	@Override
