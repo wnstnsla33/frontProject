@@ -12,9 +12,11 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MailService implements MailServiceInter {
 	@Autowired
 	JavaMailSender emailSender;
@@ -63,26 +65,26 @@ public class MailService implements MailServiceInter {
 	}
 
 	@Override
-	public EmailAuthResponseDTO sendSimpleMessage(String to) throws Exception {
+	public void sendSimpleMessage(String to) throws Exception {
 		ePw = createKey(); // 랜덤 인증코드 생성
 
 		MimeMessage message = createMessage(to); // "to" 로 메일 발송
 
 		redisUtil.setDataExpire(to, ePw, 10*60L);
+		log.info("메일 보냈습니다.");
 		try { // 예외처리
 			emailSender.send(message);
-			return new EmailAuthResponseDTO(true,"인증번호가 메일로 전송되었습니다");
 		} catch (Exception e) {
-			return new EmailAuthResponseDTO(false,"메일 전송 중 오류가 발생했습니다. 다시시도해주세요");
+			throw new SmtpException(SmtpErrorCode.SMTP_ERROR);
 		}
 	}
 
 	@Override
-	public EmailAuthResponseDTO authValid(String to, String code) {
+	public void authValid(String to, String code) {
 		String validCode = redisUtil.getData(to);
-		if(validCode==null) return new EmailAuthResponseDTO(false,"인증번호가 만료되었습니다.");
-		else if(code.equals(validCode))return new EmailAuthResponseDTO(true,"인증 성공하였습니다");
-		else return new EmailAuthResponseDTO(false,"인증번호가 일치하지 않습니다");
+		if(validCode==null) throw new SmtpException(SmtpErrorCode.REQUIRED_SMTP);
+		else if(code.equals(validCode))log.info("인증번호 확인");
+		else  throw new SmtpException(SmtpErrorCode.UNVALID_SMTP);
 	}
 	
 }

@@ -41,7 +41,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // 프론트 주소 허용
+        config.setAllowedOrigins(List.of("http://15.164.75.149")); // 프론트 주소 허용
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // OPTIONS 추가
         config.setAllowCredentials(true); // 쿠키 허용
         config.setAllowedHeaders(List.of("*")); // 모든 헤더 허용

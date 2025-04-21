@@ -95,7 +95,8 @@ public class ServiceUtils {
 		return reportRepository.findReport(reportId).orElseThrow(() -> new ReportException(ReportErrorCode.INVALID_ID));
 	}
 
-	private static final String UPLOAD_DIR = "C:/myproject/uploads/";
+	private static final String UPLOAD_DIR = "/home/ubuntu/uploads/";
+
 
 	
 

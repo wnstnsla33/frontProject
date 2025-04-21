@@ -11,11 +11,12 @@ public class CorsMvcConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry corsRegistry) {
 	    corsRegistry.addMapping("/**")
-	        .allowedOrigins("https://soribox.site") // 실제 배포 주소
+	        .allowedOrigins("http://15.164.75.149") // 실제 배포 주소
 	        .allowedMethods("*")
 	        .allowCredentials(true)
 	        .exposedHeaders("Set-Cookie");
 	}
+
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {

@@ -11,6 +11,6 @@ import jakarta.mail.internet.MimeMessage;
 public interface MailServiceInter {
 	MimeMessage createMessage(String to) throws MessagingException,UnsupportedEncodingException;
 	String createKey();
-	EmailAuthResponseDTO sendSimpleMessage(String to) throws Exception;
-	EmailAuthResponseDTO authValid(String to,String code);
+	void sendSimpleMessage(String to) throws Exception;
+	void authValid(String to,String code);
 }

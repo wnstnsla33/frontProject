@@ -47,7 +47,6 @@ import pProject.pPro.room.excption.RoomException;
 @Transactional
 public class RoomService {
 	private final RedisPublisher redisPublisher;
-	private final RoomQRepository roomQRepository;
 	private final RoomRepository roomRepository;
 	private final HostUserRepository hostUserRepository;
 	private final ChatRepository chatRepository;
