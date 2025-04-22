@@ -24,6 +24,7 @@ import pProject.pPro.entity.BookmarkEntity;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.UserEntity;
 import pProject.pPro.global.ServiceUtils;
+import pProject.pPro.post.DTO.EditPostDTO;
 import pProject.pPro.post.DTO.PostListDTO;
 import pProject.pPro.post.DTO.PostPageDTO;
 import pProject.pPro.post.DTO.WritePostDTO;
@@ -133,6 +134,7 @@ public class PostService {
         PostEntity post = utils.findPost(postId);
         if (passwordEncoder.matches(pwd, post.getSecreteKey())) {
             log.info("🔓 비밀글 비밀번호 일치");
+            post.setViewCount(post.getViewCount()+1);
             if (email != null)
                 return new PostListDTO(post, false, true);
             Optional<BookmarkEntity> bookmark = bookmarkRepository.findBookmark(postId, email);
@@ -166,13 +168,13 @@ public class PostService {
 
     public List<PostListDTO> getTop10Posts(String email) {
         log.info("********** getTop10Posts() 호출 - email: {} **********", email);
-        PageRequest top10 = PageRequest.of(0, 10);
+        Pageable pageable =PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "viewCount"));
         if (email == null) {
             log.info("📌 비로그인 유저 기준 인기글 조회");
-            return postRepository.findTop10ByViewCount(top10);
+            return postRepository.findTop10ByViewCountFixed(pageable);
         }
         UserEntity user = utils.findUser(email);
-        return postRepository.findTop10ByViewCount(user.getUserId(), top10);
+        return postRepository.findTop10ByViewCount(user.getUserId(),pageable);
     }
 
     public List<PostListDTO> getNoticeList(String email) {
@@ -182,6 +184,11 @@ public class PostService {
         }
         UserEntity user = utils.findUser(email);
         return postRepository.getNoticeList(user.getUserId());
+    }
+    public EditPostDTO getEditPost(String email, Long postId) {
+    	 PostEntity post = postRepository.getPostEditInfo(postId).orElseThrow(()->  new PostException(PostErrorCode.POST_NOT_FOUND));
+    	 if(email.equals(post.getUser().getUserEmail()))return new EditPostDTO(post);
+    	 throw new PostException(PostErrorCode.WRITER_ONLY);
     }
 
 }

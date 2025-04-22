@@ -1,6 +1,7 @@
 package pProject.pPro.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -27,7 +28,7 @@ public class ReplyLikeEntity {
     @Column(name = "replyLike_id")
     private Long replyLikeId;
 	
-	private LocalDate createDate;
+	private LocalDateTime createDate;
 	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reply_id")
 	private ReplyEntity reply;
@@ -36,4 +37,12 @@ public class ReplyLikeEntity {
     @JoinColumn(name = "user_id")
 	@JsonManagedReference("user-replyLike")
 	private UserEntity user;
+
+	public ReplyLikeEntity(ReplyEntity reply, UserEntity user) {
+		super();
+		this.reply = reply;
+		this.user = user;
+		this.createDate = LocalDateTime.now();
+	}
+	
 }

@@ -1,5 +1,6 @@
 package pProject.pPro.room.DTO;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,9 +37,10 @@ public class RoomDTO {
 	@Size(min = 1, max = 1000, message = "채팅방 소개는 1000자 이하로 입력해주세요.")
 	private String roomContent;
 	@Min(value = 1, message = "최소 1명 이상의 인원이 필요합니다.")
-	@Max(value = 10, message = "최대 인원은 10명까지 가능합니다.")
+	@Max(value = 30, message = "최대 인원은 30명까지 가능합니다.")
 	private int maxParticipants;
 	private int curPaticipants;
+	private String recentChat;
 	private String hostName;
 	@Size(min = 4, max = 30, message = "비밀번호는 4자 이상 30자 이하로 입력해주세요.")
 	private String secretePassword;
@@ -73,7 +75,10 @@ public class RoomDTO {
 			this.roomModifiedDate = room.getRoomModifiedDate();
 			this.hostName = room.getCreateUser().getUserName();
 			this.roomImg = room.getRoomImg();
+			this.sido = room.getAddress().getSido();
+			this.sigungu = room.getAddress().getSigungu();
 			this.HostId = room.getCreateUser().getUserId();
+			
 			this.roomMembers = room.getHostUsers().stream()
 				    .filter(hostUser -> hostUser.getStatus() == HostUserStatus.JOINED)
 				    .map(hostUser -> new RoomMemberDTO(
@@ -82,7 +87,7 @@ public class RoomDTO {
 				        hostUser.getUser().getUserId()
 				    ))
 				    .toList();
-
+			
 		}
 
 	}
@@ -100,6 +105,7 @@ public class RoomDTO {
 		this.hostName = room.getCreateUser().getUserName();
 		this.roomImg = room.getRoomImg();
 		this.HostId = room.getCreateUser().getUserId();
+		this.recentChat = calculateTimeAgo(room.getRecentChat());
 		this.roomMembers = room.getHostUsers().stream()
 			    .filter(hostUser -> hostUser.getStatus() == HostUserStatus.JOINED)
 			    .map(hostUser -> new RoomMemberDTO(
@@ -129,6 +135,7 @@ public class RoomDTO {
 			this.roomModifiedDate = hostUserEntity.getRoom().getRoomModifiedDate();
 			this.hostName = hostUserEntity.getRoom().getCreateUser().getUserName();
 			this.roomImg = hostUserEntity.getRoom().getRoomImg();
+			this.recentChat = calculateTimeAgo(hostUserEntity.getRoom().getRecentChat());
 			this.HostId = hostUserEntity.getRoom().getCreateUser().getUserId();
 		}
 
@@ -147,5 +154,28 @@ public class RoomDTO {
 		this.hostName = hostUserEntity.getRoom().getCreateUser().getUserName();
 		this.roomImg = hostUserEntity.getRoom().getRoomImg();
 		this.HostId = hostUserEntity.getRoom().getCreateUser().getUserId();
+	}
+	public String calculateTimeAgo(LocalDateTime time) {
+	    if (time == null) {
+	        return "";
+	    }
+	    LocalDateTime now = LocalDateTime.now();
+	    Duration duration = Duration.between(time, now);
+
+	    long minutes = duration.toMinutes();
+	    long hours = duration.toHours();
+	    long days = duration.toDays();
+
+	    if (minutes < 1) {
+	        return "방금 전";
+	    } else if (minutes < 60) {
+	        return minutes + "분 전";
+	    } else if (hours < 24) {
+	        return hours + "시간 전";
+	    } else if (days < 30) {
+	        return days + "일 전";
+	    } else {
+	        return "오래 전";
+	    }
 	}
 }

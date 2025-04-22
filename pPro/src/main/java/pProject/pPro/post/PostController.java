@@ -13,13 +13,17 @@ import pProject.pPro.User.UserService;
 import pProject.pPro.entity.UserEntity;
 import pProject.pPro.global.CommonResponse;
 import pProject.pPro.global.ControllerUtils;
+import pProject.pPro.post.DTO.EditPostDTO;
 import pProject.pPro.post.DTO.PassWordDTO;
+import pProject.pPro.post.DTO.PostDetailWithReply;
 import pProject.pPro.post.DTO.PostListDTO;
 import pProject.pPro.post.DTO.PostPageDTO;
 import pProject.pPro.post.DTO.PostSearchDTO;
 import pProject.pPro.post.DTO.WritePostDTO;
 import pProject.pPro.post.exception.PostErrorCode;
 import pProject.pPro.post.exception.PostException;
+import pProject.pPro.reply.ReplyService;
+import pProject.pPro.reply.DTO.ReplyListDTO;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +31,7 @@ public class PostController {
 	private final PostService postService;
 	private final UserService userService;
 	private final ControllerUtils utils;
-
+	private final ReplyService replyService;
 	@PostMapping("/post/new")
 	public ResponseEntity<?> newPost(@ModelAttribute WritePostDTO writePostDTO,
 	                                 @AuthenticationPrincipal UserDetails loginUser) {
@@ -72,7 +76,8 @@ public class PostController {
 	                                       @AuthenticationPrincipal UserDetails loginUser) {
 		String email = utils.findEmailOrNull(loginUser);
 		PostListDTO dto = postService.incrementAndGetPost(postId, email);
-		return ResponseEntity.ok(CommonResponse.success("게시글 상세 조회 성공", dto));
+		List<ReplyListDTO> replyList = replyService.findReplyByPost(postId,email);
+		return ResponseEntity.ok(CommonResponse.success("게시글 상세 조회 성공", new PostDetailWithReply(dto,replyList)));
 	}
 
 	@PutMapping("/post/{postId}")
@@ -96,7 +101,8 @@ public class PostController {
 	                                        @AuthenticationPrincipal UserDetails user) {
 		String email = utils.findEmailOrNull(user);
 		PostListDTO dto = postService.getSecretePost(postId, passWordDTO.getPwd(), email);
-		return ResponseEntity.ok(CommonResponse.success("비밀 게시글 조회 성공", dto));
+		List<ReplyListDTO> replyList = replyService.findReplyByPost(postId,email);
+		return ResponseEntity.ok(CommonResponse.success("비밀 게시글 조회 성공", new PostDetailWithReply(dto, replyList)));
 	}
 
 	@GetMapping("/post/myPost")
@@ -117,5 +123,11 @@ public class PostController {
 		String email = utils.findEmailOrNull(user);
 		List<PostListDTO> list = postService.getNoticeList(email);
 		return ResponseEntity.ok(CommonResponse.success("공지 게시글 조회 성공", list));
+	}
+	@GetMapping("/post/edit/{postId}")
+	public ResponseEntity<?> getPostEditInfo(@PathVariable("postId")Long postId, @AuthenticationPrincipal UserDetails user) {
+		String email = utils.findEmail(user);
+		EditPostDTO dto = postService.getEditPost(email, postId);
+		return ResponseEntity.ok(CommonResponse.success("공지 게시글 조회 성공", dto));
 	}
 }

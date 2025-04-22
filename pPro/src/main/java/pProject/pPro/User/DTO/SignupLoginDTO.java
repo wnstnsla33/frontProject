@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @Getter
+@AllArgsConstructor
 public class SignupLoginDTO {
 	@Email(message= "email형식으로 적어주세요")
 	@NotNull(message= "필수 값을 적어주세요")

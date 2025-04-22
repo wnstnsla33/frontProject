@@ -97,22 +97,38 @@ public class RoomService {
 	}
 
 	public Page<RoomDTO> searchRooms(SearchRoomDTO dto) {
-		log.info("********** searchRooms() 호출 - title: {}, type: {}, sido: {}, sigungu: {} **********", dto.getTitle(),
-				dto.getRoomType(), dto.getSido(), dto.getSigungu());
+		log.info("********** searchRooms() 호출 - title: {}, type: {}, sido: {}, sigungu: {} **********", 
+			dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu());
 
+		// ✅ 빈 문자열 → null 변환
+		if (dto.getTitle() != null && dto.getTitle().isBlank()) dto.setTitle(null);
+		if (dto.getRoomType() != null && dto.getRoomType().isBlank()) dto.setRoomType(null);
+		if (dto.getSido() != null && dto.getSido().isBlank()) dto.setSido(null);
+		if (dto.getSigungu() != null && dto.getSigungu().isBlank()) dto.setSigungu(null);
 		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by("roomCreatDate").descending());
-		return roomRepository.searchRoomsWithSido(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
-				.map(RoomDTO::new);
+
+		return roomRepository
+			.searchRoomsWithSido(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
+			.map(RoomDTO::new);
 	}
+
 
 	public Page<RoomDTO> searchRooms(SearchRoomDTO dto, String email) {
 		UserEntity user = utils.findUser(email);
+
+		// ✅ 유저 주소값 자동 설정
 		dto.setSido(user.getAddress().getSido());
 		dto.setSigungu(user.getAddress().getSigungu());
+		
+		// ✅ 빈 문자열 → null 변환
+		if (dto.getTitle() != null && dto.getTitle().isBlank()) dto.setTitle(null);
+		if (dto.getRoomType() != null && dto.getRoomType().isBlank()) dto.setRoomType(null);
 		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by("roomCreatDate").descending());
-		return roomRepository.searchRoomsWithSido(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
-				.map(RoomDTO::new);
+		return roomRepository
+			.searchRoomsWithSido(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
+			.map(RoomDTO::new);
 	}
+
 
 	public RoomWithChatDTO joinRoom(String roomId, String email) {
 	    log.info("🔔 joinRoom() 호출 - roomId: {}, email: {}", roomId, email);

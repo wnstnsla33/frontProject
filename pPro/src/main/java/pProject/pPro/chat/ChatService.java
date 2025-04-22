@@ -1,5 +1,6 @@
 package pProject.pPro.chat;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class ChatService {
 		log.info("********** saveMessage() 호출 - roomId: {}, email: {}, message: '{}' **********", msg.getRoomId(), email, msg.getMessage());
 
 		RoomEntity room = utils.findRoom(msg.getRoomId());
+		room.setRecentChat(LocalDateTime.now());
 		UserEntity user = utils.findUser(email);
 		ChatEntity entity = new ChatEntity(msg.getMessage(), room, user);
 		chatRepository.save(entity);

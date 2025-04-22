@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -47,6 +49,7 @@ public class RoomEntity {
 	private LocalDateTime meetingTime;
 	private LocalDateTime roomCreatDate;
 	private LocalDateTime roomModifiedDate;
+	private LocalDateTime recentChat;
 	private String secretePassword;
 	@Embedded
 	private RoomAddress address;

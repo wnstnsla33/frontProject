@@ -31,8 +31,8 @@ public class ReplyController {
 	}
 
 	@GetMapping("/post/{postId}/reply")
-	public ResponseEntity<?> findReplyList(@PathVariable("postId") Long postId) {
-		List<ReplyListDTO> replyList = replyService.findReplyByPost(postId);
+	public ResponseEntity<?> findReplyList(@PathVariable("postId") Long postId,@AuthenticationPrincipal UserDetails user) {
+		List<ReplyListDTO> replyList = replyService.findReplyByPost(postId,utils.findEmailOrNull(user));
 		return ResponseEntity.ok(CommonResponse.success("댓글 목록 조회 성공", replyList));
 	}
 

@@ -16,6 +16,7 @@ import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.room.DTO.BannedUserDTO;
 import pProject.pPro.room.DTO.PasswordDTO;
 import pProject.pPro.room.DTO.RoomDTO;
+import pProject.pPro.room.DTO.RoomListDTO;
 import pProject.pPro.room.DTO.RoomWithChatDTO;
 import pProject.pPro.room.DTO.SearchRoomDTO;
 
@@ -91,15 +92,16 @@ public class RoomController {
 
 	@GetMapping("/chatRoom/search")
 	public ResponseEntity<?> searchRooms(@ModelAttribute SearchRoomDTO dto) {
+		
 		Page<RoomDTO> pageResult = roomService.searchRooms(dto);
-		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", pageResult));
+		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", new RoomListDTO(pageResult)));
 	}
 
 	@GetMapping("/chatRoom/search/near")
 	public ResponseEntity<?> searchNearRooms(@AuthenticationPrincipal UserDetails user,
 			@ModelAttribute SearchRoomDTO dto) {
 		Page<RoomDTO> pageResult = roomService.searchRooms(dto, utils.findEmail(user));
-		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", pageResult));
+		return ResponseEntity.ok(CommonResponse.success("방 검색 결과", new RoomListDTO(pageResult)));
 	}
 
 	@PutMapping("/chatRoom/banned")

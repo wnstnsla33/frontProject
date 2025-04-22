@@ -54,6 +54,8 @@ public class ReplyEntity {
 	@JoinColumn(name = "parent_id",nullable = true)
 	private ReplyEntity parent; // 부모 댓글 (없으면 null)
 
+	
+	
 	@OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ReplyEntity> replies = new ArrayList<ReplyEntity>();
 

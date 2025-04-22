@@ -72,16 +72,19 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 		        CASE WHEN b.id IS NOT NULL THEN true ELSE false END
 		    )
 		    FROM PostEntity p
+		    JOIN FETCH p.user u
 		    LEFT JOIN BookmarkEntity b ON b.post.id = p.id AND b.user.id = :userId
 		    ORDER BY p.viewCount DESC
 		""")
-		List<PostListDTO> findTop10ByViewCount(@Param("userId") Long userId, Pageable pageable);
+		List<PostListDTO> findTop10ByViewCount(@Param("userId") Long userId,Pageable pageable);
+
 	@Query("""
-		    SELECT new pProject.pPro.post.DTO.PostListDTO(p,false)
+		    SELECT new pProject.pPro.post.DTO.PostListDTO(p, false)
 		    FROM PostEntity p
+		    JOIN FETCH p.user u
 		    ORDER BY p.viewCount DESC
 		""")
-		List<PostListDTO> findTop10ByViewCount(Pageable pageable);
+		List<PostListDTO> findTop10ByViewCountFixed(Pageable pageable );
 
 	@EntityGraph(attributePaths = {"user"})
 	@Query("""
@@ -93,4 +96,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 
 	@Query("select count(p) from PostEntity p where p.user.userId =:userId")
 	Long postCount(@Param("userId")Long userId);
+	
+	@Query("select p from PostEntity p join fetch p.user where p.postId=:postId")
+	Optional<PostEntity> getPostEditInfo(@Param("postId")Long postId);
 }

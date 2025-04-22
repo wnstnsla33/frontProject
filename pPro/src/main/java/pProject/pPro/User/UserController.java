@@ -31,7 +31,7 @@ public class UserController {
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<CommonResponse<Void>> signup(@RequestBody @Valid SignupLoginDTO dto) {
-    	
+    	userService.insertDummyUsers();
         userService.signup(dto);
         return ResponseEntity.ok(CommonResponse.success("회원가입 성공"));
     }
