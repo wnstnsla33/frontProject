@@ -16,6 +16,7 @@ import pProject.pPro.global.ControllerUtils;
 import pProject.pPro.room.DTO.BannedUserDTO;
 import pProject.pPro.room.DTO.PasswordDTO;
 import pProject.pPro.room.DTO.RoomDTO;
+import pProject.pPro.room.DTO.RoomEditInfo;
 import pProject.pPro.room.DTO.RoomListDTO;
 import pProject.pPro.room.DTO.RoomWithChatDTO;
 import pProject.pPro.room.DTO.SearchRoomDTO;
@@ -64,11 +65,17 @@ public class RoomController {
 		return ResponseEntity.ok(CommonResponse.success("방 삭제 또는 퇴장 처리 완료", null));
 	}
 
-	@PutMapping("/chatRoom/{roomId}")
+	@PutMapping("/chatRoom/edit/{roomId}")
 	public ResponseEntity<?> updateRoom(@PathVariable("roomId") String roomId, @RequestBody RoomDTO dto,
 			@AuthenticationPrincipal UserDetails user) {
 		RoomDTO updatedRoom = roomService.updateRoom(dto, roomId, utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방 정보 수정 완료", updatedRoom));
+	}
+	@GetMapping("/chatRoom/edit/{roomId}")
+	public ResponseEntity<?> getEditInfo(@PathVariable("roomId") String roomId,
+			@AuthenticationPrincipal UserDetails user) {
+		RoomEditInfo info = roomService.getRoomInfo(roomId);
+		return ResponseEntity.ok(CommonResponse.success("방 정보 수정 완료", info));
 	}
 
 	@GetMapping("/chatRoom/hostRooms")

@@ -28,10 +28,17 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 	Optional<PostEntity> getPostDetail(@Param("postId") Long postId);
 
 	@Query("""
-			    SELECT p FROM PostEntity p
-			    LEFT JOIN BookmarkEntity b ON b.post.id = p.id AND b.user.id = :userId
-			""")
-	List<PostEntity> getMyPostList(@Param("userId") Long userId);
+		    SELECT new pProject.pPro.post.DTO.PostListDTO(
+		        p,
+		        CASE WHEN b.id IS NOT NULL THEN true ELSE false END
+		    )
+		    FROM PostEntity p
+		    LEFT JOIN BookmarkEntity b ON b.post.postId = p.postId AND b.user.userId = :userId
+		    WHERE p.user.userId = :userId
+		""")
+		List<PostListDTO> findPostsWithBookmarkInfo(
+		    @Param("userId") Long userId
+		);
 
 
 	@Query("SELECT p FROM PostEntity p join fetch p.user WHERE p.user.userGrade = 'ADMIN'")

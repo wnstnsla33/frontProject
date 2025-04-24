@@ -36,6 +36,7 @@ import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.message.MessageRepository;
 import pProject.pPro.message.DTO.SaveMessageDTO;
 import pProject.pPro.room.DTO.RoomDTO;
+import pProject.pPro.room.DTO.RoomEditInfo;
 import pProject.pPro.room.DTO.RoomWithChatDTO;
 import pProject.pPro.room.DTO.SearchRoomDTO;
 import pProject.pPro.room.excption.RoomErrorCode;
@@ -257,7 +258,7 @@ public class RoomService {
 		}
 
 		roomEntity.setRoomContent(room.getRoomContent());
-		roomEntity.setCurPaticipants(room.getCurPaticipants());
+		roomEntity.setRoomMaxParticipants(room.getMaxParticipants());
 		roomEntity.setRoomModifiedDate(LocalDateTime.now());
 		roomEntity.setRoomTitle(room.getRoomTitle());
 		roomEntity.setRoomType(room.getRoomType());
@@ -291,6 +292,9 @@ public class RoomService {
 		messageRepository.save(message);
 	}
 	
+	public RoomEditInfo getRoomInfo(String  roomId) {
+		return new RoomEditInfo(roomRepository.findById(roomId).orElseThrow(()->new RoomException(RoomErrorCode.INVALID_ID)));
+	}
 	
 	 public void publish(UserEntity user, String roomId, MessageType type, String customMessage) {
 	        ChatMessageDTO message = new ChatMessageDTO();

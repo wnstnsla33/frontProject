@@ -73,12 +73,12 @@ public class RoomDTO {
 			this.curPaticipants = room.getCurPaticipants();
 			this.roomCreatedAt = room.getRoomCreatDate();
 			this.roomModifiedDate = room.getRoomModifiedDate();
-			this.hostName = room.getCreateUser().getUserName();
+			this.hostName = room.getCreateUser().getUserNickName();
 			this.roomImg = room.getRoomImg();
 			this.sido = room.getAddress().getSido();
 			this.sigungu = room.getAddress().getSigungu();
 			this.HostId = room.getCreateUser().getUserId();
-			
+			this.recentChat = calculateTimeAgo(room.getRecentChat());
 			this.roomMembers = room.getHostUsers().stream()
 				    .filter(hostUser -> hostUser.getStatus() == HostUserStatus.JOINED)
 				    .map(hostUser -> new RoomMemberDTO(
@@ -154,6 +154,7 @@ public class RoomDTO {
 		this.hostName = hostUserEntity.getRoom().getCreateUser().getUserName();
 		this.roomImg = hostUserEntity.getRoom().getRoomImg();
 		this.HostId = hostUserEntity.getRoom().getCreateUser().getUserId();
+		this.recentChat = calculateTimeAgo(hostUserEntity.getRoom().getRecentChat());
 	}
 	public String calculateTimeAgo(LocalDateTime time) {
 	    if (time == null) {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -41,8 +42,8 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://15.164.75.149")); // 프론트 주소 허용
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // OPTIONS 추가
+        config.setAllowedOrigins(List.of("http://15.164.75.149:8080","http://soribox.kro.kr")); // 프론트 주소 허용
+        config.setAllowedMethods(List.of("*")); // OPTIONS 추가
         config.setAllowCredentials(true); // 쿠키 허용
         config.setAllowedHeaders(List.of("*")); // 모든 헤더 허용
         config.setExposedHeaders(List.of("Set-Cookie", "refresh","access")); // 노출할 헤더
@@ -66,7 +67,7 @@ public class SecurityConfig implements WebMvcConfigurer {
         customFilter.setAuthenticationFailureHandler(customFailureHandler);
 
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             
             // ✅ [1] 전역 요청 로깅 필터 추가 (모든 요청 URI 출력)
@@ -81,11 +82,6 @@ public class SecurityConfig implements WebMvcConfigurer {
                 )
                 .successHandler(customSuccessHandler)
 
-                // ✅ [3] 실패 핸들러 추가 (카카오 실패 시 /login fallback 막기)
-                .failureHandler((request, response, exception) -> {
-                    System.out.println("❌ OAuth2 로그인 실패: " + exception.getMessage());
-                    response.sendRedirect("http://localhost:3000/login-failed");
-                })
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/ws-stomp/**", "/api/**","/",  "/signup/**","/find/**","/post","/auth/getToken","/uploads/**","/post/**","/chatRoom/search").permitAll()

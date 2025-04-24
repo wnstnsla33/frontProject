@@ -41,7 +41,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
 		String requestURI = request.getRequestURI();
 		System.out.println(requestURI);
-
 		// 허용할 경로는 무조건 필터를 통과시킴
 		boolean isAllowedPath = isPublicPath(requestURI);
 		if (token == null && isAllowedPath) {
@@ -71,7 +70,6 @@ public class JWTFilter extends OncePerRequestFilter {
 		UserDTO userDTO = new UserDTO();
 		userDTO.setEmail(email);
 		userDTO.setRole(role);
-
 		CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
 		Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null,
 				customOAuth2User.getAuthorities());
@@ -83,7 +81,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 	private boolean isPublicPath(String requestURI) {
 		return requestURI.startsWith("/post") || requestURI.startsWith("/uploads/") || requestURI.equals("/signup")
-				|| requestURI.equals("/signup/confirm") || requestURI.equals("/login") || requestURI.equals("/my")
+				|| requestURI.equals("/signup/confirm") || requestURI.startsWith("/login") 
 				|| requestURI.startsWith("/find") || requestURI.equals("/auth/getToken")
 				|| requestURI.equals("/ws-stomp") || requestURI.startsWith("/ws-stomp")
 				|| requestURI.equals("/chatRoom/search");
@@ -91,7 +89,7 @@ public class JWTFilter extends OncePerRequestFilter {
 	private void sendErrorResponse(HttpServletResponse response, String message, int statusCode) throws IOException {
 		response.setStatus(statusCode);
 		response.setContentType("application/json;charset=UTF-8");
-
+		System.out.println("에러 작성 jwtfilger");
 		String json = new com.fasterxml.jackson.databind.ObjectMapper()
 				.writeValueAsString(pProject.pPro.global.CommonResponse.fail(message));
 

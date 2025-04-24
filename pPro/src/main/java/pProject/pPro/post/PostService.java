@@ -151,14 +151,8 @@ public class PostService {
     public List<PostListDTO> getMyPostList(String email) {
         log.info("********** getMyPostList() 호출 - email: {} **********", email);
         Long id = utils.findUser(email).getUserId();
-        List<PostEntity> postEntities = postRepository.getMyPostList(id);
-        return postEntities.stream()
-                .map(post -> {
-                    boolean isBookmarked = post.getBookmark().stream()
-                            .anyMatch(b -> b.getUser().getUserId().equals(id));
-                    return new PostListDTO(post, isBookmarked);
-                })
-                .collect(Collectors.toList());
+        List<PostListDTO> postEntities = postRepository.findPostsWithBookmarkInfo(id);
+        return postEntities;
     }
 
     public String saveImg(MultipartFile file) {

@@ -19,7 +19,7 @@ public class FilterExceptionHandler {
         // customMessage가 있으면 우선 사용
         String message = (e.getCustomMessage() != null) ? e.getCustomMessage() : switch (e.getErrorCode()) {
             case EXPIRED_ACCESS -> "Access 토큰이 만료되었습니다.";
-            case EXPIRED_REFRESH -> "Refresh 토큰이 만료되었습니다.";
+            case EXPIRED_REFRESH -> "시간이지나 재로그인이 필요합니다.";
             case REQUIRED_LOGIN -> "로그인이 필요합니다.";
         };
 
