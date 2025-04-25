@@ -37,17 +37,17 @@ public class ReportResponseDTO {
 	private String parentId;
 	public ReportResponseDTO(ReportEntity report) {
 		this.reportId = report.getReportId();
-		this.parentId = report.getParentId();
 		this.reporterId = report.getReporter().getUserId();
 		this.reporterNickName = report.getReporter().getUserNickName();
 		this.reportedCount = report.getReportedUser().getReportedCount();
 		this.reportedUserId = report.getReportedUser().getUserId();
 		this.reportedUserNickName = report.getReportedUser().getUserNickName();
-		this.chatText = report.getChatText();
 		this.targetId = report.getTargetId();
 		this.targetType = report.getTargetType();
 		this.reason = report.getReason();
 		this.status = report.getStatus();
 		this.createdAt = report.getCreatedAt();
+		this.chatText = report.getChatText();
+		this.parentId = report.getParentId();
 	}
 }

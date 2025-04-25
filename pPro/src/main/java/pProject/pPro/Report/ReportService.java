@@ -31,6 +31,7 @@ import pProject.pPro.entity.UserEntity;
 import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.message.MessageRepository;
 import pProject.pPro.message.DTO.MessageType;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -39,9 +40,11 @@ public class ReportService {
 	private final ReportRepository reportRepository;
 	private final ServiceUtils utils;
 	private final MessageRepository messageRepository;
+
 	// 신고 생성
 	public void createReport(CreateReportDTO dto, String email) {
-		log.info("********** createReport() 호출 - email: {}, targetId: {}, targetType: {} **********", email, dto.getTargetId(), dto.getTargetType());
+		log.info("********** createReport() 호출 - email: {}, targetId: {}, targetType: {} **********", email,
+				dto.getTargetId(), dto.getTargetType());
 
 		UserEntity reporter = utils.findUser(email);
 		UserEntity reportedUser = null;
@@ -50,41 +53,40 @@ public class ReportService {
 
 		boolean exists = reportRepository.isAlreadyReported(reporter, dto.getTargetId(), dto.getTargetType());
 		if (exists) {
-			log.warn("🚫 중복 신고 감지 - reporter: {}, targetId: {}, type: {}", reporter.getUserEmail(), dto.getTargetId(), dto.getTargetType());
+			log.warn("🚫 중복 신고 감지 - reporter: {}, targetId: {}, type: {}", reporter.getUserEmail(), dto.getTargetId(),
+					dto.getTargetType());
 			throw new ReportException(ReportErrorCode.DUPLICATE_REPORT);
 		}
 
 		// 대상 유저 찾기
 		if (dto.getReportedUserId() != null) {
 			reportedUser = utils.findUserById(dto.getReportedUserId());
-		} else {
-			switch (dto.getTargetType()) {
-				case ROOM -> {
-					RoomEntity room = utils.findRoom(dto.getTargetId(), "신고 대상자가 존재하지 않습니다.");
-					reportedUser = room.getCreateUser();
-				}
-				case POST -> {
-					PostEntity post = utils.findPost(parseToLong(dto.getTargetId()), "신고 대상자가 존재하지 않습니다.");
-					reportedUser = post.getUser();
-				}
-				case CHAT -> {
-					ChatEntity chat = utils.findChat(parseToLong(dto.getTargetId()), "신고 대상자가 존재하지 않습니다.");
-					reportedUser = chat.getUser();
-					chatText = chat.getMessage();
-					parentId = chat.getRoom().getRoomId();
-				}
-				case REPLY -> {
-					ReplyEntity reply = utils.findReply(parseToLong(dto.getTargetId()), "신고 대상자가 존재하지 않습니다.");
-					reportedUser = reply.getUser();
-					chatText = reply.getContent();
-					parentId = reply.getPost().getPostId().toString();
-				}
-			}
 		}
-
+		switch (dto.getTargetType()) {
+		case ROOM -> {
+			RoomEntity room = utils.findRoom(dto.getTargetId(), "신고 대상자가 존재하지 않습니다.");
+			reportedUser = room.getCreateUser();
+		}
+		case POST -> {
+			PostEntity post = utils.findPost(parseToLong(dto.getTargetId()), "신고 대상자가 존재하지 않습니다.");
+			reportedUser = post.getUser();
+		}
+		case CHAT -> {
+			ChatEntity chat = utils.findChat(parseToLong(dto.getTargetId()), "신고 대상자가 존재하지 않습니다.");
+			reportedUser = chat.getUser();
+			chatText = chat.getMessage();
+			parentId = chat.getRoom().getRoomId();
+		}
+		case REPLY -> {
+			ReplyEntity reply = utils.findReply(parseToLong(dto.getTargetId()), "신고 대상자가 존재하지 않습니다.");
+			reportedUser = reply.getUser();
+			chatText = reply.getContent();
+			parentId = reply.getPost().getPostId().toString();
+		}
+		}
 		ReportEntity report = new ReportEntity(dto, reporter, reportedUser);
-		report.setParentId(parentId);
 		report.setChatText(chatText);
+		report.setParentId(parentId);
 		reportRepository.save(report);
 
 		log.info("✅ 신고 저장 완료 - reportId: {}, 대상 유저: {}", report.getReportId(), reportedUser.getUserEmail());
@@ -97,14 +99,14 @@ public class ReportService {
 	}
 
 	// 신고 상태 변경
-	public ReportStatus updateStatus(ReportStatusDTO dto, long reportId,String email) {
+	public ReportStatus updateStatus(ReportStatusDTO dto, long reportId, String email) {
 		ReportStatus status = dto.getStatus();
 		UserEntity sender = utils.findUser(email);
 		ReportEntity report = utils.findReportWithUser(reportId);
 		if (status == ReportStatus.ACCEPT) {
 			UserEntity user = report.getReportedUser();
 			log.info("📛 신고 수락됨 - 신고 유저: {}, 현재 누적: {}", user.getUserEmail(), user.getReportedCount());
-			MessageEntity message = new MessageEntity(dto,sender,user);
+			MessageEntity message = new MessageEntity(dto, sender, user);
 			messageRepository.save(message);
 			if (user.getReportedCount() > 2) {
 				log.info("🚫 유저 정지 처리 - 유저: {}", user.getUserEmail());
@@ -121,7 +123,8 @@ public class ReportService {
 
 	// 관리자용 신고 목록
 	public ReportPageDTO getReportList(ReportSearchDTO dto) {
-		log.info("********** getReportList() 호출 - page: {}, keyword: {}, status: {} **********", dto.getPage(), dto.getKeyword(), dto.getStatus());
+		log.info("********** getReportList() 호출 - page: {}, keyword: {}, status: {} **********", dto.getPage(),
+				dto.getKeyword(), dto.getStatus());
 
 		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by(Sort.Direction.DESC, "createdAt"));
 		Page<ReportResponseDTO> list = reportRepository.findAllReports(dto.getKeyword(), dto.getStatus(), pageable)

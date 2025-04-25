@@ -42,10 +42,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-stomp")
                 .setHandshakeHandler(new CustomHandshakeHandler())
-                .addInterceptors(jwtCookieHandshakeInterceptor())
+                // .addInterceptors(jwtCookieHandshakeInterceptor()) // ← 일단 막고 테스트
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
+
 
     @Bean
     public HandshakeInterceptor jwtCookieHandshakeInterceptor() {
@@ -60,14 +61,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     if (cookies != null) {
                         for (Cookie cookie : cookies) {
                             if (cookie.getName().equals("access")) {
+                            	
                                 String token = cookie.getValue();
                                 if (jwtTokenProvider.validateToken(token)) {
                                     Authentication auth = jwtTokenProvider.getAuthentication(token);
                                     attributes.put("user", auth.getPrincipal());
                                 }
+                                
                             }
                         }
                     }
+                    else System.out.println("쿠키없음");
                 }
                 return true;
             }
