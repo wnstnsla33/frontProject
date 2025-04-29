@@ -39,8 +39,6 @@ public class ReplyService {
 	private final ServiceUtils utils;
 
 	public ReplyListDTO saveReply(Long postId, ReplyRegDTO replyRegDTO, String email) {
-		log.info("********** saveReply() 호출 - postId: {}, parentReplyId: {}, email: {} **********", postId,
-				replyRegDTO.getParentReplyId(), email);
 
 		UserEntity user = utils.findUser(email);
 		PostEntity post = utils.findPost(postId);
@@ -57,12 +55,10 @@ public class ReplyService {
 		ReplyEntity regReply = replyRepository.save(reply);
 		post.setReplyCount(post.getReplyCount() + 1);
 
-		log.info("✅ 댓글 저장 완료 - replyId: {}", regReply.getReplyId());
 		return new ReplyListDTO(regReply,false);
 	}
 
 	public List<ReplyListDTO> findReplyByPost(Long postId, String email) {
-		log.info("********** findReplyByPost() 호출 - postId: {} **********", postId);
 		List<ReplyListDTO> replyList = null;
 		if (email == null) {
 			replyList = replyRepository.findReplyDTOByPost(postId); // 또는 withoutLike
@@ -76,11 +72,9 @@ public class ReplyService {
 	}
 
 	public ReplyListDTO updateReply(Long replyId, String content, String email) {
-		log.info("********** updateReply() 호출 - replyId: {}, email: {} **********", replyId, email);
 
 		ReplyEntity replyEntity = utils.findReply(replyId);
 		if (!replyEntity.getUser().getUserEmail().equals(email)) {
-			log.warn("🚫 댓글 수정 권한 없음 - 요청자: {}, 작성자: {}", email, replyEntity.getUser().getUserEmail());
 			throw new UserException(UserErrorCode.INVALID_ID, "작성자만 수정할 수 있습니다.");
 		}
 		UserEntity user = utils.findUser(email); 
@@ -92,19 +86,16 @@ public class ReplyService {
 	}
 
 	public void deleteReply(Long postId, Long replyId, String email) {
-		log.info("********** deleteReply() 호출 - postId: {}, replyId: {}, email: {} **********", postId, replyId, email);
 
 		PostEntity post = utils.findPost(postId);
 		ReplyEntity reply = utils.findReply(replyId);
 		if (!reply.getUser().getUserEmail().equals(email)) {
-			log.warn("🚫 댓글 삭제 권한 없음 - 요청자: {}, 작성자: {}", email, reply.getUser().getUserEmail());
 			throw new UserException(UserErrorCode.INVALID_ID, "작성자만 삭제할 수 있습니다.");
 		}
 
 		replyRepository.deleteById(reply.getReplyId());
 		post.setReplyCount(post.getReplyCount() - 1);
 
-		log.info("🗑️ 댓글 삭제 완료 - replyId: {}", replyId);
 	}
 	
 	public List<ReplyListDTO> buildReplyTree(List<ReplyListDTO> flatReplies) {

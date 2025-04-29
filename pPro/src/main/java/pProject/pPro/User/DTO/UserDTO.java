@@ -1,4 +1,4 @@
-package pProject.pPro.User;
+package pProject.pPro.User.DTO;
 
 import lombok.Getter;
 import lombok.Setter;

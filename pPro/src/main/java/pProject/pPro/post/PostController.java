@@ -35,6 +35,7 @@ public class PostController {
 	@PostMapping("/post/new")
 	public ResponseEntity<?> newPost(@ModelAttribute WritePostDTO writePostDTO,
 	                                 @AuthenticationPrincipal UserDetails loginUser) {
+		utils.isBannedUser(loginUser);
 		String email = utils.findEmail(loginUser);
 		UserEntity user= userService.expUp(email);
 		postService.writePost(writePostDTO, user);
@@ -46,7 +47,7 @@ public class PostController {
 		if (imageFile.isEmpty()) {
 			throw new PostException(PostErrorCode.UNKNOWN_ERROR);
 		}
-		String imageUrl = postService.saveImg(imageFile);
+		String imageUrl = postService.saveImage(imageFile);
 		return ResponseEntity.ok(CommonResponse.success("이미지 업로드 성공", imageUrl));
 	}
 

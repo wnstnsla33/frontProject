@@ -30,7 +30,6 @@ public class ChatService {
 	private final ServiceUtils utils;
 
 	public void saveMessage(ChatMessageDTO msg, String email) {
-		log.info("********** saveMessage() 호출 - roomId: {}, email: {}, message: '{}' **********", msg.getRoomId(), email, msg.getMessage());
 
 		RoomEntity room = utils.findRoom(msg.getRoomId());
 		room.setRecentChat(LocalDateTime.now());
@@ -40,7 +39,6 @@ public class ChatService {
 	}
 
 	public boolean isHost(String roomId, String email) {
-		log.info("********** isHost() 호출 - roomId: {}, email: {} **********", roomId, email);
 		UserEntity user = utils.findUser(email);
 		Optional<HostUserEntity> hostUser = hostUserRepository.findLoginId(roomId, user.getUserId()); 
 		boolean result = hostUser.isPresent();

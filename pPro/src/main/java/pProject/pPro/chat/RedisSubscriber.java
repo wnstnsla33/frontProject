@@ -29,7 +29,6 @@ public class RedisSubscriber implements MessageListener {
             String msgBody = new String(redisMessage.getBody(), StandardCharsets.UTF_8);
             ChatMessageDTO message = objectMapper.readValue(msgBody, ChatMessageDTO.class);
 
-            log.info("Redis 수신 → /sub/chat/room/{}", message.getRoomId());
 
             messagingTemplate.convertAndSend("/sub/chat/room/" + message.getRoomId(), message);
         } catch (Exception e) {

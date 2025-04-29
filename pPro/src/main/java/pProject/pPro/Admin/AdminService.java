@@ -51,12 +51,10 @@ public class AdminService {
 	private final ServiceUtils utils;
 
 	public void deleteUserById(Long id) {
-		log.info("********** deleteUserById() 호출 **********");
 		userRepository.deleteById(id);
 	}
 
 	public AdminPagingDTO getUserList(SearchDTO dto) {
-		log.info("********** getUserList() 호출 **********");
 		Pageable pageable = PageRequest.of(dto.getPage(), 10, Sort.by("userCreateDate").descending());
 		Page<UserEntity> pageResult = (dto.getName() != null && !dto.getName().isEmpty())
 				? userRepository.findByUserNameContainingIgnoreCase(dto.getName(), pageable)
@@ -66,7 +64,6 @@ public class AdminService {
 	}
 
 	public UserDetailByAdmimDTO getUserDetailInfo(Long userId) {
-		log.info("********** getUserDetailInfo() 호출 **********");
 		UserEntity user = utils.findUserById(userId);
 		Long replyCount = replyRepository.replyCount(userId);
 		Long postCount = postRepository.postCount(userId);
@@ -79,7 +76,6 @@ public class AdminService {
 	}
 
 	public List<PostListDTO> getPostListByAdmin(SearchDTO searchDTO) {
-		log.info("********** getPostListByAdmin() 호출 **********");
 		Pageable pageable = PageRequest.of(searchDTO.getPage(), 10, Sort.by("createDate").descending());
 		Page<PostEntity> pageResult = postRepository.searchPostsByAdmin(
 				searchDTO.getName() != null ? searchDTO.getName() : "", pageable);
@@ -87,35 +83,29 @@ public class AdminService {
 	}
 
 	public List<RoomDTO> getRoomListByAdmin(SearchDTO searchDTO) {
-		log.info("********** getRoomListByAdmin() 호출 **********");
 		Pageable pageable = PageRequest.of(searchDTO.getPage(), 10, Sort.by("roomCreatDate").descending());
 		Page<RoomEntity> pageResult = roomRepository.searchRooms(searchDTO.getName(),pageable);
 		return pageResult.getContent().stream().map(room -> new RoomDTO(room, true)).toList();
 	}
 
 	public List<RoomDTO> getUserRoomsByAdmin(Long userId) {
-		log.info("********** getUserRoomsByAdmin() 호출 **********");
 		List<HostUserEntity> hostRooms = hostUserRepository.findRoomsByUserId(userId);
 		return hostRooms.stream().map(hu -> new RoomDTO(hu, true)).toList();
 	}
 
 	public void deleteRoom(String roomId) {
-		log.info("********** deleteRoom() 호출 **********");
 		roomRepository.deleteById(roomId);
 	}
 
 	public void deletePostById(Long postId) {
-		log.info("********** deletePostById() 호출 **********");
 		postRepository.deleteById(postId);
 	}
 
 	public void deleteRoomByAdmin(String roomId) {
-		log.info("********** deleteRoomByAdmin() 호출 **********");
 		roomRepository.deleteById(roomId);
 	}
 
 	public List<UserChatByAdmin> getUserChatsByAdmin(Long userId, int page, String keyword) {
-		log.info("********** getUserChatsByAdmin() 호출 **********");
 		Pageable pageable = PageRequest.of(page, 20, Sort.by("createTime").descending());
 		Page<ChatEntity> chatPage = chatRepository.searchUserChatsWithRoomTitle(userId, keyword, pageable);
 		return chatPage.getContent().stream().map(UserChatByAdmin::new).toList();

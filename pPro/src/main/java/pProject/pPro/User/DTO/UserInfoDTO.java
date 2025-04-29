@@ -1,5 +1,7 @@
 package pProject.pPro.User.DTO;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -41,7 +43,8 @@ public class UserInfoDTO {
 	private int userExp;
 
 	private int userLevel;
-	
+	private String address;
+	private LocalDateTime reportedTime;
 	public UserInfoDTO(UserEntity userEntity) {
 		super();
 		this.userId = userEntity.getUserId();
@@ -58,6 +61,8 @@ public class UserInfoDTO {
 		this.userImg = userEntity.getUserImg();
 		this.userExp = userEntity.getUserExp();
 		this.userLevel = userEntity.getUserLevel();
+		this.address = userEntity.getAddress() != null ? userEntity.getAddress().getTotalAddress() : null;
+		this.reportedTime = userEntity.getReportedDate();
 	}
 	
 	

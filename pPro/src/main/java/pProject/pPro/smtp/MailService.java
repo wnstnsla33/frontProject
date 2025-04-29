@@ -71,7 +71,6 @@ public class MailService implements MailServiceInter {
 		MimeMessage message = createMessage(to); // "to" 로 메일 발송
 
 		redisUtil.setDataExpire(to, ePw, 10*60L);
-		log.info("메일 보냈습니다.");
 		try { // 예외처리
 			emailSender.send(message);
 		} catch (Exception e) {
@@ -83,7 +82,7 @@ public class MailService implements MailServiceInter {
 	public void authValid(String to, String code) {
 		String validCode = redisUtil.getData(to);
 		if(validCode==null) throw new SmtpException(SmtpErrorCode.REQUIRED_SMTP);
-		else if(code.equals(validCode))log.info("인증번호 확인");
+		else if(code.equals(validCode));
 		else  throw new SmtpException(SmtpErrorCode.UNVALID_SMTP);
 	}
 	

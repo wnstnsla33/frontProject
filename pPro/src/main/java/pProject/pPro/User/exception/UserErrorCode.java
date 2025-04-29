@@ -13,8 +13,8 @@ public enum UserErrorCode implements BaseErrorCode {
     ISSOCIAL("소셜 계정은 해당 기능을 사용할 수 없습니다.", 400),
     UNKNOWN("서버 오류입니다. 잠시 후 다시 시도해주세요.", 500),
     REQUIRED_LOGIN("로그인이 필요한 서비스입니다.", 403),
-    EXIST_NICKNAME("중복 닉네임이 있습니다.", 409);
-
+    EXIST_NICKNAME("중복 닉네임이 있습니다.", 409),
+	BANNED_USER("누적된 신고로 벤이 되었습니다.",401);
     private final String message;
     private final int status;
 

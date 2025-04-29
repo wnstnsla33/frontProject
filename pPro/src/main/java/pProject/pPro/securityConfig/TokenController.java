@@ -59,7 +59,6 @@ public class TokenController {
         accessCookie.setMaxAge(10 * 60); // 10분
         response.addCookie(accessCookie);
 
-        System.out.println("토큰 재발급");
         return ResponseEntity.ok("새 access 토큰이 발급되었습니다.");
     }
 

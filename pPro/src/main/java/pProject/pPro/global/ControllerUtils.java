@@ -16,4 +16,12 @@ public class ControllerUtils {
 		if(user==null) return null;
 		return user.getUsername();
 	}
+	 public void isBannedUser(UserDetails user) {
+	        boolean isBanned = user.getAuthorities().stream()
+	            .anyMatch(auth -> auth.getAuthority().equals("ROLE_BANNED"));
+	        
+	        if (isBanned) {
+	            throw new UserException(UserErrorCode.BANNED_USER);
+	        }
+	    }
 }

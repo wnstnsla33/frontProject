@@ -23,9 +23,6 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-    	System.out.println("🔥 필터 통과 URI: " + request.getRequestURI());
-    	System.out.println("🔥 Content-Type: " + request.getContentType());
-    	System.out.println("🔥 Method: " + request.getMethod());
         UsernamePasswordAuthenticationToken authenticationToken = null;
 
         String userId = null;
@@ -51,16 +48,16 @@ public class CustomUsernamePasswordAuthenticationFilter extends UsernamePassword
             userId = obtainUsername(request);
             userPassword = obtainPassword(request);
 
-            logger.info("POST 접속. USERID : " + userId + ", USERPW : " + userPassword);
         }
         else {
-            logger.error("POST / JSON 요청만 가능합니다.");
             throw new AuthenticationServiceException("Authentication Method Not Supported : " + request.getMethod());
         }
 
-        if(userId.equals("") || userPassword.equals("")){
-            System.out.println("ID 혹은 PW를 입력하지 않았습니다.");
-            throw new AuthenticationServiceException("ID 혹은 PW를 입력하지 않았습니다.");
+        if(userId.equals("")){
+            throw new AuthenticationServiceException("ID를 입력하지 않았습니다.");
+        }
+        else if(userPassword.equals("")) {
+        	throw new AuthenticationServiceException("PW를 입력하지 않았습니다.");
         }
 
         authenticationToken = new UsernamePasswordAuthenticationToken(userId, userPassword);

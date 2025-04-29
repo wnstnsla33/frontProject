@@ -27,7 +27,6 @@ public class MessageService {
 	private final ServiceUtils utils;
 
 	public void save(SaveMessageDTO dto, String email) {
-		System.out.println(dto.getType());
 		UserEntity sender = utils.findUser(email);
 		UserEntity receiver = utils.findUserById(dto.getReceiverId());
 		MessageEntity message = new MessageEntity(dto, sender, receiver);

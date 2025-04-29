@@ -66,7 +66,7 @@ public class FriendsService {
 	public List<FriendsListDTO> findFriendsList(String email) {
 		UserEntity user = utils.findUser(email);
 		List<FriendsEntity> requests = friendsRepository.friendsList(user.getUserId());
-		return requests.stream().map(FriendsListDTO::new).collect(Collectors.toList());
+		return requests.stream().map(f -> new FriendsListDTO(f, user.getUserId())).collect(Collectors.toList());
 	}
 
 	public int getRequestCount(String email) {

@@ -12,7 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import pProject.pPro.User.UserDTO;
+import pProject.pPro.User.DTO.UserDTO;
 import pProject.pPro.securityConfig.exception.FilterErrorCode;
 import pProject.pPro.securityConfig.exception.FilterException;
 
@@ -40,17 +40,14 @@ public class JWTFilter extends OncePerRequestFilter {
 		}
 
 		String requestURI = request.getRequestURI();
-		System.out.println(requestURI);
 		// 허용할 경로는 무조건 필터를 통과시킴
 		boolean isAllowedPath = isPublicPath(requestURI);
 		if (token == null && isAllowedPath) {
-			System.out.println("토큰없음,권한 true");
 			filterChain.doFilter(request, response);
 			return;
 		}
 		// 여기서부터는 토큰이 필수적임
 		if (token == null) {
-			System.out.println("널값 토쿤");
 			sendErrorResponse(response, "로그인이 필요합니다.", HttpServletResponse.SC_FORBIDDEN); // 403
 			return;
 		}
@@ -89,7 +86,6 @@ public class JWTFilter extends OncePerRequestFilter {
 	private void sendErrorResponse(HttpServletResponse response, String message, int statusCode) throws IOException {
 		response.setStatus(statusCode);
 		response.setContentType("application/json;charset=UTF-8");
-		System.out.println("에러 작성 jwtfilger");
 		String json = new com.fasterxml.jackson.databind.ObjectMapper()
 				.writeValueAsString(pProject.pPro.global.CommonResponse.fail(message));
 

@@ -28,7 +28,8 @@ public class UserDetailDTO {
 	private List<UserRoomDTO> rooms;
 	private int userLevel;
 	private LocalDateTime recentLoginTime;
-	
+	private LocalDateTime reportedTime;
+	private String address;
 	public UserDetailDTO(UserEntity user) {
 		this.userId= user.getUserId();
 		this.userEmail = user.getUserEmail();
@@ -38,6 +39,8 @@ public class UserDetailDTO {
 		this.userImg=user.getUserImg();
 		this.userLevel = user.getUserLevel();
 		this.recentLoginTime = user.getRecentLoginTime();
+		this.reportedTime= user.getReportedDate();
+		this.address = user.getAddress() != null ? user.getAddress().getTotalAddress() : null;
 		this.rooms = user.getJoinedRooms().stream()
 				.map(join -> {
 					RoomEntity room = join.getRoom();

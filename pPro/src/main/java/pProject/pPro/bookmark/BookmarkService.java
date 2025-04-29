@@ -28,7 +28,6 @@ public class BookmarkService {
 	private final ServiceUtils utils;
 
 	public PostBookmarkResponseDTO toggle(Long postId, String email) {
-		log.info("********** toggle() 호출 - postId: {}, email: {} **********", postId, email);
 
 		UserEntity user = utils.findUser(email);
 		PostEntity post = utils.findPost(postId);
@@ -47,7 +46,6 @@ public class BookmarkService {
 	}
 
 	public BookmarkEntity getBookmark(Long postId, String email) {
-		log.info("********** getBookmark() 호출 - postId: {}, email: {} **********", postId, email);
 
 		return bookmarkRepository.findBookmark(postId, email)
 				.orElseThrow(() -> {

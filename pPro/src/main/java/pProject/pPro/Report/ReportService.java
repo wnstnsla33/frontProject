@@ -43,8 +43,6 @@ public class ReportService {
 
 	// 신고 생성
 	public void createReport(CreateReportDTO dto, String email) {
-		log.info("********** createReport() 호출 - email: {}, targetId: {}, targetType: {} **********", email,
-				dto.getTargetId(), dto.getTargetType());
 
 		UserEntity reporter = utils.findUser(email);
 		UserEntity reportedUser = null;
@@ -53,8 +51,6 @@ public class ReportService {
 
 		boolean exists = reportRepository.isAlreadyReported(reporter, dto.getTargetId(), dto.getTargetType());
 		if (exists) {
-			log.warn("🚫 중복 신고 감지 - reporter: {}, targetId: {}, type: {}", reporter.getUserEmail(), dto.getTargetId(),
-					dto.getTargetType());
 			throw new ReportException(ReportErrorCode.DUPLICATE_REPORT);
 		}
 
@@ -88,60 +84,55 @@ public class ReportService {
 		report.setChatText(chatText);
 		report.setParentId(parentId);
 		reportRepository.save(report);
-
-		log.info("✅ 신고 저장 완료 - reportId: {}, 대상 유저: {}", report.getReportId(), reportedUser.getUserEmail());
 	}
 
 	// 신고 상세 조회
 	public ReportResponseDTO findReport(Long id) {
-		log.info("********** findReport() 호출 - reportId: {} **********", id);
 		return new ReportResponseDTO(utils.findReportWithUser(id));
 	}
 
 	// 신고 상태 변경
+	// 신고 상태 변경
 	public ReportStatus updateStatus(ReportStatusDTO dto, long reportId, String email) {
-		ReportStatus status = dto.getStatus();
-		UserEntity sender = utils.findUser(email);
-		ReportEntity report = utils.findReportWithUser(reportId);
-		if (status == ReportStatus.ACCEPT) {
-			UserEntity user = report.getReportedUser();
-			log.info("📛 신고 수락됨 - 신고 유저: {}, 현재 누적: {}", user.getUserEmail(), user.getReportedCount());
-			MessageEntity message = new MessageEntity(dto, sender, user);
-			messageRepository.save(message);
-			if (user.getReportedCount() > 2) {
-				log.info("🚫 유저 정지 처리 - 유저: {}", user.getUserEmail());
-				user.setReportedDate(LocalDateTime.now());
-				user.setUserGrade(Grade.BANNED);
-			}
-			user.setReportedCount(user.getReportedCount() + 1);
-		}
+	    ReportStatus status = dto.getStatus();
+	    UserEntity sender = utils.findUser(email);
+	    ReportEntity report = utils.findReportWithUser(reportId);
 
-		report.setStatus(status);
-		log.info("✅ 신고 상태 변경 완료 - reportId: {}, status: {}", reportId, status);
-		return report.getStatus();
+	    if (status == ReportStatus.ACCEPT) {
+	        UserEntity user = report.getReportedUser();
+
+	        MessageEntity message = new MessageEntity(dto, sender, user);
+	        messageRepository.save(message);
+
+	        user.setReportedCount(user.getReportedCount() + 1);
+
+	        if (user.getReportedCount() % 3 == 0) {
+	            user.setUserGrade(Grade.BANNED);
+	            user.setReportedDate(LocalDateTime.now().plusMonths(1)); // 🔥 1달 뒤로 설정
+	        }
+	    }
+
+	    report.setStatus(status);
+	    return report.getStatus();
 	}
+
 
 	// 관리자용 신고 목록
 	public ReportPageDTO getReportList(ReportSearchDTO dto) {
-		log.info("********** getReportList() 호출 - page: {}, keyword: {}, status: {} **********", dto.getPage(),
-				dto.getKeyword(), dto.getStatus());
 
 		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by(Sort.Direction.DESC, "createdAt"));
 		Page<ReportResponseDTO> list = reportRepository.findAllReports(dto.getKeyword(), dto.getStatus(), pageable)
 				.map(ReportResponseDTO::new);
 
-		log.info("📋 신고 목록 반환 - 전체 페이지 수: {}, 건수: {}", list.getTotalPages(), list.getTotalElements());
 		return new ReportPageDTO(list.getContent(), list.getTotalPages());
 	}
 
 	// 내가 한 신고 조회
 	public List<ReportResponseDTO> getMyReports(String email) {
-		log.info("********** getMyReports() 호출 - email: {} **********", email);
 
 		UserEntity user = utils.findUser(email);
 		List<ReportEntity> reports = reportRepository.findByReporter(user);
 
-		log.info("📌 나의 신고 건수: {}", reports.size());
 		return reports.stream().map(ReportResponseDTO::new).collect(Collectors.toList());
 	}
 
@@ -149,7 +140,6 @@ public class ReportService {
 		try {
 			return Long.parseLong(id);
 		} catch (NumberFormatException e) {
-			log.error("🚨 잘못된 ID 입력 - id: {}", id);
 			throw new IllegalArgumentException("다시 실행해주십시오");
 		}
 	}

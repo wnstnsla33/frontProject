@@ -1,5 +1,6 @@
 package pProject.pPro.room;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -60,10 +61,9 @@ public class RoomService {
 	@Value("${admin.email}")
 	private String adminEmail;
 	public RoomDTO createRoom(RoomDTO room, String email) {
-		log.info("********** createRoom() 호출 - email: {}, roomTitle: {} **********", email, room.getRoomTitle());
 		UserEntity user = utils.findUser(email);
 		RoomEntity roomEntity = new RoomEntity(room);
-		roomEntity.setRoomImg(utils.saveImage(room.getRoomSaveImg()));
+		roomEntity.setRoomImg(saveImage(room.getRoomSaveImg()));
 		roomEntity.setCreateUser(user);
 		roomEntity.setAddress(new RoomAddress(room.getSido(), room.getSigungu()));
 
@@ -80,26 +80,18 @@ public class RoomService {
 		return new RoomDTO(saveRoom);
 	}
 
-	public String savedImage(MultipartFile file) {
-		log.info("********** savedImage() 호출 - 파일명: {} **********", file.getOriginalFilename());
-		return utils.saveImage(file);
-	}
 
 	public RoomDTO findRoom(String roomId) {
-		log.info("********** findRoom() 호출 - roomId: {} **********", roomId);
 		return new RoomDTO(roomRepository.findByIdForUpdate(roomId).orElseThrow(() -> {
 			return new RoomException(RoomErrorCode.ROOM_NOT_FOUND);
 		}));
 	}
 
 	public List<RoomDTO> roomList() {
-		log.info("********** roomList() 호출 **********");
 		return roomRepository.findAll().stream().map(RoomDTO::new).toList();
 	}
 
 	public Page<RoomDTO> searchRooms(SearchRoomDTO dto) {
-		log.info("********** searchRooms() 호출 - title: {}, type: {}, sido: {}, sigungu: {} **********", 
-			dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu());
 
 		// ✅ 빈 문자열 → null 변환
 		if (dto.getTitle() != null && dto.getTitle().isBlank()) dto.setTitle(null);
@@ -132,7 +124,6 @@ public class RoomService {
 
 
 	public RoomWithChatDTO joinRoom(String roomId, String email) {
-	    log.info("🔔 joinRoom() 호출 - roomId: {}, email: {}", roomId, email);
 
 	    boolean isAdmin = email.equals(adminEmail);
 	    UserEntity user = utils.findUser(email);
@@ -232,8 +223,6 @@ public class RoomService {
 	}
 
 	public void leftRoom(String roomId, String email) {
-		log.info("********** deleteRoom() 호출 - roomId: {}, email: {} **********", roomId, email);
-
 		RoomEntity room = utils.findRoom(roomId);
 		UserEntity user = utils.findUser(email);
 		if (!room.getCreateUser().getUserEmail().equals(email)) {
@@ -250,7 +239,6 @@ public class RoomService {
 	}
 
 	public RoomDTO updateRoom(RoomDTO room, String roomId, String email) {
-		log.info("********** updateRoom() 호출 - roomId: {}, email: {} **********", roomId, email);
 		UserEntity user = utils.findUser(email);
 		RoomEntity roomEntity = utils.findRoom(roomId);
 		if (!(roomEntity.getCreateUser().getUserId()==user.getUserId())) {
@@ -263,7 +251,6 @@ public class RoomService {
 		roomEntity.setRoomTitle(room.getRoomTitle());
 		roomEntity.setRoomType(room.getRoomType());
 
-		log.info("✅ 방 수정 완료 - roomId: {}", roomId);
 		return new RoomDTO(roomEntity);
 	}
 
@@ -306,4 +293,26 @@ public class RoomService {
 	        message.setMessage(customMessage);
 	        redisPublisher.publish(roomId, message);
 	 }
+	 
+	 public String saveImage(MultipartFile imageFile) {
+	    	String UPLOAD_DIR = "/home/ubuntu/uploads/";
+			File dir = new File(UPLOAD_DIR);
+			if (!dir.exists())
+				dir.mkdirs();
+
+			String originalFilename = imageFile.getOriginalFilename();
+			String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+			String savedFileName = UUID.randomUUID() + extension;
+
+			File savedFile = new File(UPLOAD_DIR + savedFileName);
+			try {
+
+				imageFile.transferTo(savedFile);
+			} catch (Exception e) {
+				e.printStackTrace();
+				// TODO: handle exception
+			}
+
+			return "/uploads/" + savedFileName;
+		}
 }

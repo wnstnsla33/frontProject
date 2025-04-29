@@ -14,4 +14,8 @@ import lombok.Setter;
 public class Address {
 	private String sido; // 시/도
 	private String sigungu;
+	
+	public String getTotalAddress() {
+		return this.getSido()+" "+this.getSigungu();
+	}
 }

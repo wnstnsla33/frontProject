@@ -20,7 +20,6 @@ public class MailServiceRestController {
 	MailService mailService;
 	@GetMapping("/signup/confirm")
 	public ResponseEntity mailConfirm(@RequestParam(name="email")String email)throws Exception{
-		log.info("***********************************메일 보냄 경로 /signup/confirm");
 		mailService.sendSimpleMessage(email);
 		return ResponseEntity.ok(CommonResponse.success("이메일을 확인해주세요"));
 	}

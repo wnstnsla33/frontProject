@@ -85,9 +85,8 @@ public class SecurityConfig implements WebMvcConfigurer {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/ws-stomp/**", "/api/**","/",  "/signup/**","/find/**","/post","/auth/getToken","/uploads/**","/post/**","/chatRoom/search").permitAll()
-                .requestMatchers("/user").hasAnyRole("USER","ADMIN","BANNED")
-                .requestMatchers("/user/**","/chatRoom/**","/auth/logout","/report/**","/friends/**").hasAnyRole("USER","ADMIN")
-                .requestMatchers("/admin/**","/admin").hasRole("ADMIN")
+                .requestMatchers("/user","/auth/logout","/friends/**","/user/**","/chatRoom/**","/report/**").hasAnyRole("USER","ADMIN","BANNED")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)

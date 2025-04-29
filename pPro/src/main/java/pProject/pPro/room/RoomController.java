@@ -34,6 +34,7 @@ public class RoomController {
 
 	@PostMapping("/chatRoom")
 	public ResponseEntity<?> createRoom(@ModelAttribute @Valid RoomDTO dto, @AuthenticationPrincipal UserDetails user) {
+		utils.isBannedUser(user);
 		RoomDTO createdRoom = roomService.createRoom(dto, utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방이 생성되었습니다", createdRoom));
 	}
@@ -47,6 +48,7 @@ public class RoomController {
 	@GetMapping("/chatRoom/{roomId}")
 	public ResponseEntity<?> findRoom(@PathVariable("roomId") String roomId,
 			@AuthenticationPrincipal UserDetails user) {
+		utils.isBannedUser(user);
 		RoomWithChatDTO joinedRoom = roomService.joinRoom(roomId, utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("방 참가 완료", joinedRoom));
 	}
@@ -54,6 +56,7 @@ public class RoomController {
 	@PostMapping("/chatRoom/{roomId}/verify")
 	public ResponseEntity<?> joinWithPassword(@PathVariable("roomId") String roomId, @RequestBody PasswordDTO password,
 			@AuthenticationPrincipal UserDetails user) {
+		utils.isBannedUser(user);
 		RoomWithChatDTO joinedRoom = roomService.joinPwdRoom(roomId, utils.findEmail(user), password.getPassword());
 		return ResponseEntity.ok(CommonResponse.success("비밀방 참가 완료", joinedRoom));
 	}
@@ -93,7 +96,7 @@ public class RoomController {
 
 	@PostMapping("/chatRoom/image")
 	public ResponseEntity<?> uploadRoomImage(@RequestPart("image") MultipartFile imageFile) {
-		String savedUrl = roomService.savedImage(imageFile);
+		String savedUrl = roomService.saveImage(imageFile);
 		return ResponseEntity.ok(CommonResponse.success("이미지 저장 성공", savedUrl));
 	}
 

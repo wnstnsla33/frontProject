@@ -11,8 +11,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import pProject.pPro.User.UserDTO;
 import pProject.pPro.User.UserRepository;
+import pProject.pPro.User.DTO.UserDTO;
 import pProject.pPro.entity.Grade;
 import pProject.pPro.entity.UserEntity;
 
@@ -74,7 +74,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         	UserEntity existData = optionalUser.get();
         	if (!existData.getUserEmail().equals(userEmail)) {
                 existData.setUserEmail(userEmail);
-                System.out.println("oauth2 email바뀌어 새로 저장");
                 userRepository.save(existData);
             }
 

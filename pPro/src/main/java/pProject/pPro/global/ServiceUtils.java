@@ -95,7 +95,6 @@ public class ServiceUtils {
 		return reportRepository.findReport(reportId).orElseThrow(() -> new ReportException(ReportErrorCode.INVALID_ID));
 	}
 
-	private static final String UPLOAD_DIR = "/home/ubuntu/uploads/";
 
 
 	
@@ -141,24 +140,5 @@ public class ServiceUtils {
 		return hostUserRepository.findLoginId(rId, userId).orElseThrow(()->new RoomException(RoomErrorCode.INVALID_ID));
 	}
 	
-	public String saveImage(MultipartFile imageFile) {
-		File dir = new File(UPLOAD_DIR);
-		if (!dir.exists())
-			dir.mkdirs();
 
-		String originalFilename = imageFile.getOriginalFilename();
-		String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-		String savedFileName = UUID.randomUUID() + extension;
-
-		File savedFile = new File(UPLOAD_DIR + savedFileName);
-		try {
-
-			imageFile.transferTo(savedFile);
-		} catch (Exception e) {
-			e.printStackTrace();
-			// TODO: handle exception
-		}
-
-		return "/uploads/" + savedFileName;
-	}
 }

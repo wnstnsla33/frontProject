@@ -71,7 +71,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             }
                         }
                     }
-                    else System.out.println("쿠키없음");
                 }
                 return true;
             }
