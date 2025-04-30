@@ -61,7 +61,6 @@ public class UserInfoDTO {
 		this.userImg = userEntity.getUserImg();
 		this.userExp = userEntity.getUserExp();
 		this.userLevel = userEntity.getUserLevel();
-		this.address = userEntity.getAddress() != null ? userEntity.getAddress().getTotalAddress() : null;
 		this.reportedTime = userEntity.getReportedDate();
 	}
 	

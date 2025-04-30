@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +27,7 @@ import pProject.pPro.entity.UserEntity;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	private final JWTUtil jwtUtil;
 	private final UserRepository userRepository;
-
+	private final RedisTemplate<String, String> redisTemplate;
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
@@ -41,6 +43,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
 		response.addCookie(createCookie("access", access, 1));
 		response.addCookie(createCookie("refresh", refresh, 2));
+		 redisTemplate.opsForValue().set(
+	                "refresh:" + username,
+	                refresh,
+	                7 * 24 * 60 * 60,
+	                TimeUnit.SECONDS
+	        );
 		UserEntity userEntity = userRepository.findByEmail(username).get();
 		userEntity.setRecentLoginTime(LocalDateTime.now());
 		userRepository.save(userEntity);

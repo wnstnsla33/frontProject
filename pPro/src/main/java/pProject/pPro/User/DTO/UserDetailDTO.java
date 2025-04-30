@@ -40,7 +40,6 @@ public class UserDetailDTO {
 		this.userLevel = user.getUserLevel();
 		this.recentLoginTime = user.getRecentLoginTime();
 		this.reportedTime= user.getReportedDate();
-		this.address = user.getAddress() != null ? user.getAddress().getTotalAddress() : null;
 		this.rooms = user.getJoinedRooms().stream()
 				.map(join -> {
 					RoomEntity room = join.getRoom();

@@ -46,8 +46,8 @@ public class UserController {
 
     // 로그아웃
     @PostMapping("/auth/logout")
-    public ResponseEntity<CommonResponse<Void>> logout(HttpServletResponse response) {
-        userService.logout(response);
+    public ResponseEntity<CommonResponse<Void>> logout(HttpServletResponse response,@AuthenticationPrincipal UserDetails user) {
+        userService.logout(utils.findEmail(user),response);
         return ResponseEntity.ok(CommonResponse.success("로그아웃 성공"));
     }
 

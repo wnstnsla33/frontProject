@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final ServiceUtils utils;
-
+    private final RedisTemplate<String, String> redisTemplate;
     public String createKey() {
         int leftLimit = 48;
         int rightLimit = 122;
@@ -99,16 +100,10 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void logout(HttpServletResponse response) {
-        Cookie accessCookie = new Cookie("access", null);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(0);
-        response.addCookie(accessCookie);
-
-        Cookie refreshCookie = new Cookie("refresh", null);
-        refreshCookie.setPath("/auth");
-        refreshCookie.setMaxAge(0);
-        response.addCookie(refreshCookie);
+    public void logout(String email, HttpServletResponse response) {
+        redisTemplate.delete("refresh:" + email); // ✅ Redis에서 Refresh 삭제
+        response.addCookie(deleteCookie("access", "/"));
+        response.addCookie(deleteCookie("refresh", "/auth"));
     }
 
     public void deleteUser(String email, String pwd) {
@@ -227,4 +222,12 @@ public class UserService {
 
 		return "/uploads/" + savedFileName;
 	}
+    
+    private Cookie deleteCookie(String name, String path) {
+        Cookie cookie = new Cookie(name, null);
+        cookie.setPath(path);
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0);
+        return cookie;
+    }
 }

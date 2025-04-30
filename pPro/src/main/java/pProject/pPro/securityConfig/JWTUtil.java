@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.rsocket.RSocketSecurity.JwtSpec;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 
 
@@ -48,8 +50,22 @@ public class JWTUtil {
 
         return expirationDate.before(new Date());
     }
+    public Long getRemainingTime(String token) {
+    	JwtParser parser = Jwts.parser()
+    	        .verifyWith(secretKey)  // Signature verification은 verifyWith 사용
+    	        .build();
+
+    	Claims claims = parser.parseSignedClaims(token).getPayload();
+
+        Date expiration = claims.getExpiration();
+        long now = System.currentTimeMillis();
+        long diffMs = expiration.getTime() - now;
+
+        return  Math.max(diffMs / 1000, 0);
+    }
 
 
+    
     public String createJwt(String category,String email, String role, Long expiredMs) {
 
         return Jwts.builder()
