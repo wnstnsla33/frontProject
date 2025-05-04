@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import jakarta.persistence.LockModeType;
 import pProject.pPro.entity.FriendsEntity;
+import pProject.pPro.entity.UserEntity;
 
 public interface FriendsRepository extends JpaRepository<FriendsEntity, Long>{
 	//나의 친구요청 리스트
@@ -42,4 +43,6 @@ public interface FriendsRepository extends JpaRepository<FriendsEntity, Long>{
 	@Query("select f from FriendsEntity f join fetch f.my join fetch f.friend where f.friendsId =:fId")
 	Optional< FriendsEntity> findFriendsEntityWithUser(@Param("fId")Long fId);
 	
+	@Query("select f from FriendsEntity f where f.my=:myId and f.friend=:friendId")
+	FriendsEntity findFriendEntity(@Param("myId")UserEntity myId,@Param("friendId")UserEntity FriendId);
 }

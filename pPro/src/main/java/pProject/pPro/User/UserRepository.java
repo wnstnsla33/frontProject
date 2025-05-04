@@ -28,4 +28,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>{
 	@EntityGraph(attributePaths = {"joinedRooms.room"})
 	@Query("select u from UserEntity u where u.userId=:userId")
 	Optional<UserEntity> getUserInfo(@Param("userId")Long userId);
+	
+	long countByUserNickName(String nickname);
+
 }

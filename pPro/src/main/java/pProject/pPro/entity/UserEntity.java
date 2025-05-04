@@ -172,4 +172,10 @@ public class UserEntity {
             this.userExp=userExp;
         }
 	}
+	public UserEntity(String userEmail) {
+		super();
+		this.userEmail = userEmail;
+	}
+	
+	
 }
