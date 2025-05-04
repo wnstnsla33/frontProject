@@ -21,7 +21,8 @@ public interface RoomRepository extends JpaRepository<RoomEntity, String> {
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT r FROM RoomEntity r WHERE r.roomId = :roomId")
 	Optional<RoomEntity> findByIdForUpdate(@Param("roomId") String roomId);
-
+	
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@EntityGraph(attributePaths = { "hostUsers", "hostUsers.user" })
 	@Query("SELECT r FROM RoomEntity r  WHERE r.roomId = :roomId  ")
 	Optional<RoomEntity> fetchRoomWithHostUsers(@Param("roomId") String roomId);

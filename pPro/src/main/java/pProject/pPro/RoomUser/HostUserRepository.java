@@ -4,13 +4,16 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import jakarta.persistence.LockModeType;
 import pProject.pPro.entity.HostUserEntity;
 
 public interface HostUserRepository extends JpaRepository<HostUserEntity, Long> {
-
+	
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT h FROM HostUserEntity h JOIN FETCH h.room r "
 			+ "WHERE r.roomId = :roomId AND h.user.userId = :userId")
 	Optional<HostUserEntity> findLoginId(@Param("roomId") String roomId, @Param("userId") Long userId);

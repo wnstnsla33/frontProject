@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,5 +70,10 @@ public class FriendsController {
 	public ResponseEntity friendsList(@AuthenticationPrincipal UserDetails user) {
 		List<FriendsListDTO> result = friendsService.findFriendsList(utils.findEmail(user));
 		return ResponseEntity.ok(CommonResponse.success("친구 목록", result));
+	}
+	@DeleteMapping("/friends/{fId}")
+	public ResponseEntity deleteFriends(@AuthenticationPrincipal UserDetails user,@PathVariable("fId")Long fId) {
+		friendsService.DeleteFreinds(fId);
+		return ResponseEntity.ok(CommonResponse.success("친구를 삭제하였습니다."));
 	}
 }

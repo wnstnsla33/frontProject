@@ -54,7 +54,7 @@ public class UserController {
     // 프로필 수정
     @PostMapping("/user/edit")
     public ResponseEntity<CommonResponse<UserInfoDTO>> profileEdit(
-            @ModelAttribute ProfileEditDTO profileEditDTO,
+            @Valid @ModelAttribute ProfileEditDTO profileEditDTO,
             @AuthenticationPrincipal UserDetails loginUser) {
         UserEntity userInfo = userService.updateUser(profileEditDTO, utils.findEmail(loginUser));
         return ResponseEntity.ok(CommonResponse.success("프로필 수정 성공", new UserInfoDTO(userInfo)));

@@ -77,6 +77,19 @@ public class PostEntity {
 		this.secreteKey = writePostDTO.getSecreteKey();
 		this.user = user;
 	}
-	
-	
+	public void increaseReplyCount() {
+		this.replyCount = replyCount+1;
+	}
+	public void decreaseReplyCount() {
+		this.replyCount = replyCount-1;
+	}
+	public void increaseViewCount() {
+		this.viewCount = viewCount+1;
+	}
+	public void increaseBookmarkCount() {
+		this.bookmarkCount = bookmarkCount+1;
+	}
+	public void decreaseBookmarkCount() {
+		this.bookmarkCount = bookmarkCount-1;
+	}
 }

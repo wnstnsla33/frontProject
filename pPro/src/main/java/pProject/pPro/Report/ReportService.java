@@ -103,9 +103,8 @@ public class ReportService {
 
 	        MessageEntity message = new MessageEntity(dto, sender, user);
 	        messageRepository.save(message);
-
-	        user.setReportedCount(user.getReportedCount() + 1);
-
+	        user.increaseReportedCounts();
+	        
 	        if (user.getReportedCount() % 3 == 0) {
 	            user.setUserGrade(Grade.BANNED);
 	            user.setReportedDate(LocalDateTime.now().plusMonths(1)); // 🔥 1달 뒤로 설정

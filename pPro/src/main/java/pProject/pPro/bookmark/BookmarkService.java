@@ -35,11 +35,11 @@ public class BookmarkService {
 		boolean isBookmarked;
 		if (bookmark.isPresent()) {
 			bookmarkRepository.delete(bookmark.get());
-			post.setBookmarkCount(post.getBookmarkCount() - 1);
+			post.decreaseBookmarkCount();
 			isBookmarked=false;
 		} else {
 			bookmarkRepository.save(new BookmarkEntity(post, user));
-			 post.setBookmarkCount(post.getBookmarkCount() + 1);
+			 post.increaseBookmarkCount();
 			 isBookmarked=true;
 		}
 		return new PostBookmarkResponseDTO(post, isBookmarked);

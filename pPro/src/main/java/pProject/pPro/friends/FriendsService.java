@@ -41,9 +41,9 @@ public class FriendsService {
 		friendsRepository.save(friends);
 	}
 
-	public void updateF(String email, Long FId, RequestFriendsType type) {
+	public void updateF(String email, Long fId, RequestFriendsType type) {
 		UserEntity user = utils.findUser(email);
-		FriendsEntity friends = utils.findFriendsEntity(FId);
+		FriendsEntity friends  = friendsRepository.findFriendsEntityWithUser(fId).orElseThrow(() -> new FriendsException(FriendsErrorCode.NOT_FOUND_FRIENDS_ID));
 		// 내아이디에 친추가 맞는지 확인
 		if (!friends.getFriend().getUserId().equals(user.getUserId()))
 			throw new FriendsException(FriendsErrorCode.NOT_FOUND_FRIENDS_ID);
@@ -54,7 +54,15 @@ public class FriendsService {
 		// 이미 처리한 요청인지 확인
 		if (friends.getType() != RequestFriendsType.REQUEST)
 			throw new FriendsException(FriendsErrorCode.ALREADY_REPONSE);
-		friends.setType(type);
+		if(type==RequestFriendsType.ACCEPT) {
+			if(user.getFriendsCounts()<30&&friends.getMy().getFriendsCounts()<30) {
+				user.increaseFriendsCounts();
+				friends.getMy().increaseFriendsCounts();
+				friends.setType(type);
+			}
+			else throw new FriendsException( FriendsErrorCode.TOMANY_FRIENDS);
+		}
+		else friends.setType(RequestFriendsType.DENIED);
 	}
 
 	public Page<FriendsRequestDTO> findRequestList(String email, Pageable pageable) {
@@ -73,5 +81,10 @@ public class FriendsService {
 		UserEntity user = utils.findUser(email);
 		return friendsRepository.requestFriendsCount(user.getUserId());
 	}
-
+	public void DeleteFreinds(Long fId) {
+		FriendsEntity friends  = friendsRepository.findFriendsEntityWithUser(fId).orElseThrow(() -> new FriendsException(FriendsErrorCode.NOT_FOUND_FRIENDS_ID));
+		friends.getMy().decreaseFriendsCounts();
+		friends.getFriend().decreaseFriendsCounts();
+		friendsRepository.delete(friends);
+	}
 }

@@ -119,7 +119,7 @@ public class PostService {
     public PostListDTO getSecretePost(Long postId, String pwd, String email) {
         PostEntity post = utils.findPost(postId);
         if (passwordEncoder.matches(pwd, post.getSecreteKey())) {
-            post.setViewCount(post.getViewCount()+1);
+            post.increaseViewCount();
             if (email != null)
                 return new PostListDTO(post, false, true);
             Optional<BookmarkEntity> bookmark = bookmarkRepository.findBookmark(postId, email);

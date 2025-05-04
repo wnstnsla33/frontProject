@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,13 +25,21 @@ import pProject.pPro.securityConfig.JWTUtil;
 import java.util.concurrent.TimeUnit;
 
 @Component
-@RequiredArgsConstructor
 public class CustomSuccessHandlerNoSNS extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JWTUtil jwtUtil;
-    private final UserRepository userRepository;
-    private final RedisTemplate<String, String> redisTemplate;
+	private final JWTUtil jwtUtil;
+	private final UserRepository userRepository;
+	private final RedisTemplate<String, String> redisTemplate;
 
+	public CustomSuccessHandlerNoSNS(
+		JWTUtil jwtUtil,
+		UserRepository userRepository,
+		@Qualifier("redisTemplate") RedisTemplate<String, String> redisTemplate
+	) {
+		this.jwtUtil = jwtUtil;
+		this.userRepository = userRepository;
+		this.redisTemplate = redisTemplate;
+	}
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {

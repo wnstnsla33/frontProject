@@ -69,5 +69,11 @@ public class ReplyEntity {
 		this.user = user;
 		this.parent=parent;
 	}
+	public void increaseLikeCount() {
+		this.likeCount = likeCount+1;
+	}
+	public void decreaseLikeCount() {
+		this.likeCount = likeCount+1;
+	}
 
 }

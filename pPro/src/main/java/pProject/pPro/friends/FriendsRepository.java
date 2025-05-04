@@ -6,9 +6,11 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import jakarta.persistence.LockModeType;
 import pProject.pPro.entity.FriendsEntity;
 
 public interface FriendsRepository extends JpaRepository<FriendsEntity, Long>{
@@ -36,6 +38,8 @@ public interface FriendsRepository extends JpaRepository<FriendsEntity, Long>{
 	
 	@Query("select count(f) from FriendsEntity f where f.friend.userId =:userId and f.type ='REQUEST'")
 	int requestFriendsCount(@Param("userId")Long userId);
-	
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select f from FriendsEntity f join fetch f.my join fetch f.friend where f.friendsId =:fId")
+	Optional< FriendsEntity> findFriendsEntityWithUser(@Param("fId")Long fId);
 	
 }

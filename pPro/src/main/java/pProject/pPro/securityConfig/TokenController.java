@@ -3,8 +3,10 @@ package pProject.pPro.securityConfig;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,17 +14,24 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import pProject.pPro.User.UserRepository;
 import pProject.pPro.global.CommonResponse;
+import pProject.pPro.global.ServiceUtils;
 import pProject.pPro.securityConfig.exception.FilterErrorCode;
 import pProject.pPro.securityConfig.exception.FilterException;
 
 @RestController
-@RequiredArgsConstructor
 public class TokenController {
 
     private final JWTUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
-
+    public TokenController(
+    		JWTUtil jwtUtil,
+            @Qualifier("redisTemplate") RedisTemplate<String, String> redisTemplate
+        ) {
+            this.jwtUtil = jwtUtil;
+            this.redisTemplate = redisTemplate;
+        }
     @GetMapping("/auth/getToken")
     public ResponseEntity<?> getToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractCookie(request, "refresh");

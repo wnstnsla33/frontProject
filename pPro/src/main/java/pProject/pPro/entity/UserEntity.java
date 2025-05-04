@@ -75,6 +75,8 @@ public class UserEntity {
 
 	private String Hint;
 
+	private int friendsCounts;
+	
 	@Embedded
 	private Address address;
 
@@ -141,5 +143,33 @@ public class UserEntity {
 		this.userCreateDate = LocalDateTime.now().toString();
 		this.userLevel = 1;
 		this.userExp = 0;
+	}
+	public void decreaseFriendsCounts() {
+		this.friendsCounts = friendsCounts-1;
+	}
+	public void increaseFriendsCounts() {
+		this.friendsCounts = friendsCounts+1;
+	}
+	public void increaseReportedCounts() {
+		this.reportedCount = reportedCount+1;
+	}
+	public void decreaseReportedCounts() {
+		this.reportedCount = reportedCount-1;
+	}
+	public void expUp() {
+		
+		this.userExp = userExp+ 20;
+
+        if (userExp >= 100) {
+            this.userLevel = userLevel+1;
+            userExp=0;
+            
+            int level = userLevel;
+            if (level >= 10) this.userGrade = Grade.VIP;
+            else if (level >= 7) this.userGrade = Grade.GOLD;
+            else if (level >= 4)this.userGrade = Grade.SILVER;
+        } else {
+            this.userExp=userExp;
+        }
 	}
 }

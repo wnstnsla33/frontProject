@@ -26,12 +26,12 @@ public class ReplyLikeService {
 		ReplyEntity reply = utils.findReply(replyId);
 		if(replyLike.isPresent()) {
 			replyLikeRepository.deleteById(replyLike.get().getReplyLikeId());
-			reply.setLikeCount(reply.getLikeCount()-1);
+			reply.decreaseLikeCount();
 			return new ReplyLikeResponseDTO(false, reply.getLikeCount());
 		}
 		ReplyLikeEntity newReplyLike = new ReplyLikeEntity(reply, user);
 		replyLikeRepository.save(newReplyLike);
-		reply.setLikeCount(reply.getLikeCount()+1);
+		reply.increaseLikeCount();
 		return new ReplyLikeResponseDTO(true, reply.getLikeCount());
 	}
 }

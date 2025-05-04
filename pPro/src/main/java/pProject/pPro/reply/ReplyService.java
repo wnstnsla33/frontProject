@@ -53,8 +53,7 @@ public class ReplyService {
 
 		ReplyEntity reply = new ReplyEntity(post, user, replyRegDTO, parentReply);
 		ReplyEntity regReply = replyRepository.save(reply);
-		post.setReplyCount(post.getReplyCount() + 1);
-
+		post.increaseReplyCount();
 		return new ReplyListDTO(regReply,false);
 	}
 
