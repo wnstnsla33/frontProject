@@ -1,11 +1,13 @@
 package pProject.pPro;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,16 +20,19 @@ import jakarta.transaction.Transactional;
 import pProject.pPro.RoomUser.HostUserRepository;
 import pProject.pPro.RoomUser.DTO.RoomAddress;
 import pProject.pPro.User.UserRepository;
+import pProject.pPro.User.exception.UserException;
 import pProject.pPro.entity.Address;
 import pProject.pPro.entity.HostUserEntity;
 import pProject.pPro.entity.RoomEntity;
 import pProject.pPro.entity.UserEntity;
 import pProject.pPro.room.RoomRepository;
 import pProject.pPro.room.RoomService;
+import pProject.pPro.room.excption.RoomErrorCode;
+import pProject.pPro.room.excption.RoomException;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class RoomConcurrencyTest {
+public class RoomTest {
 
     @Autowired private RoomService roomService;
     @Autowired private RoomRepository roomRepository;
@@ -82,15 +87,14 @@ public class RoomConcurrencyTest {
     @Test
     @DisplayName("최대 인원 제한 테스트 - 5명까지만 입장 허용")
     void joinRoom_exceedMaxParticipants() throws InterruptedException {
-        // === 테스트 준비 ===
         UserEntity host = userRepository.save(new UserEntity("host2@email.comm"));
         String roomTestId = UUID.randomUUID().toString();
 
         RoomEntity room = new RoomEntity();
         room.setRoomId(roomTestId);
         room.setRoomTitle("최대 인원 테스트");
-        room.setRoomMaxParticipants(5);
-        room.setCurPaticipants(1);
+        room.setRoomMaxParticipants(5);  
+        room.setCurPaticipants(1);  
         room.setCreateUser(host);
         room.setAddress(new RoomAddress("서울시", "은평구"));
         roomRepository.save(room);
@@ -100,10 +104,10 @@ public class RoomConcurrencyTest {
             userRepository.save(new UserEntity("user" + i + "@naver.com"));
         }
 
-        // === 동시 테스트 ===
         int threadCount = 10;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
+        AtomicInteger failCount = new AtomicInteger(0);
 
         for (int i = 10; i < 20; i++) {
             final int idx = i;
@@ -111,7 +115,7 @@ public class RoomConcurrencyTest {
                 try {
                     roomService.joinRoom(roomTestId, "user" + idx + "@naver.com");
                 } catch (Exception e) {
-                    System.out.println("❌ join 실패: " + e.getMessage());
+                    failCount.incrementAndGet(); 
                 } finally {
                     latch.countDown();
                 }
@@ -120,7 +124,12 @@ public class RoomConcurrencyTest {
 
         latch.await();
         RoomEntity resultRoom = roomRepository.findById(roomTestId).orElseThrow();
-        System.out.println("최종 참가 인원 수: " + resultRoom.getCurPaticipants());
-        assertEquals(5, resultRoom.getCurPaticipants());
+
+        System.out.println("✅ 최종 참가 인원 수: " + resultRoom.getCurPaticipants());
+        System.out.println("❌ 실패한 유저 수: " + failCount.get());
+
+        assertEquals(5, resultRoom.getCurPaticipants()); // 호스트 포함 5명
+        assertEquals(6, failCount.get()); // 나머지 5명 실패해야 정상
     }
+
 }

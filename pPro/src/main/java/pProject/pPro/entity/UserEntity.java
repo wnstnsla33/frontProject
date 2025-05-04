@@ -25,12 +25,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import pProject.pPro.User.DTO.SignupLoginDTO;
+import pProject.pPro.entity.UserExp.DefaultExpStrategy;
+import pProject.pPro.entity.UserExp.ExpStrategy;
 
 @Entity
 @Getter
@@ -82,12 +85,13 @@ public class UserEntity {
 
 	private String userImg;
 
-	@ColumnDefault("1")
 	private int userExp;
 
 	@ColumnDefault("1")
 	private int userLevel;
 
+	@Transient 
+	private ExpStrategy expStrategy = new DefaultExpStrategy();
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonBackReference("user-bookmark")
 	private List<BookmarkEntity> bookmark = new ArrayList<BookmarkEntity>();
@@ -158,11 +162,10 @@ public class UserEntity {
 	}
 	public void expUp() {
 		
-		this.userExp = userExp+ 20;
-
+		this.userExp = expStrategy.plusExp(userExp);
         if (userExp >= 100) {
             this.userLevel = userLevel+1;
-            userExp=0;
+            userExp=userExp-100;
             
             int level = userLevel;
             if (level >= 10) this.userGrade = Grade.VIP;

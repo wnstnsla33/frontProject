@@ -95,7 +95,6 @@ public class UserService {
 
     public UserEntity expUp(String email) {
         UserEntity user = utils.findUser(email);
-        int exp = user.getUserExp() + 20;
         user.expUp();
         return userRepository.save(user);
     }
