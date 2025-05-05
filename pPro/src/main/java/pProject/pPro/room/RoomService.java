@@ -53,7 +53,7 @@ public class RoomService {
 	private final HostUserRepository hostUserRepository;
 	private final ChatRepository chatRepository;
 	private final MessageRepository messageRepository;
-	
+	private final RoomQRepository roomQRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ServiceUtils utils;
 	
@@ -100,8 +100,8 @@ public class RoomService {
 		if (dto.getSigungu() != null && dto.getSigungu().isBlank()) dto.setSigungu(null);
 		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by("roomCreatDate").descending());
 
-		return roomRepository
-			.searchRoomsWithSido(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
+		return roomQRepository
+			.searchRooms(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
 			.map(RoomDTO::new);
 	}
 
@@ -117,8 +117,8 @@ public class RoomService {
 		if (dto.getTitle() != null && dto.getTitle().isBlank()) dto.setTitle(null);
 		if (dto.getRoomType() != null && dto.getRoomType().isBlank()) dto.setRoomType(null);
 		Pageable pageable = PageRequest.of(dto.getPage(), 20, Sort.by("roomCreatDate").descending());
-		return roomRepository
-			.searchRoomsWithSido(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
+		return roomQRepository
+			.searchRooms(dto.getTitle(), dto.getRoomType(), dto.getSido(), dto.getSigungu(), pageable)
 			.map(RoomDTO::new);
 	}
 

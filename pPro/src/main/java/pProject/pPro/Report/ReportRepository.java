@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import pProject.pPro.Report.DTO.ReportStatus;
+import pProject.pPro.Report.DTO.ReportTargetType;
 import pProject.pPro.entity.ReportEntity;
 import pProject.pPro.entity.UserEntity;
 

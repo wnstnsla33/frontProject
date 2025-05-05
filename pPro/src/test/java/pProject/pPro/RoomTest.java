@@ -3,6 +3,8 @@ package pProject.pPro;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +16,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
 import jakarta.transaction.Transactional;
@@ -25,6 +31,7 @@ import pProject.pPro.entity.Address;
 import pProject.pPro.entity.HostUserEntity;
 import pProject.pPro.entity.RoomEntity;
 import pProject.pPro.entity.UserEntity;
+import pProject.pPro.room.RoomQRepository;
 import pProject.pPro.room.RoomRepository;
 import pProject.pPro.room.RoomService;
 import pProject.pPro.room.excption.RoomErrorCode;
@@ -38,7 +45,8 @@ public class RoomTest {
     @Autowired private RoomRepository roomRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private HostUserRepository hostUserRepository;
-
+    @Autowired private RoomQRepository roomQRepository;
+    
     @Test
     @DisplayName("동시 참가 테스트 - 동시 10명 입장")
     void joinRoom_concurrently() throws InterruptedException {
@@ -131,5 +139,24 @@ public class RoomTest {
         assertEquals(5, resultRoom.getCurPaticipants()); // 호스트 포함 5명
         assertEquals(6, failCount.get()); // 나머지 5명 실패해야 정상
     }
+    @Test
+    @DisplayName("쿼리DSL 테스트")
+    void roomQRepositoryTest() {
+    	 UserEntity host = userRepository.save(new UserEntity("host3@email.comm"));
+         String roomTestId = UUID.randomUUID().toString();
 
+         RoomEntity room = new RoomEntity();
+         room.setRoomId(roomTestId);
+         room.setRoomTitle("queryDSL 테스트");
+         room.setRoomMaxParticipants(5);  
+         room.setCurPaticipants(1);  
+         room.setCreateUser(host);
+         room.setMeetingTime(LocalDateTime.now().plusHours(1));
+         room.setAddress(new RoomAddress("서울시", "은평구"));
+         roomRepository.save(room);
+         hostUserRepository.save(new HostUserEntity(room, host));
+         Pageable pageable = PageRequest.of(0, 20, Sort.by("roomCreatDate").descending());
+         List<RoomEntity> page = roomQRepository.searchRooms( null, null, null, null, pageable).getContent();
+         assertEquals(1, page.size());
+    }
 }

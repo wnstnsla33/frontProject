@@ -2,8 +2,6 @@ package pProject.pPro.Report.DTO;
 
 import lombok.Getter;
 import lombok.Setter;
-import pProject.pPro.Report.ReportStatus;
-import pProject.pPro.Report.ReportTargetType;
 import pProject.pPro.entity.ReportEntity;
 import pProject.pPro.entity.UserEntity;
 

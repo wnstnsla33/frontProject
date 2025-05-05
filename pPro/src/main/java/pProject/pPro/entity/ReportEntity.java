@@ -16,9 +16,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pProject.pPro.Report.ReportStatus;
-import pProject.pPro.Report.ReportTargetType;
 import pProject.pPro.Report.DTO.CreateReportDTO;
+import pProject.pPro.Report.DTO.ReportStatus;
+import pProject.pPro.Report.DTO.ReportTargetType;
 
 @Entity
 @Getter

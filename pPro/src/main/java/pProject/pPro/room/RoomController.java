@@ -31,7 +31,7 @@ public class RoomController {
 
 	private final RoomService roomService;
 	private final ControllerUtils utils;
-
+	
 	@PostMapping("/chatRoom")
 	public ResponseEntity<?> createRoom(@ModelAttribute @Valid RoomDTO dto, @AuthenticationPrincipal UserDetails user) {
 		utils.isBannedUser(user);

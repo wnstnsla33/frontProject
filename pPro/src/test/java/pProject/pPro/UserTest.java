@@ -2,6 +2,7 @@ package pProject.pPro;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import jakarta.transaction.Transactional;
+import pProject.pPro.User.UserQRepository;
 import pProject.pPro.User.UserRepository;
 import pProject.pPro.entity.PostEntity;
 import pProject.pPro.entity.UserEntity;
@@ -28,6 +30,8 @@ public class UserTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserQRepository userQRepository;
     @Autowired
     private PostService postService;
     @Test
@@ -67,5 +71,14 @@ public class UserTest {
     	user.expUp();
     	assertEquals(50, user.getUserExp());
     	System.out.println(user.getUserExp()+"정상적으로 30증가 확인");
+    }
+    @Test
+    @DisplayName("쿼리DSL 확인")
+    void queryDSLTest() {
+    	for (int i = 0; i < 10; i++) {
+            userRepository.save(new UserEntity("user" + i + "@naver.com"));
+        }
+    	List<UserEntity> list = userQRepository.searchUsers("user1");
+    	assertEquals(1, list.size());
     }
 }
