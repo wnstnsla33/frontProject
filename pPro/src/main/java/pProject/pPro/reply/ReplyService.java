@@ -60,11 +60,11 @@ public class ReplyService {
 	public List<ReplyListDTO> findReplyByPost(Long postId, String email) {
 		List<ReplyListDTO> replyList = null;
 		if (email == null) {
-			replyList = replyRepository.findReplyDTOByPost(postId); // 또는 withoutLike
+			replyList = replyRepository.findReplyDTOByPost(postId);  
 			 replyList = buildReplyTree(replyList);
 		} else {
 			UserEntity user = utils.findUser(email);
-			replyList = replyRepository.findReplyDTOByPostLogin(postId, user.getUserId()); // 또는 withoutLike
+			replyList = replyRepository.findReplyDTOByPostLogin(postId, user.getUserId());  
 			replyList= buildReplyTree(replyList);
 		}
 		return replyList;

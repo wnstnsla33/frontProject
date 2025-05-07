@@ -26,7 +26,8 @@ import pProject.pPro.RoomUser.DTO.HostUserStatus;
 @Setter
 @NoArgsConstructor
 @Table(indexes = {
-	    @Index(name = "hostuser_reply_user_id", columnList = "user_id")
+	    @Index(name = "hostuser_reply_user_id", columnList = "user_id"),
+	    @Index(name = "hostuser_status_idx", columnList = "status")
 	})
 public class HostUserEntity {
 	@Id

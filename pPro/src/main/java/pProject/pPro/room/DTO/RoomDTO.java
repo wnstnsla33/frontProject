@@ -87,9 +87,7 @@ public class RoomDTO {
 				        hostUser.getUser().getUserId()
 				    ))
 				    .toList();
-			
 		}
-
 	}
 
 	public RoomDTO(RoomEntity room, boolean verify) {
