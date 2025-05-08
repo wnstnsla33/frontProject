@@ -17,12 +17,9 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = utils.findUser(username);
+        UserEntity userEntity = utils.findUserLogin(username);
 
         // ✅ 예외 처리 추가
-        if (userEntity == null) {
-            throw new UsernameNotFoundException("해당 이메일의 계정을 찾을 수 없습니다: " + username);
-        }
 
         return new CustomUserDetails(userEntity);
     }

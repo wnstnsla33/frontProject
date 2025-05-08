@@ -22,9 +22,9 @@ public class CustomFailureHandler implements AuthenticationFailureHandler{
 		response.setContentType("application/json;charset=UTF-8");
 		PrintWriter writer = response.getWriter();
 		if(exception instanceof BadCredentialsException) {
-			writer.write("{\"error\": \"잘못된 이메일 또는 비밀번호입니다.\"}");
+			writer.write("{\"error\": \"잘못된 비밀번호입니다.\"}");
 		}else {
-			writer.write("{\"error\": \"로그인 실패: " + exception.getMessage() + "\"}");
+			writer.write("{\"error\": \"" + exception.getMessage() + "\"}");
 		}writer.flush();
 	}
 

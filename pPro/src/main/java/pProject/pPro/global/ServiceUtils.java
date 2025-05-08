@@ -66,6 +66,9 @@ public class ServiceUtils {
 		return userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.INVALID_EMAIL));
 	}
 
+	public UserEntity findUserLogin(String email) {
+		return userRepository.findByEmail(email).orElseThrow(() -> new UserException(UserErrorCode.NO_EXIST_ID));
+	}
 	public Optional<UserEntity> findUserOptional(String email) {
 		return userRepository.findByEmail(email);
 	}
