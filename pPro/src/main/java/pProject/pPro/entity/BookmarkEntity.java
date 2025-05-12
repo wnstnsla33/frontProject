@@ -18,9 +18,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +32,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "bookmark",
+indexes = {
+  @Index(name = "idx_bookmark_user", columnList = "user_id"),
+  @Index(name = "idx_bookmark_post", columnList = "post_id"),
+  @Index(name = "idx_bookmark_user_post", columnList = "user_id, post_id")
+}
+)
 public class BookmarkEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -39,11 +48,9 @@ public class BookmarkEntity {
 	private LocalDate createDate;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
-	@JsonManagedReference("user-bookma`rk")
 	private UserEntity user;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "post_id", nullable = false)
-	@JsonManagedReference("post-bookmark")
 	private PostEntity post;
 
 	public BookmarkEntity(PostEntity post, UserEntity user) {

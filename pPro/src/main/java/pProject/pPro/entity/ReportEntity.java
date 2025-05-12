@@ -10,8 +10,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +26,10 @@ import pProject.pPro.Report.DTO.ReportTargetType;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "report", indexes = {
+	    @Index(name = "idx_report_reporter", columnList = "reporter_id"),
+	    @Index(name = "idx_report_reported", columnList = "reported_user_id")
+	})
 public class ReportEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
